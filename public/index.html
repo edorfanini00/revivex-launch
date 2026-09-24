@@ -3,197 +3,229 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Revivex. Your routine, poured.</title>
-  <meta name="description" content="Revivex is a countertop machine in development that measures, blends and pours your daily supplement drink. Join the early access list.">
-  <meta name="theme-color" content="#F6EDEA">
-  <meta property="og:title" content="Revivex. Your routine, poured.">
-  <meta property="og:description" content="A countertop machine in development that measures, blends and pours your daily supplement drink.">
-  <meta property="og:image" content="/assets/v10/hero-end.jpg">
+  <title>Revivex Machine | Your daily drink, prepared for you</title>
+  <meta name="description" content="The Revivex machine is a countertop appliance in development that measures, blends and pours your daily supplement drink. Join the early access list.">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta property="og:title" content="Revivex Machine">
+  <meta property="og:description" content="A countertop appliance in development that measures, blends and pours your daily supplement drink.">
+  <meta property="og:image" content="/assets/v11/hero-end.jpg">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="/assets/v10/hero-start.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/assets/v11/hero-poster.jpg">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
 <header class="nav" id="nav">
-  <a href="#top" class="wordmark" aria-label="Revivex home">revivex</a>
   <nav class="nav-links" aria-label="Sections">
     <a href="#how">How it works</a>
-    <a href="#details">Details</a>
+    <a href="#details">Design</a>
     <a href="#faq">FAQ</a>
   </nav>
-  <a href="#waitlist" class="pill pill-dark nav-cta">Early access</a>
+  <a href="#top" class="logo" aria-label="Revivex home">
+    <img class="logo-light" src="/assets/brand/logo-light.png" alt="Revivex" width="448" height="63">
+    <img class="logo-dark" src="/assets/brand/logo-dark.png" alt="" width="448" height="63">
+  </a>
+  <a href="#waitlist" class="pill pill-white nav-cta">Join the waitlist</a>
 </header>
 
 <main id="top">
 
-  <!-- 1. SCROLL HERO: the glass fills as you scroll -->
-  <section class="hero" id="hero" aria-label="Revivex pours a glass as you scroll">
+  <!-- HERO: rounded frame, glass fills as you scroll -->
+  <section class="hero" id="hero" aria-label="The Revivex machine pours a glass as you scroll">
     <div class="hero-sticky">
-      <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
-      <img class="hero-fallback" id="heroFallback" src="/assets/v10/hero-start.jpg" alt="Revivex machine on a travertine plinth with an empty glass in the bay" fetchpriority="high">
-      <div class="hero-veil" aria-hidden="true"></div>
+      <div class="hero-frame">
+        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+        <img class="hero-fallback" src="/assets/v11/hero-poster.jpg" alt="The Revivex machine on a concrete counter with an empty glass in the bay" fetchpriority="high">
+        <div class="hero-veil" aria-hidden="true"></div>
 
-      <div class="hero-copy">
-        <p class="eyebrow reveal-now">Introducing Revivex</p>
-        <h1 class="hero-title reveal-now">
-          <span>Your routine,</span>
-          <em>poured.</em>
-        </h1>
-        <p class="hero-sub reveal-now">One quiet machine that measures, blends and pours your daily supplement drink. You just take the glass.</p>
-        <div class="hero-actions reveal-now">
-          <a href="#waitlist" class="pill pill-dark">Join the waitlist</a>
-          <a href="#how" class="link-arrow">How it works</a>
+        <div class="hero-copy">
+          <span class="chip reveal-now">In development</span>
+          <h1 class="hero-title reveal-now">Your daily drink, prepared for you.</h1>
+          <p class="hero-sub reveal-now">The Revivex machine measures, blends and pours your supplement routine. You just take the glass.</p>
+          <div class="hero-actions reveal-now">
+            <a href="#waitlist" class="pill pill-white">Join the waitlist</a>
+            <a href="#how" class="pill pill-glass">How it works</a>
+          </div>
         </div>
-      </div>
 
-      <div class="hero-progress" aria-hidden="true"><span id="heroBar"></span></div>
-      <p class="concept-tag">Concept visualization</p>
+        <div class="hero-pillars" aria-hidden="true">
+          <div><h3>Weighed one by one</h3><p>Each ingredient is measured on its own.</p></div>
+          <div><h3>Blended inside</h3><p>Nothing to stir. It pours ready to drink.</p></div>
+          <div><h3>No plumbing</h3><p>A clear tank you fill at the tap.</p></div>
+        </div>
+
+        <div class="hero-progress" aria-hidden="true"><span id="heroBar"></span></div>
+        <p class="concept-tag">Concept visualization</p>
+      </div>
     </div>
   </section>
 
-  <!-- 2. STATEMENT -->
-  <section class="statement">
-    <p class="statement-text reveal">
-      Supplements only work if you take them. <em>Revivex makes the taking effortless.</em> Every morning, the same drink, prepared the same way, waiting in the glass.
-    </p>
+  <!-- STATEMENT -->
+  <section class="proof">
+    <p class="proof-text reveal">Part of the Revivex health ecosystem. <span>Built so the routine you choose is the one you actually keep, every morning, the same way.</span></p>
   </section>
 
-  <!-- 3. HOW IT WORKS -->
+  <!-- HOW IT WORKS -->
   <section class="how" id="how">
     <header class="section-head reveal">
-      <p class="eyebrow">How it works</p>
-      <h2>Three steps. <em>Two are yours.</em></h2>
+      <div>
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps. Two of them are yours.</h2>
+      </div>
+      <p class="lede">Everything between filling the tank and taking the glass happens inside the machine.</p>
     </header>
 
     <div class="steps">
       <article class="step reveal">
-        <div class="step-media"><img src="/assets/v10/detail-tank.jpg" alt="A hand lifting the clear removable water tank out of the top of the machine" loading="lazy"></div>
+        <img src="/assets/v11/detail-tank.jpg" alt="A hand lifting the clear removable water tank out of the machine" loading="lazy">
+        <span class="chip step-num">01</span>
         <div class="step-copy">
-          <span class="step-kicker">Step one</span>
-          <h3>Fill the tank.</h3>
-          <p>A removable clear tank lifts out from the top. Fill it at the tap and set it back. No plumbing, no installation.</p>
+          <h3>Fill the tank</h3>
+          <p>A clear tank lifts out from the top. Fill it at the tap and set it back.</p>
         </div>
       </article>
-
       <article class="step reveal">
-        <div class="step-media"><img src="/assets/v10/detail-screen.jpg" alt="Close-up of the machine's screen showing the Morning routine" loading="lazy"></div>
+        <img src="/assets/v11/detail-screen.jpg" alt="Close-up of the machine's screen showing the Morning routine" loading="lazy">
+        <span class="chip step-num">02</span>
         <div class="step-copy">
-          <span class="step-kicker">Step two</span>
-          <h3>Choose your routine.</h3>
-          <p>Pick a saved routine on the screen. Revivex weighs each ingredient, adds the water and blends inside the machine.</p>
+          <h3>Choose your routine</h3>
+          <p>Pick a saved routine. The machine weighs, adds water and blends.</p>
         </div>
       </article>
-
       <article class="step reveal">
-        <div class="step-media"><img src="/assets/v10/detail-pour.jpg" alt="A clear stream pouring from the nozzle into a glass" loading="lazy"></div>
+        <img src="/assets/v11/detail-pour.jpg" alt="A clear stream pouring from the nozzle into a glass" loading="lazy">
+        <span class="chip step-num">03</span>
         <div class="step-copy">
-          <span class="step-kicker">Step three</span>
-          <h3>Take the glass.</h3>
-          <p>The finished drink pours straight into your glass. Nothing to stir, nothing to rinse, nothing to measure.</p>
+          <h3>Take the glass</h3>
+          <p>The finished drink pours straight into your glass. Nothing to rinse.</p>
         </div>
       </article>
     </div>
   </section>
 
-  <!-- 4. FULL BLEED LIFESTYLE -->
-  <section class="bleed" aria-label="Revivex on a kitchen counter">
-    <img src="/assets/v10/lifestyle-counter.jpg" alt="Revivex on an oak kitchen counter in morning light as a hand takes the glass" loading="lazy">
-    <div class="bleed-copy reveal">
-      <h2>Made for the counter,<br><em>not the cabinet.</em></h2>
-    </div>
+  <!-- STORY CARDS -->
+  <section class="stories" aria-label="Revivex at home">
+    <article class="story reveal">
+      <img src="/assets/v11/lifestyle-kitchen.jpg" alt="A woman taking a glass from the Revivex machine in a bright modern kitchen at dawn" loading="lazy">
+      <div class="story-copy">
+        <p class="eyebrow eyebrow-light">Every morning</p>
+        <h2>A routine that runs itself</h2>
+        <p>No scoops, shakers or pill organizers. Your drink is ready the same way every day, so consistency stops depending on willpower.</p>
+      </div>
+    </article>
+    <article class="story left reveal">
+      <img src="/assets/v11/lifestyle-desk.jpg" alt="A man holding a glass of water on a terrace at dawn" loading="lazy">
+      <div class="story-copy">
+        <p class="eyebrow eyebrow-light">Two sizes</p>
+        <h2>350 ml or 250 ml. Same ingredients.</h2>
+        <p>Choose a standard drink or a concentrated one. The water changes, your routine doesn't.</p>
+      </div>
+    </article>
   </section>
 
-  <!-- 5. DETAILS -->
+  <!-- DETAILS -->
   <section class="details" id="details">
     <header class="section-head reveal">
-      <p class="eyebrow">The details</p>
-      <h2>Quiet by design. <em>Careful by default.</em></h2>
+      <div>
+        <p class="eyebrow">Design</p>
+        <h2>Quiet on the counter. Careful inside.</h2>
+      </div>
+      <p class="lede">A machine you trust with your routine should stop and tell you when something isn't right.</p>
     </header>
     <div class="detail-grid">
-      <div class="detail reveal">
-        <h3>Blended inside</h3>
-        <p>Mixing happens in the machine, not your glass. What pours out is ready to drink.</p>
+      <div class="detail-visual reveal">
+        <img src="/assets/v11/hero-end.jpg" alt="The Revivex machine with a full glass of clear water" loading="lazy">
       </div>
-      <div class="detail reveal">
-        <h3>Two sizes</h3>
-        <p>A standard 350 ml drink, or a concentrated 250 ml with the same ingredients.</p>
-      </div>
-      <div class="detail reveal">
-        <h3>Weighed, one by one</h3>
-        <p>Each ingredient is dispensed and checked on its own before any water is added.</p>
-      </div>
-      <div class="detail reveal">
-        <h3>Stops when unsure</h3>
-        <p>If anything doesn't check out, Revivex pauses and tells you, instead of guessing.</p>
+      <div class="detail-list">
+        <div class="detail reveal">
+          <span class="detail-icon"><svg viewBox="0 0 24 24"><path d="M4 20h16M7 20V10h10v10M9 10V6h6v4"/></svg></span>
+          <div><h3>Weighed one by one</h3><p>Each ingredient is dispensed and checked on its own before water is added.</p></div>
+        </div>
+        <div class="detail reveal">
+          <span class="detail-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8 12c2-3 6-3 8 0"/></svg></span>
+          <div><h3>Blended inside</h3><p>Mixing happens in the machine. What pours out is ready to drink.</p></div>
+        </div>
+        <div class="detail reveal">
+          <span class="detail-icon"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg></span>
+          <div><h3>Refillable tank</h3><p>No water line or installation. Lift, fill, set back.</p></div>
+        </div>
+        <div class="detail reveal">
+          <span class="detail-icon"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></span>
+          <div><h3>Stops when unsure</h3><p>If a step doesn't check out, it pauses and tells you instead of guessing.</p></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 6. WAITLIST -->
+  <!-- WAITLIST -->
   <section class="waitlist" id="waitlist">
-    <div class="waitlist-inner reveal">
-      <p class="eyebrow eyebrow-light">Early access</p>
-      <h2>Be first to <em>pour.</em></h2>
-      <p class="waitlist-sub">Revivex is in development. Leave your email and we'll write when there's something real to share.</p>
-
-      <form class="waitlist-form" id="waitlistForm" novalidate>
-        <label class="sr-only" for="emailInput">Email address</label>
-        <div class="field-row">
-          <input type="email" id="emailInput" name="email" placeholder="you@email.com" autocomplete="email" required>
-          <button type="submit" class="pill pill-light" id="submitBtn">Join</button>
-        </div>
-        <div class="hp" aria-hidden="true">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-        </div>
-        <label class="consent">
-          <input type="checkbox" id="consentInput" name="consent" required>
-          <span>Email me about Revivex early access. Unsubscribe anytime. <a href="/privacy.html">Privacy</a></span>
-        </label>
-        <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
-      </form>
+    <div class="waitlist-card reveal">
+      <img src="/assets/v11/hero-end.jpg" alt="" aria-hidden="true" loading="lazy">
+      <div class="waitlist-inner">
+        <p class="eyebrow eyebrow-light">Early access</p>
+        <h2>Be first to try it.</h2>
+        <p class="waitlist-sub">The machine is in development. Leave your email and we'll write when there's something real to share.</p>
+        <form class="waitlist-form" id="waitlistForm" novalidate>
+          <label class="sr-only" for="emailInput">Email address</label>
+          <div class="field-row">
+            <input type="email" id="emailInput" name="email" placeholder="you@email.com" autocomplete="email" required>
+            <button type="submit" class="pill pill-white" id="submitBtn">Join the waitlist</button>
+          </div>
+          <div class="hp" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+          <label class="consent">
+            <input type="checkbox" id="consentInput" name="consent" required>
+            <span>Email me about Revivex machine early access. Unsubscribe anytime. <a href="/privacy.html">Privacy</a></span>
+          </label>
+          <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
     </div>
   </section>
 
-  <!-- 7. FAQ -->
+  <!-- FAQ -->
   <section class="faq" id="faq">
-    <header class="section-head reveal">
-      <p class="eyebrow">Questions</p>
-      <h2>Good to know.</h2>
-    </header>
-    <div class="faq-list">
-      <details class="reveal">
-        <summary>Can I buy Revivex today?</summary>
-        <p>Not yet. Revivex is in development and nothing is for sale. The waitlist is how we'll share progress first.</p>
-      </details>
-      <details class="reveal">
-        <summary>Does it need a water line?</summary>
-        <p>No. It uses a removable tank that you fill at the tap and set back on top.</p>
-      </details>
-      <details class="reveal">
-        <summary>Do I mix anything in the glass?</summary>
-        <p>No. Weighing, water and blending all happen inside the machine. The glass just receives the finished drink.</p>
-      </details>
-      <details class="reveal">
-        <summary>Are these real photos?</summary>
-        <p>No. Every image on this page is a concept visualization of a product in development. Final design may change.</p>
-      </details>
+    <div class="faq-wrap">
+      <header class="section-head reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2>Good to know.</h2>
+      </header>
+      <div class="faq-list">
+        <details class="reveal">
+          <summary>Can I buy the Revivex machine today?</summary>
+          <p>Not yet. It's in development and nothing is for sale. The waitlist is how we'll share progress first.</p>
+        </details>
+        <details class="reveal">
+          <summary>Does it need a water line?</summary>
+          <p>No. It uses a removable tank that you fill at the tap and set back on top.</p>
+        </details>
+        <details class="reveal">
+          <summary>Do I mix anything in the glass?</summary>
+          <p>No. Weighing, water and blending all happen inside the machine. The glass receives the finished drink.</p>
+        </details>
+        <details class="reveal">
+          <summary>Are these real photos?</summary>
+          <p>No. Every image on this page is a concept visualization of a product in development. The final design may change.</p>
+        </details>
+      </div>
     </div>
   </section>
 
 </main>
 
 <footer class="footer">
-  <a href="#top" class="wordmark">revivex</a>
+  <a href="#top" class="logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
   <nav class="footer-links" aria-label="Footer">
+    <a href="https://healthrevivex.com" rel="noopener">Revivex Health</a>
     <a href="/privacy.html">Privacy</a>
     <a href="#waitlist">Early access</a>
   </nav>
-  <p>&copy; 2026 Revivex. Concept in development. Not for sale. All imagery is concept visualization.</p>
+  <p>&copy; 2026 Revivex. The Revivex machine is in development and not for sale. All imagery is concept visualization.</p>
 </footer>
 
 <script src="/app.js" defer></script>

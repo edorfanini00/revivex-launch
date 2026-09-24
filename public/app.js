@@ -4,7 +4,7 @@
 
   /* Nav background after hero starts */
   const nav = document.getElementById('nav');
-  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > document.getElementById('hero').offsetHeight - window.innerHeight - 20);
   onNav(); window.addEventListener('scroll', onNav, { passive: true });
 
   /* Reveal on scroll */
@@ -31,7 +31,7 @@
     const cw = canvas.width, ch = canvas.height;
     const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
     const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    const focusX = window.innerWidth <= 640 ? 0.70 : 0.62;
+    const focusX = window.innerWidth <= 640 ? 0.74 : 0.64;
     const x = (cw - w) * focusX, y = (ch - h) / 2;
     ctx.drawImage(img, x, y, w, h);
   }
@@ -56,12 +56,12 @@
   window.addEventListener('resize', size);
 
   if (!reduce) {
-    fetch('/assets/v10/frames/manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
+    fetch('/assets/v11/frames/manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
       count = m.frameCount;
       for (let i = 1; i <= count; i++) {
         const img = new Image();
         img.decoding = 'async';
-        img.src = `/assets/v10/frames/f-${String(i).padStart(4, '0')}.${m.ext}`;
+        img.src = `/assets/v11/frames/f-${String(i).padStart(4, '0')}.${m.ext}`;
         if (i === 1) img.onload = () => { ready = true; canvas.classList.add('ready'); size(); };
         frames.push(img);
       }
@@ -99,7 +99,7 @@
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: v, consent: true, website: hp.value, source: 'landing-v10' })
+        body: JSON.stringify({ email: v, consent: true, website: hp.value, source: 'landing-v11' })
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok !== false) {
@@ -111,7 +111,7 @@
     } catch {
       say('Network error. Please try again.', false);
     } finally {
-      btn.disabled = false; btn.textContent = 'Join';
+      btn.disabled = false; btn.textContent = 'Join the waitlist';
     }
   });
 })();
