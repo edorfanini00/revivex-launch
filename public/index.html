@@ -15,13 +15,22 @@
   <!-- ─── HEADER ──────────────────────────────────────────────────────────── -->
   <header class="site-header">
     <a href="#" class="wordmark">revivex</a>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <a href="#scrollSeq" class="header-nav-link">How it works</a>
+      <span class="nav-sep" aria-hidden="true">|</span>
+      <a href="#features" class="header-nav-link">Features</a>
+      <span class="nav-sep" aria-hidden="true">|</span>
+      <a href="#faq" class="header-nav-link">FAQ</a>
+    </nav>
     <a href="#waitlist" class="btn btn-filled header-cta">Get early access</a>
   </header>
 
   <!-- ─── HERO ────────────────────────────────────────────────────────────── -->
   <section class="hero" id="hero">
-    <div class="hero-image" aria-hidden="true">
-      <img src="assets/feature-03.png" alt="" loading="eager">
+    <div class="hero-media" aria-hidden="true">
+      <video class="hero-video" autoplay muted loop playsinline poster="assets/poster-v2.webp">
+        <source src="assets/hero-loop-v2.mp4" type="video/mp4">
+      </video>
     </div>
     <div class="hero-content">
       <p class="overline">Wellness, automated.</p>
@@ -34,15 +43,32 @@
         <a href="#waitlist" class="btn btn-filled">Get early access</a>
         <a href="#scrollSeq" class="btn btn-ghost">See how it works</a>
       </div>
+      <p class="hero-social-proof">Joining hundreds on the early access list</p>
+    </div>
+  </section>
+
+  <!-- ─── STATS ────────────────────────────────────────────────────────────── -->
+  <section class="stats">
+    <div class="stat">
+      <span class="stat-num">28</span>
+      <span class="stat-label">Ingredients stored</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">1mg</span>
+      <span class="stat-label">Precision dosing</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">&lt; 60s</span>
+      <span class="stat-label">Morning prep time</span>
     </div>
   </section>
 
   <!-- ─── SCROLL SEQUENCE INTRO (warm bg) ─────────────────────────────────── -->
-  <section class="scroll-intro">
-    <p class="overline" style="text-align:center;">The machine</p>
-    <h2 class="section-heading">Meet <em>Revivex</em></h2>
-    <p class="section-sub">One machine. Your complete routine.</p>
-  </section>
+  <div class="seq-intro">
+    <p class="overline">The machine</p>
+    <h2><em>Meet Revivex</em></h2>
+    <p>One machine. Your complete routine.</p>
+  </div>
 
   <!-- ─── SCROLL SEQUENCE (dark canvas) ───────────────────────────────────── -->
   <section class="scroll-seq-wrapper" id="scrollSeq">
@@ -114,10 +140,19 @@
     </div>
   </section>
 
+  <!-- ─── QUOTE ────────────────────────────────────────────────────────────── -->
+  <section class="quote-section">
+    <blockquote>
+      <p class="quote-text">"Finally, a way to actually stay consistent with my supplements."</p>
+      <cite>— Early access member</cite>
+    </blockquote>
+  </section>
+
   <!-- ─── WAITLIST ─────────────────────────────────────────────────────────── -->
   <section class="waitlist" id="waitlist">
     <h2 class="waitlist-heading"><em>Be first.</em></h2>
     <p class="waitlist-sub">Early access. No commitment.</p>
+    <p class="form-label-top">Reserve your spot</p>
     <form class="waitlist-form" id="waitlistForm" novalidate>
       <input
         type="email"
@@ -140,15 +175,19 @@
     <div class="faq-list">
       <details class="faq-item">
         <summary class="faq-q">When will Revivex be available?</summary>
-        <p class="faq-a">We're currently in concept development. Early access members will be the first to know when we launch — and will receive exclusive pricing.</p>
+        <p class="faq-a">We're currently in development. Join the early access list to be first to know.</p>
       </details>
       <details class="faq-item">
-        <summary class="faq-q">Which supplements does it support?</summary>
-        <p class="faq-a">Revivex is designed for a wide range of powdered supplements including collagen, protein, creatine, vitamins, and adaptogens. Your routine, your ingredients.</p>
+        <summary class="faq-q">How many supplements can it store?</summary>
+        <p class="faq-a">Revivex is designed to hold up to 28 individual ingredient compartments.</p>
       </details>
       <details class="faq-item">
-        <summary class="faq-q">Is this a subscription product?</summary>
-        <p class="faq-a">Revivex is a hardware appliance — you buy it once. No mandatory subscription. We'll offer optional smart refill and tracking features as add-ons.</p>
+        <summary class="faq-q">Is this a subscription service?</summary>
+        <p class="faq-a">No. Revivex is a one-time purchase appliance. You use your own supplements.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Is Revivex FDA approved?</summary>
+        <p class="faq-a">Revivex is an appliance, not a supplement. It does not require FDA approval. Always consult your doctor about your supplement routine.</p>
       </details>
     </div>
   </section>
@@ -156,6 +195,13 @@
   <!-- ─── FOOTER ───────────────────────────────────────────────────────────── -->
   <footer class="site-footer">
     <span class="wordmark">revivex</span>
+    <nav class="footer-nav" aria-label="Footer navigation">
+      <a href="#" class="footer-link">Privacy Policy</a>
+      <span class="nav-sep" aria-hidden="true">|</span>
+      <a href="#" class="footer-link">Contact</a>
+      <span class="nav-sep" aria-hidden="true">|</span>
+      <a href="#waitlist" class="footer-link">Early Access</a>
+    </nav>
     <p class="footer-copy">© 2026 Revivex. Concept in development. Not for sale.</p>
   </footer>
 
