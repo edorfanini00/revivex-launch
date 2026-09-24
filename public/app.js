@@ -10,9 +10,10 @@
 
   // Build frame list — frames/revivex-NNNN.webp (populated when animation is ready)
   // Fallback: use static images if no frames directory
-  const FRAME_COUNT = window._revivexFrameCount || 0;
+  // Load frame manifest then all frames
   const frames = [];
   let framesLoaded = 0;
+  let manifestLoaded = false;
 
   function resizeCanvas() {
     if (!canvas) return;
@@ -22,24 +23,33 @@
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // If we have frames, load them; otherwise fall back to static hero image
-  if (FRAME_COUNT > 0) {
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      const img = new Image();
-      const n = String(i).padStart(4, '0');
-      img.src = `assets/frames/revivex-${n}.webp`;
-      img.onload = () => framesLoaded++;
-      frames.push(img);
+  // Load frames from manifest
+  async function loadFrames() {
+    try {
+      const r = await fetch('assets/frames/manifest.json');
+      const m = await r.json();
+      const count = m.frameCount || 0;
+      const ext = m.ext || 'jpg';
+      for (let i = 1; i <= count; i++) {
+        const img = new Image();
+        const n = String(i).padStart(4, '0');
+        img.src = `assets/frames/revivex-${n}.${ext}`;
+        img.onload = () => { framesLoaded++; if (framesLoaded === 1) drawFrame(0); };
+        frames.push(img);
+      }
+      manifestLoaded = true;
+    } catch {
+      // Fallback to 2-frame static
+      const startImg = new Image();
+      startImg.src = 'assets/hero-ai.png';
+      startImg.onload = () => { framesLoaded++; drawFrame(0); };
+      const endImg = new Image();
+      endImg.src = 'assets/hero-endframe.png';
+      endImg.onload = () => framesLoaded++;
+      frames.push(startImg, endImg);
     }
-  } else {
-    // Static fallback — show hero-ai.png and hero-endframe.png based on scroll
-    const startImg = new Image();
-    startImg.src = 'assets/hero-ai.png';
-    const endImg = new Image();
-    endImg.src = 'assets/hero-endframe.png';
-    frames.push(startImg, endImg);
-    framesLoaded = 2;
   }
+  loadFrames();
 
   function drawFrame(progress) {
     if (!ctx || frames.length === 0) return;
