@@ -10,7 +10,7 @@ html { scroll-behavior: smooth; }
   --text: #f0f0f0;
   --muted: rgba(255,255,255,0.45);
   --accent: #fff;
-  --serif: 'DM Serif Display', serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
   --sans: 'Inter', system-ui, sans-serif;
 }
 
