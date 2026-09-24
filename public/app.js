@@ -18,11 +18,14 @@
   const canvas = document.getElementById('heroCanvas');
   const bar = document.getElementById('heroBar');
   const ctx = canvas.getContext('2d');
+  // Phones get native portrait frames (1080x1920) so nothing is upscaled from a desktop crop.
+  const MOBILE = window.matchMedia('(max-width: 640px), (orientation: portrait) and (max-width: 900px)').matches;
+  const FRAMES = MOBILE ? '/assets/v11/frames-m/' : '/assets/v11/frames/';
   const frames = [];
   let count = 0, current = -1, ready = false;
 
   function size() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
     canvas.width = Math.round(canvas.clientWidth * dpr);
     canvas.height = Math.round(canvas.clientHeight * dpr);
     current = -1; render();
@@ -31,8 +34,9 @@
     const cw = canvas.width, ch = canvas.height;
     const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
     const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    const focusX = window.innerWidth <= 640 ? 0.74 : 0.64;
+    const focusX = MOBILE ? 0.5 : 0.64;
     const x = (cw - w) * focusX, y = (ch - h) / 2;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, x, y, w, h);
   }
   function progress() {
@@ -56,12 +60,12 @@
   window.addEventListener('resize', size);
 
   if (!reduce) {
-    fetch('/assets/v11/frames/manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
+    fetch(FRAMES + 'manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
       count = m.frameCount;
       for (let i = 1; i <= count; i++) {
         const img = new Image();
         img.decoding = 'async';
-        img.src = `/assets/v11/frames/f-${String(i).padStart(4, '0')}.${m.ext}`;
+        img.src = `${FRAMES}f-${String(i).padStart(4, '0')}.${m.ext}`;
         if (i === 1) img.onload = () => { ready = true; canvas.classList.add('ready'); size(); };
         frames.push(img);
       }
