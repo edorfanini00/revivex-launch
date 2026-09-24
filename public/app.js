@@ -1,51 +1,70 @@
-/* Revivex app.js — v5 */
+/* Revivex app.js — v6 — Scroll-driven video scrub */
 'use strict';
 
 (function () {
 
-  /* ── Hero video toggle ──────────────────────────── */
-  var heroVideo = document.querySelector('.hero-video');
-  var heroToggle = document.getElementById('heroToggle');
+  /* ── SCROLL-SCRUBBED HERO VIDEO ─────────────────────
+     Hero section is 300vh tall. The video element is
+     position:sticky inside, so it stays in viewport.
+     JS maps scrollY → video.currentTime as the user
+     scrolls through the 300vh hero section.
+  ──────────────────────────────────────────────────── */
+  var heroSection = document.getElementById('hero');
+  var heroVideo   = document.getElementById('heroVideo');
+  var heroContent = document.getElementById('heroContent');
+  var heroForm    = document.getElementById('heroForm');
 
-  if (heroVideo && heroToggle) {
-    var iconPause = heroToggle.querySelector('.icon-pause');
-    var iconPlay = heroToggle.querySelector('.icon-play');
+  var heroScrollHandler = null;
 
-    heroToggle.addEventListener('click', function () {
-      if (heroVideo.paused) {
-        heroVideo.play();
-        heroToggle.setAttribute('aria-label', 'Pause video');
-        heroToggle.setAttribute('aria-pressed', 'false');
-        iconPause.style.display = '';
-        iconPlay.style.display = 'none';
-      } else {
-        heroVideo.pause();
-        heroToggle.setAttribute('aria-label', 'Play video');
-        heroToggle.setAttribute('aria-pressed', 'true');
-        iconPause.style.display = 'none';
-        iconPlay.style.display = '';
+  if (heroSection && heroVideo) {
+    // Pre-load video so currentTime seeking works
+    heroVideo.load();
+
+    heroScrollHandler = function () {
+      var heroTop    = heroSection.getBoundingClientRect().top + window.scrollY;
+      var heroHeight = heroSection.offsetHeight; // 300vh
+      var scrolled   = window.scrollY - heroTop;
+      var scrollable = heroHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+
+      var progress = Math.max(0, Math.min(1, scrolled / scrollable));
+
+      // Scrub video: map scroll progress to video time
+      if (heroVideo.readyState >= 1 && heroVideo.duration) {
+        heroVideo.currentTime = progress * heroVideo.duration;
       }
-    });
+
+      // Fade in hero headline + sub after 5% scroll
+      if (heroContent) {
+        if (progress > 0.05) {
+          heroContent.classList.add('visible');
+        } else {
+          heroContent.classList.remove('visible');
+        }
+      }
+
+      // Show CTA form after 30% scroll
+      if (heroForm) {
+        if (progress > 0.30) {
+          heroForm.style.opacity = '1';
+          heroForm.style.pointerEvents = 'auto';
+        } else {
+          heroForm.style.opacity = '0';
+          heroForm.style.pointerEvents = 'none';
+        }
+      }
+    };
+
+    window.addEventListener('scroll', heroScrollHandler, { passive: true });
+
+    // Run once on load so initial state is correct
+    heroScrollHandler();
+
+    // If page loads mid-scroll (back button), run after video meta loads
+    heroVideo.addEventListener('loadedmetadata', heroScrollHandler);
   }
 
-  /* ── Film section play ──────────────────────────── */
-  var filmVideo = document.getElementById('filmVideo');
-  var filmPlay = document.getElementById('filmPlay');
-
-  if (filmVideo && filmPlay) {
-    filmPlay.addEventListener('click', function () {
-      filmPlay.style.display = 'none';
-      filmVideo.play();
-      filmVideo.setAttribute('controls', '');
-    });
-
-    filmVideo.addEventListener('ended', function () {
-      filmPlay.style.display = 'flex';
-      filmVideo.removeAttribute('controls');
-    });
-  }
-
-  /* ── Form helpers ───────────────────────────────── */
+  /* ── FORM HELPERS ───────────────────────────────── */
   function getToken(cb) {
     fetch('/api/form')
       .then(function (r) { return r.json(); })
@@ -86,9 +105,9 @@
     var msgEl = document.getElementById(msgId);
     if (!form || !msgEl) return;
 
-    var emailInput = form.querySelector('input[type="email"]');
+    var emailInput    = form.querySelector('input[type="email"]');
     var honeypotInput = form.querySelector('input[name="website"]');
-    var btn = form.querySelector('button[type="submit"]');
+    var btn           = form.querySelector('button[type="submit"]');
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -120,7 +139,7 @@
   wireForm('heroForm', 'heroMsg');
   wireForm('waitlistForm', 'waitlistMsg');
 
-  /* ── Scroll fade-up ─────────────────────────────── */
+  /* ── SCROLL FADE-UP (features, waitlist, faq) ───── */
   function initFadeUp() {
     var els = document.querySelectorAll('.fade-up');
     if (!els.length) return;
@@ -145,7 +164,7 @@
           observer.unobserve(el);
         }
       }
-    }, { threshold: 0.15 });
+    }, { threshold: 0.12 });
 
     for (var k = 0; k < els.length; k++) {
       observer.observe(els[k]);

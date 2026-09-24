@@ -1,6 +1,6 @@
 /* ===================================================
-   REVIVEX — Design System v5
-   Linc-inspired: pure black, video hero, cinematic
+   REVIVEX — Design System v6
+   Scroll-driven video hero (Jack Roberts style)
    =================================================== */
 
 :root {
@@ -10,7 +10,7 @@
   --text: #f5f5f5;
   --muted: rgba(255,255,255,0.45);
   --accent: #ffffff;
-  --font: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  --font: system-ui, -apple-system, sans-serif;
 }
 
 /* ── Reset ─────────────────────────────────────────── */
@@ -83,15 +83,24 @@ body {
   background: rgba(255,255,255,0.06);
 }
 
-/* ── HERO ───────────────────────────────────────────── */
+/* ── HERO — SCROLL SCRUBBING ────────────────────────── */
+/* Section is 300vh tall — scrolling through takes time  */
 .hero {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  height: 300vh;
   background: #000;
 }
 
+/* Sticky container: locks to viewport while hero scrolls */
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Video fills the sticky viewport */
 .hero-video {
   position: absolute;
   inset: 0;
@@ -101,60 +110,56 @@ body {
   z-index: 0;
 }
 
+/* Gradient overlay — bottom-left dark vignette */
 .hero-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.88) 0%,
-    rgba(0,0,0,0.45) 40%,
-    rgba(0,0,0,0.10) 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,0,0,0.85) 0%,
+      rgba(0,0,0,0.4) 40%,
+      rgba(0,0,0,0.05) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(0,0,0,0.9) 0%,
+      rgba(0,0,0,0.3) 35%,
+      transparent 70%
+    );
 }
 
-/* Pause/play toggle — top-right like Linc */
-.hero-pause {
-  position: absolute;
-  top: 28px;
-  right: 40px;
-  z-index: 10;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 100px;
-  color: var(--accent);
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.hero-pause:hover { background: rgba(255,255,255,0.2); }
-
-/* Hero text — bottom-left like Linc */
+/* Hero text — bottom-left, fades in from JS */
 .hero-content {
   position: absolute;
   bottom: 80px;
   left: 80px;
   z-index: 2;
   max-width: 640px;
+  /* Initial state: text starts slightly below, fades up */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.hero-content.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-h1 {
-  font-size: clamp(52px, 6vw, 84px);
-  font-weight: 300;
-  line-height: 1.05;
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 200;
+  line-height: 1.02;
   color: var(--accent);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 16px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 18px;
   font-weight: 400;
   letter-spacing: 0.01em;
 }
@@ -226,6 +231,18 @@ body {
   text-transform: uppercase;
 }
 
+/* Scroll progress indicator — thin line at bottom of sticky */
+.hero-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.25);
+  z-index: 10;
+  width: 0%;
+  transition: width 0.05s linear;
+}
+
 /* ── TRUST BAR ──────────────────────────────────────── */
 .trust-bar {
   width: 100%;
@@ -273,11 +290,11 @@ body {
 }
 
 .feature-h2 {
-  font-size: 28px;
-  font-weight: 300;
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 200;
   line-height: 1.25;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   margin-bottom: 16px;
 }
 
@@ -311,77 +328,6 @@ body {
   display: block;
 }
 
-/* ── FILM SECTION ───────────────────────────────────── */
-.film-section {
-  background: #0a0a0a;
-  padding: 100px 40px;
-}
-
-.film-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.film-wrap {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-  cursor: pointer;
-}
-
-.film-video {
-  width: 100%;
-  display: block;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-}
-
-.film-play {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.35);
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s;
-  color: var(--accent);
-}
-
-.film-play:hover { background: rgba(0,0,0,0.5); }
-
-.film-play-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.15s;
-}
-
-.film-play:hover .film-play-circle {
-  background: rgba(255,255,255,0.2);
-  transform: scale(1.06);
-}
-
-.film-play svg {
-  margin-left: 3px;
-}
-
-.film-label {
-  font-size: 12px;
-  color: rgba(255,255,255,0.3);
-  text-align: center;
-  margin-top: 20px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 /* ── WAITLIST ───────────────────────────────────────── */
 .waitlist {
   padding: 120px 40px;
@@ -401,16 +347,16 @@ body {
 }
 
 .waitlist-h2 {
-  font-size: 48px;
-  font-weight: 300;
-  letter-spacing: -0.02em;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 200;
+  letter-spacing: -0.03em;
   color: var(--accent);
   margin-bottom: 12px;
 }
 
 .waitlist-sub {
-  font-size: 15px;
-  color: var(--muted);
+  font-size: 16px;
+  color: rgba(255,255,255,0.5);
   margin-bottom: 36px;
 }
 
@@ -505,19 +451,20 @@ details[open] .faq-q::after {
   font-size: 15px;
   line-height: 1.7;
   color: var(--muted);
-  margin-top: 16px;
-  max-width: 580px;
+  padding-top: 16px;
+  max-width: 560px;
 }
 
 /* ── FOOTER ─────────────────────────────────────────── */
 .footer {
+  padding: 40px 80px;
   border-top: 1px solid var(--border);
-  padding: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   background: var(--bg);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .footer-wordmark {
@@ -525,18 +472,19 @@ details[open] .faq-q::after {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.4);
 }
 
 .footer-copy {
   font-size: 12px;
   color: rgba(255,255,255,0.2);
+  letter-spacing: 0.02em;
 }
 
-/* ── ANIMATIONS ─────────────────────────────────────── */
+/* ── SCROLL FADE-UP ─────────────────────────────────── */
 .fade-up {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(32px);
   transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
@@ -545,67 +493,40 @@ details[open] .faq-q::after {
   transform: translateY(0);
 }
 
-/* ── RESPONSIVE ─────────────────────────────────────── */
-@media (max-width: 900px) {
-  .feature {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    padding: 80px 40px;
-  }
-
-  .feature-reverse {
-    direction: ltr;
-  }
-
-  .feature-img { max-height: 320px; }
-
-  .hero-content {
-    left: 40px;
-    right: 40px;
-    bottom: 60px;
-  }
-
-  .hero-form-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .input-email { width: 100%; max-width: 320px; }
-
-  .waitlist-card { padding: 60px 32px; }
-}
-
-@media (max-width: 600px) {
+/* ── MOBILE ─────────────────────────────────────────── */
+@media (max-width: 768px) {
   .nav { padding: 20px 24px; }
-
-  .hero-content {
-    left: 24px;
-    right: 24px;
-    bottom: 48px;
-  }
-
-  .hero-pause { right: 24px; }
-
   .btn-ghost { display: none; }
 
-  .feature {
-    padding: 64px 24px;
-    gap: 36px;
+  .hero-content {
+    bottom: 48px;
+    left: 24px;
+    right: 24px;
+    max-width: none;
   }
 
-  .film-section { padding: 64px 24px; }
+  .hero-h1 {
+    font-size: clamp(40px, 10vw, 64px);
+  }
 
-  .waitlist { padding: 80px 24px; }
-  .waitlist-card { padding: 48px 24px; }
-  .waitlist-h2 { font-size: 36px; }
+  .input-email { width: 100%; }
 
-  .faq { padding: 64px 24px; }
+  .feature {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 80px 24px;
+  }
+
+  .feature-reverse { direction: ltr; }
+
+  .waitlist-card {
+    padding: 48px 24px;
+  }
 
   .footer {
+    padding: 32px 24px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-    padding: 32px 24px;
   }
 
   .trust-bar { padding: 28px 20px; }

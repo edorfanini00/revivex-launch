@@ -19,50 +19,44 @@
     </div>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero" aria-label="Hero">
-    <video
-      class="hero-video"
-      src="/assets/hero-loop-v2.mp4"
-      poster="/assets/poster-v2.webp"
-      autoplay
-      muted
-      loop
-      playsinline
-      aria-hidden="true"
-    ></video>
-    <div class="hero-overlay" aria-hidden="true"></div>
+  <!-- HERO — 300vh scroll-scrubbed video -->
+  <section class="hero" id="hero" aria-label="Hero">
+    <!-- Sticky video container — stays in view as user scrolls -->
+    <div class="hero-sticky">
+      <video
+        class="hero-video"
+        id="heroVideo"
+        src="/assets/hero-loop-v2.mp4"
+        poster="/assets/poster-v2.webp"
+        preload="auto"
+        muted
+        playsinline
+        aria-hidden="true"
+      ></video>
+      <div class="hero-overlay" aria-hidden="true"></div>
 
-    <button class="hero-pause" id="heroToggle" aria-label="Pause video" aria-pressed="false">
-      <svg class="icon-pause" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <rect x="2" y="1" width="3.5" height="12" rx="1" fill="currentColor"/>
-        <rect x="8.5" y="1" width="3.5" height="12" rx="1" fill="currentColor"/>
-      </svg>
-      <svg class="icon-play" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style="display:none">
-        <path d="M3 1.5L12 7L3 12.5V1.5Z" fill="currentColor"/>
-      </svg>
-    </button>
-
-    <div class="hero-content">
-      <h1 class="hero-h1">Your routine,<br>perfected.</h1>
-      <p class="hero-sub">One machine. Your ingredients. Zero compromise.</p>
-      <form class="hero-form" id="heroForm" novalidate>
-        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="hero-form-row">
-          <input
-            type="email"
-            name="email"
-            class="input-email"
-            placeholder="Your email"
-            autocomplete="email"
-            required
-            aria-label="Email address"
-          />
-          <button type="submit" class="btn-pill">Join waitlist</button>
-        </div>
-        <p class="hero-msg" id="heroMsg" role="status" aria-live="polite"></p>
-      </form>
-      <p class="hero-disclaimer">Concept visualization</p>
+      <!-- Text content sits inside sticky, fades in via JS -->
+      <div class="hero-content" id="heroContent">
+        <h1 class="hero-h1" id="heroHeadline">Your routine,<br>perfected.</h1>
+        <p class="hero-sub" id="heroSub">One machine. Your ingredients. Zero compromise.</p>
+        <form class="hero-form" id="heroForm" novalidate style="opacity:0;pointer-events:none;transition:opacity 0.5s ease;">
+          <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <div class="hero-form-row">
+            <input
+              type="email"
+              name="email"
+              class="input-email"
+              placeholder="Your email"
+              autocomplete="email"
+              required
+              aria-label="Email address"
+            />
+            <button type="submit" class="btn-pill">Join waitlist</button>
+          </div>
+          <p class="hero-msg" id="heroMsg" role="status" aria-live="polite"></p>
+        </form>
+        <p class="hero-disclaimer">Concept visualization</p>
+      </div>
     </div>
   </section>
 
@@ -110,29 +104,6 @@
       </div>
     </div>
 
-  </section>
-
-  <!-- FILM SECTION -->
-  <section class="film-section fade-up" aria-label="Product film">
-    <div class="film-inner">
-      <div class="film-wrap" id="filmWrap">
-        <video
-          class="film-video"
-          id="filmVideo"
-          src="/assets/revivex-film-v2.mp4"
-          poster="/assets/poster-v2.webp"
-          preload="none"
-          playsinline
-          aria-label="Revivex concept film"
-        ></video>
-        <button class="film-play" id="filmPlay" aria-label="Play film">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M5 2.5L17 10L5 17.5V2.5Z" fill="currentColor"/>
-          </svg>
-        </button>
-      </div>
-      <p class="film-label">See it in motion &nbsp;—&nbsp; Concept visualization</p>
-    </div>
   </section>
 
   <!-- WAITLIST -->
