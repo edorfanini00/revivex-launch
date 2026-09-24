@@ -1,163 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Revivex — One machine. Your routine.</title>
-  <meta name="description" content="The supplement routine you'll actually keep. Join the Revivex early access waitlist." />
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revivex — Your routine, perfected.</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav class="nav" aria-label="Main navigation">
-    <div class="nav-inner">
-      <span class="nav-wordmark">Revivex</span>
-      <a href="#waitlist" class="btn-pill nav-cta">Get early access</a>
-    </div>
-  </nav>
+<nav class="nav">
+  <a href="/" class="nav-logo">Revivex</a>
+  <a href="#waitlist" class="nav-cta">Get early access</a>
+</nav>
 
-  <!-- HERO -->
-  <section class="hero" id="hero" aria-label="Hero">
-    <div class="hero-content">
-      <p class="hero-overline">Introducing Revivex</p>
-      <h1 class="hero-h1">One machine.<br>Your routine.</h1>
-      <p class="hero-sub">The supplement routine you'll actually keep.</p>
-
-      <div class="hero-image-wrap fade-up">
-        <img
-          src="/assets/hero-still.png"
-          alt="Revivex appliance — concept visualization"
-          class="hero-img"
-          loading="eager"
-        />
-        <span class="concept-badge">Concept visualization</span>
+<!-- SCROLL-DRIVEN FRAME SEQUENCE HERO (Jack Roberts technique) -->
+<section class="scroll-hero" id="scroll-hero">
+  <div class="scroll-hero-sticky">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-overlay">
+      <div class="hero-text" id="hero-text">
+        <p class="hero-overline">Introducing Revivex</p>
+        <h1 class="hero-h1">Your routine,<br><em>perfected.</em></h1>
+        <p class="hero-sub">One machine. Your ingredients. Zero compromise.</p>
       </div>
-
-      <form class="hero-form fade-up" id="heroForm" novalidate>
-        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="form-row">
-          <input
-            type="email"
-            name="email"
-            class="input-email"
-            placeholder="Your email"
-            autocomplete="email"
-            required
-            aria-label="Email address"
-          />
-          <button type="submit" class="btn-pill">Join waitlist</button>
-        </div>
-        <p class="form-msg" id="heroMsg" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </section>
-
-  <!-- DIVIDER -->
-  <div class="divider" aria-hidden="true"></div>
-
-  <!-- FEATURES -->
-  <section class="features" aria-label="Features">
-
-    <div class="feature fade-up">
-      <div class="feature-img-wrap">
-        <img src="/assets/hero-still.png" alt="Revivex appliance — concept visualization" class="feature-img" loading="lazy" />
-        <span class="img-disclaimer">Concept visualization</span>
-      </div>
-      <div class="feature-text">
-        <span class="feature-num">01</span>
-        <h2 class="feature-title">Precision.</h2>
-        <p class="feature-body">Every ingredient measured to the milligram. Every time.</p>
+      <div class="hero-cta-wrap" id="hero-cta">
+        <form class="hero-form" id="hero-form">
+          <input type="email" placeholder="your@email.com" required class="hero-input" id="hero-email">
+          <button type="submit" class="hero-btn">Join waitlist</button>
+          <input type="text" name="website" style="display:none" tabindex="-1">
+        </form>
+        <p class="concept-label">Concept visualization · Not for sale</p>
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="feature feature-reverse fade-up">
-      <div class="feature-text">
-        <span class="feature-num">02</span>
-        <h2 class="feature-title">Simplicity.</h2>
-        <p class="feature-body">One system. No pills, no measuring, no mess.</p>
-      </div>
-      <div class="feature-img-wrap">
-        <img src="/assets/hero-still.png" alt="Revivex appliance — concept visualization" class="feature-img" loading="lazy" />
-        <span class="img-disclaimer">Concept visualization</span>
-      </div>
+<!-- TRUST BAR -->
+<div class="trust-bar fade-up">
+  <span>Concept in development</span>
+  <span class="dot">·</span>
+  <span>Early access opening soon</span>
+  <span class="dot">·</span>
+  <span>No spam, ever</span>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="feature fade-up">
+    <div class="feature-num">01</div>
+    <div class="feature-body">
+      <h2>Precision.</h2>
+      <p>Every blend measured exactly. Every time. No scoops, no guesswork.</p>
     </div>
-
-    <div class="feature fade-up">
-      <div class="feature-img-wrap">
-        <img src="/assets/hero-still.png" alt="Revivex appliance — concept visualization" class="feature-img" loading="lazy" />
-        <span class="img-disclaimer">Concept visualization</span>
-      </div>
-      <div class="feature-text">
-        <span class="feature-num">03</span>
-        <h2 class="feature-title">Consistency.</h2>
-        <p class="feature-body">The only routine that works is one you don't have to think about.</p>
-      </div>
+    <div class="feature-img">
+      <img src="assets/hero-ai.png" alt="Revivex machine" loading="lazy">
     </div>
+  </div>
 
-  </section>
-
-  <!-- DIVIDER -->
-  <div class="divider" aria-hidden="true"></div>
-
-  <!-- WAITLIST CARD -->
-  <section class="waitlist-section fade-up" id="waitlist" aria-label="Join waitlist">
-    <div class="waitlist-card">
-      <h2 class="waitlist-h2">Be first.</h2>
-      <p class="waitlist-sub">Early access. No commitment.</p>
-      <form class="waitlist-form" id="waitlistForm" novalidate>
-        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="form-row">
-          <input
-            type="email"
-            name="email"
-            class="input-email"
-            placeholder="Your email address"
-            autocomplete="email"
-            required
-            aria-label="Email address"
-          />
-          <button type="submit" class="btn-pill">Join</button>
-        </div>
-        <p class="form-msg" id="waitlistMsg" role="status" aria-live="polite"></p>
-      </form>
-      <p class="waitlist-disclaimer">No medical claims. Concept in development. Not for sale. Unsubscribe anytime.</p>
+  <div class="feature feature-reverse fade-up">
+    <div class="feature-num">02</div>
+    <div class="feature-img">
+      <img src="assets/hero-dispense.png" alt="Revivex dispensing" loading="lazy">
     </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="faq fade-up" aria-label="Frequently asked questions">
-    <div class="faq-inner">
-
-      <details class="faq-item">
-        <summary class="faq-q">What is Revivex?</summary>
-        <p class="faq-a">Revivex is an appliance concept that consolidates your daily wellness routine into a single countertop system. It's currently in development — join the waitlist to follow along.</p>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-q">When will it be available?</summary>
-        <p class="faq-a">We're not announcing dates yet. Waitlist members will hear first, and we'll only reach out when there's something worth sharing.</p>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-q">Is this a real product I can buy?</summary>
-        <p class="faq-a">Not yet. Everything shown is a concept visualization. No orders are being taken. By joining the waitlist, you're expressing interest only — no commitment or payment required.</p>
-      </details>
-
+    <div class="feature-body">
+      <h2>Simplicity.</h2>
+      <p>One system. No pills, no measuring, no mess. Just place your glass.</p>
     </div>
-  </section>
+  </div>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span class="footer-wordmark">Revivex</span>
-    <span class="footer-copy">© 2026 Revivex. Concept in development. Not for sale.</span>
-  </footer>
+  <div class="feature fade-up">
+    <div class="feature-num">03</div>
+    <div class="feature-body">
+      <h2>Consistency.</h2>
+      <p>The only routine that works is one you don't have to think about.</p>
+    </div>
+    <div class="feature-img">
+      <img src="assets/hero-warm.png" alt="Revivex lifestyle" loading="lazy">
+    </div>
+  </div>
+</section>
 
-  <script src="/app.js"></script>
+<!-- FILM SECTION -->
+<section class="film-section fade-up">
+  <p class="section-label">See it in motion · Concept visualization</p>
+  <div class="film-wrap">
+    <video id="product-film" src="assets/revivex-film-v2.mp4" poster="assets/poster-v2.webp" preload="none" muted playsinline></video>
+    <button class="film-play" id="film-play" aria-label="Play film">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" stroke="rgba(255,255,255,0.3)" stroke-width="1"/><path d="M22 20l16 8-16 8V20z" fill="white"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section class="waitlist fade-up" id="waitlist">
+  <div class="waitlist-card">
+    <p class="section-label">Early access</p>
+    <h2 class="waitlist-h2">Be first.</h2>
+    <p class="waitlist-sub">No commitment. No spam.</p>
+    <form class="waitlist-form" id="waitlist-form">
+      <input type="email" placeholder="your@email.com" required class="wl-input" id="wl-email">
+      <input type="checkbox" id="wl-consent" name="consent" style="display:none" checked>
+      <button type="submit" class="wl-btn">Join the waitlist</button>
+      <input type="text" name="website" style="display:none" tabindex="-1">
+    </form>
+    <div class="wl-msg" id="wl-msg"></div>
+    <p class="wl-disclaimer">By joining you agree to receive Revivex development updates.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq fade-up">
+  <details class="faq-item">
+    <summary>What is Revivex?</summary>
+    <p>A concept for a countertop appliance that automates your daily supplement routine — measuring, mixing, and dispensing your blend on demand.</p>
+  </details>
+  <details class="faq-item">
+    <summary>When does it launch?</summary>
+    <p>We're in active development. Join the waitlist to follow our progress and be first when early access opens.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Is this available to buy?</summary>
+    <p>Not yet. This is a concept in development. All imagery is concept visualization.</p>
+  </details>
+</section>
+
+<footer class="footer">
+  <span class="footer-logo">Revivex</span>
+  <span>© 2026 Revivex. Concept in development. Not for sale. All imagery is concept visualization.</span>
+</footer>
+
+<script src="app.js"></script>
 </body>
 </html>
