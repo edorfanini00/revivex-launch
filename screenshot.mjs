@@ -37,7 +37,7 @@ async function screenshotPage(width, outPath) {
   console.log(`${width}px → ${outPath}`);
 }
 
-await screenshotPage(1440, 'evidence/desktop-v7-1440.png');
-await screenshotPage(390, 'evidence/desktop-v7-390.png');
+await screenshotPage(1440, 'evidence/desktop-v9-1440.png');
+await screenshotPage(390, 'evidence/desktop-v9-390.png');
 await browser.close();
 console.log('Screenshots saved.');

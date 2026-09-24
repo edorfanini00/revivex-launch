@@ -4,250 +4,161 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Revivex — Your routine, perfected.</title>
-  <meta name="description" content="Revivex automates your supplement routine. Join the waitlist.">
-  <meta property="og:title" content="Revivex — Your routine, perfected.">
-  <meta property="og:description" content="Revivex automates your supplement routine.">
-  <meta property="og:image" content="/assets/poster-v2.webp">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/styles.css">
+  <meta name="description" content="Revivex prepares your complete supplement routine automatically. Every morning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════
-     HERO — full viewport, video bg
-     ═══════════════════════════════════════════════════ -->
-<section class="hero" id="hero">
+  <!-- ─── HEADER ──────────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <a href="#" class="wordmark">revivex</a>
+    <a href="#waitlist" class="btn btn-filled header-cta">Get early access</a>
+  </header>
 
-  <!-- Video background -->
-  <video
-    class="hero-video"
-    src="/assets/hero-loop-v2.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-    poster="/assets/poster-v2.webp"
-    aria-hidden="true"
-  ></video>
-
-  <!-- Dark overlay -->
-  <div class="hero-overlay" aria-hidden="true"></div>
-
-  <!-- Top nav -->
-  <nav class="hero-nav">
-    <span class="wordmark">REVIVEX</span>
-  </nav>
-
-  <!-- Pause / play -->
-  <button class="hero-pause" id="heroPause" aria-label="Pause background video">
-    <span class="pause-icon" id="pauseIcon">
-      <span></span><span></span>
-    </span>
-    <span class="play-icon" id="playIcon" style="display:none">
-      <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-        <path d="M0 0L10 6L0 12V0Z" fill="currentColor"/>
-      </svg>
-    </span>
-  </button>
-
-  <!-- Scroll indicator -->
-  <div class="hero-scroll-indicator" aria-hidden="true">
-    <div class="scroll-line"></div>
-    <span class="scroll-label">scroll</span>
-  </div>
-
-  <!-- Hero text — bottom left -->
-  <div class="hero-content">
-    <h1>Your routine,<br>perfected.</h1>
-    <p class="hero-sub">Revivex automates your supplement routine.</p>
-    <a href="#waitlist" class="btn-primary">JOIN THE WAITLIST</a>
-  </div>
-
-</section>
-
-<!-- ═══════════════════════════════════════════════════
-     SCROLL SEQUENCE — 400vh sticky canvas
-     ═══════════════════════════════════════════════════ -->
-<section class="scroll-seq" id="scrollSeq">
-  <div class="scroll-seq-sticky">
-    <canvas class="seq-canvas" id="seqCanvas"></canvas>
-
-    <!-- Text layer overlaid on canvas -->
-    <div class="seq-overlay">
-
-      <div class="seq-headline" id="seqHeadline">
-        Precision.<br>Simplicity.<br>Consistency.
+  <!-- ─── HERO ────────────────────────────────────────────────────────────── -->
+  <section class="hero" id="hero">
+    <div class="hero-image" aria-hidden="true">
+      <img src="assets/feature-03.png" alt="" loading="eager">
+    </div>
+    <div class="hero-content">
+      <p class="overline">Wellness, automated.</p>
+      <h1>
+        <span class="h1-line1">Your routine,</span>
+        <span class="h1-line2">perfected.</span>
+      </h1>
+      <p class="hero-sub">Revivex prepares your complete supplement routine automatically. Every morning.</p>
+      <div class="hero-buttons">
+        <a href="#waitlist" class="btn btn-filled">Get early access</a>
+        <a href="#scrollSeq" class="btn btn-ghost">See how it works</a>
       </div>
+    </div>
+  </section>
 
-      <div class="seq-callouts">
-        <div class="seq-callout" id="callout1">
-          <span class="callout-num">01</span>
-          <span class="callout-text">Personalized doses.<br>Every morning.</span>
+  <!-- ─── SCROLL SEQUENCE INTRO (warm bg) ─────────────────────────────────── -->
+  <section class="scroll-intro">
+    <p class="overline" style="text-align:center;">The machine</p>
+    <h2 class="section-heading">Meet <em>Revivex</em></h2>
+    <p class="section-sub">One machine. Your complete routine.</p>
+  </section>
+
+  <!-- ─── SCROLL SEQUENCE (dark canvas) ───────────────────────────────────── -->
+  <section class="scroll-seq-wrapper" id="scrollSeq">
+    <div class="scroll-seq-sticky">
+      <canvas id="seqCanvas"></canvas>
+      <div class="seq-overlay" id="seqOverlay">
+        <div class="seq-tagline" id="seqTagline">
+          <span>Precision.</span>
+          <span>Simplicity.</span>
+          <span>Consistency.</span>
         </div>
-        <div class="seq-callout" id="callout2">
-          <span class="callout-num">02</span>
-          <span class="callout-text">Zero measuring.<br>Zero guessing.</span>
-        </div>
-        <div class="seq-callout" id="callout3">
-          <span class="callout-num">03</span>
-          <span class="callout-text">Your routine,<br>on autopilot.</span>
+        <div class="seq-callout" id="seqCallout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ────────────────────────────────────────────────────────── -->
+  <section class="features" id="features">
+    <p class="overline" style="text-align:center;">Why Revivex</p>
+    <h2 class="section-heading">Built for your morning.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <img src="assets/feature-01.png" alt="Woman holding supplement drink" class="card-img">
+        <div class="card-body">
+          <span class="card-num">01</span>
+          <h3 class="card-heading"><em>Your morning, elevated.</em></h3>
+          <p class="card-text">Start every day with your complete supplement routine, automatically prepared.</p>
         </div>
       </div>
-
+      <div class="feature-card">
+        <img src="assets/feature-02.png" alt="Ingredient flat lay" class="card-img">
+        <div class="card-body">
+          <span class="card-num">02</span>
+          <h3 class="card-heading"><em>Every ingredient, accounted for.</em></h3>
+          <p class="card-text">Milligram precision across every ingredient. Every time.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <img src="assets/feature-03.png" alt="Morning table warm light" class="card-img">
+        <div class="card-body">
+          <span class="card-num">03</span>
+          <h3 class="card-heading"><em>The routine you'll actually keep.</em></h3>
+          <p class="card-text">Effortless consistency — the only kind that works.</p>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════════════════════════════
-     FEATURES — numbered rows
-     ═══════════════════════════════════════════════════ -->
-<section class="features" id="features">
-
-  <div class="feature-row will-fade">
-    <div class="feature-num">01</div>
-    <div class="feature-body">
-      <h2>Your morning,<br>elevated.</h2>
-      <p>Start every day with your complete supplement routine — automatically prepared, precisely measured, ready the moment you are.</p>
-    </div>
-    <div class="feature-img">
-      <img src="/assets/feature-01.png" alt="Automatic dispensing — concept visualization" loading="lazy">
-      <span class="img-disclaimer">Concept visualization</span>
-    </div>
-  </div>
-
-  <div class="feature-row will-fade">
-    <div class="feature-num">02</div>
-    <div class="feature-body">
-      <h2>Every ingredient,<br>accounted for.</h2>
-      <p>From magnesium to adaptogens — Revivex stores up to 28 individual ingredients and blends each dose with milligram precision. No guesswork, ever.</p>
-    </div>
-    <div class="feature-img">
-      <img src="/assets/feature-02.png" alt="Schedule-based routine — concept visualization" loading="lazy">
-      <span class="img-disclaimer">Concept visualization</span>
-    </div>
-  </div>
-
-  <div class="feature-row will-fade">
-    <div class="feature-num">03</div>
-    <div class="feature-body">
-      <h2>The routine you'll<br>actually keep.</h2>
-      <p>Consistency is the only thing that makes supplements work. Revivex makes it effortless — so your routine becomes as automatic as your morning coffee.</p>
-    </div>
-    <div class="feature-img">
-      <img src="/assets/feature-03.png" alt="Counter-ready design — concept visualization" loading="lazy">
-      <span class="img-disclaimer">Concept visualization</span>
-    </div>
-  </div>
-
-</section>
-
-<!-- ═══════════════════════════════════════════════════
-     PRODUCT FILM
-     ═══════════════════════════════════════════════════ -->
-<section class="film-section" id="film">
-  <div class="film-wrap will-fade">
-    <p class="film-label">See Revivex in motion — <em>Concept visualization</em></p>
-    <div class="film-player">
+  <!-- ─── PRODUCT VIDEO ───────────────────────────────────────────────────── -->
+  <section class="product-video" id="film">
+    <p class="overline" style="text-align:center;">In motion</p>
+    <h2 class="section-heading"><em>See it in motion</em></h2>
+    <span class="badge">Concept visualization</span>
+    <div class="video-wrap">
       <video
         id="filmVideo"
-        src="/assets/revivex-film-v2.mp4"
-        poster="/assets/poster-v2.webp"
+        src="assets/revivex-film-v2.mp4"
+        poster="assets/poster-v2.webp"
         preload="none"
         playsinline
+        muted
       ></video>
-      <button class="film-play-btn" id="filmPlayBtn" aria-label="Play film">
-        <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
-          <path d="M0 0L18 11L0 22V0Z" fill="currentColor"/>
+      <button class="play-overlay" id="filmPlay" aria-label="Play film">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="28" fill="rgba(246,237,234,0.92)"/>
+          <polygon points="22,18 42,28 22,38" fill="#313030"/>
         </svg>
       </button>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════════════════════════════
-     WAITLIST
-     ═══════════════════════════════════════════════════ -->
-<section class="waitlist" id="waitlist">
-  <div class="waitlist-inner will-fade">
-    <h2 class="waitlist-heading">Be first.</h2>
-    <p class="waitlist-sub">Early access. No spam.</p>
-
+  <!-- ─── WAITLIST ─────────────────────────────────────────────────────────── -->
+  <section class="waitlist" id="waitlist">
+    <h2 class="waitlist-heading"><em>Be first.</em></h2>
+    <p class="waitlist-sub">Early access. No commitment.</p>
     <form class="waitlist-form" id="waitlistForm" novalidate>
-      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div class="form-row">
-        <input
-          type="email"
-          name="email"
-          id="emailInput"
-          class="form-input"
-          placeholder="your@email.com"
-          autocomplete="email"
-          required
-        >
-        <button type="submit" class="btn-primary" id="submitBtn">JOIN</button>
-      </div>
-      <label class="form-consent">
-        <input type="checkbox" name="consent" id="consentCheck" required>
-        <span>I agree to receive updates about Revivex.</span>
-      </label>
-      <p class="form-msg" id="formMsg" aria-live="polite"></p>
+      <input
+        type="email"
+        name="email"
+        id="emailInput"
+        placeholder="your@email.com"
+        required
+        autocomplete="email"
+        class="waitlist-input"
+      >
+      <button type="submit" class="btn btn-light">Notify me</button>
     </form>
-  </div>
-</section>
+    <p class="form-msg" id="formMsg" aria-live="polite"></p>
+  </section>
 
-<!-- ═══════════════════════════════════════════════════
-     FAQ
-     ═══════════════════════════════════════════════════ -->
-<section class="faq" id="faq">
-  <div class="faq-inner will-fade">
-    <h2 class="faq-heading">Questions.</h2>
-
+  <!-- ─── FAQ ──────────────────────────────────────────────────────────────── -->
+  <section class="faq" id="faq">
+    <p class="overline" style="text-align:center;">Questions</p>
+    <h2 class="section-heading">Common questions.</h2>
     <div class="faq-list">
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          What supplements does Revivex support?
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a">
-          <p>Revivex is designed to work with a wide range of powdered and encapsulated supplements. Full compatibility details will be shared ahead of launch.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          When will Revivex be available?
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a">
-          <p>Revivex is currently in development. Waitlist members will be the first to receive availability updates.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          Is this a final product design?
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a">
-          <p>All imagery on this page is a concept visualization. Final product design, specifications, and pricing have not been finalized and are subject to change.</p>
-        </div>
-      </div>
-
+      <details class="faq-item">
+        <summary class="faq-q">When will Revivex be available?</summary>
+        <p class="faq-a">We're currently in concept development. Early access members will be the first to know when we launch — and will receive exclusive pricing.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Which supplements does it support?</summary>
+        <p class="faq-a">Revivex is designed for a wide range of powdered supplements including collagen, protein, creatine, vitamins, and adaptogens. Your routine, your ingredients.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Is this a subscription product?</summary>
+        <p class="faq-a">Revivex is a hardware appliance — you buy it once. No mandatory subscription. We'll offer optional smart refill and tracking features as add-ons.</p>
+      </details>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════════════════════════════
-     FOOTER
-     ═══════════════════════════════════════════════════ -->
-<footer class="footer">
-  <span class="footer-wordmark">REVIVEX</span>
-  <p class="footer-copy">© 2026 Revivex. Concept in development. Not for sale.</p>
-  <a href="/privacy.html" class="footer-link">Privacy</a>
-</footer>
+  <!-- ─── FOOTER ───────────────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="wordmark">revivex</span>
+    <p class="footer-copy">© 2026 Revivex. Concept in development. Not for sale.</p>
+  </footer>
 
-<script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

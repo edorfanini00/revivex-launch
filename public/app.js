@@ -1,264 +1,153 @@
-/* Revivex app.js — scroll sequence, FAQ, film player, waitlist */
+/* Revivex app.js — scroll sequence, film player, waitlist */
 'use strict';
 
-// ─── HERO VIDEO PAUSE/PLAY ──────────────────────────────────────────────────
-(function initHeroPause() {
-  const video = document.querySelector('.hero-video');
-  const btn = document.getElementById('heroPause');
-  const pauseIcon = document.getElementById('pauseIcon');
-  const playIcon = document.getElementById('playIcon');
-  if (!video || !btn) return;
-
-  btn.addEventListener('click', () => {
-    if (video.paused) {
-      video.play();
-      pauseIcon.style.display = '';
-      playIcon.style.display = 'none';
-      btn.setAttribute('aria-label', 'Pause background video');
-    } else {
-      video.pause();
-      pauseIcon.style.display = 'none';
-      playIcon.style.display = '';
-      btn.setAttribute('aria-label', 'Play background video');
-    }
-  });
-})();
-
-// ─── SCROLL SEQUENCE (frame-by-frame canvas) ────────────────────────────────
+// ─── SCROLL SEQUENCE ─────────────────────────────────────────────────────────
 (function initScrollSeq() {
   const section = document.getElementById('scrollSeq');
-  const canvas = document.getElementById('seqCanvas');
+  const canvas  = document.getElementById('seqCanvas');
+  const tagline = document.getElementById('seqTagline');
+  const callout = document.getElementById('seqCallout');
   if (!section || !canvas) return;
 
   const ctx = canvas.getContext('2d');
-  const headline = document.getElementById('seqHeadline');
-  const callout1 = document.getElementById('callout1');
-  const callout2 = document.getElementById('callout2');
-  const callout3 = document.getElementById('callout3');
+  const MANIFEST = 'assets/frames/manifest.json';
+  const CALLOUTS = [
+    { pct: 0.40, text: 'Precision dispensing, down to the milligram.' },
+    { pct: 0.60, text: 'Built for daily use. Designed for life.' },
+    { pct: 0.80, text: 'Your routine, on autopilot.' },
+  ];
 
   let frames = [];
+  let images = [];
   let frameCount = 0;
-  let loaded = 0;
-  let currentFrame = 0;
-  let rafPending = false;
+  let currentFrame = -1;
 
-  // Resize canvas to fill viewport
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
+  function resize() {
+    canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    drawFrame(currentFrame);
+    drawFrame(currentFrame >= 0 ? currentFrame : 0);
   }
 
   function drawFrame(index) {
-    if (!frames[index] || !frames[index].complete) return;
-    const img = frames[index];
+    if (!images[index] || !images[index].complete) return;
+    currentFrame = index;
+    const img = images[index];
     const cw = canvas.width, ch = canvas.height;
-    const scale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
-    const dw = img.naturalWidth * scale;
-    const dh = img.naturalHeight * scale;
-    const dx = (cw - dw) / 2;
-    const dy = (ch - dh) / 2;
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const scale = Math.max(cw / iw, ch / ih);
+    const dw = iw * scale, dh = ih * scale;
     ctx.clearRect(0, 0, cw, ch);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, cw, ch);
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
   }
 
   function onScroll() {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(() => {
-      rafPending = false;
-      if (!frameCount) return;
+    const rect   = section.getBoundingClientRect();
+    const total  = section.offsetHeight - window.innerHeight;
+    const scrolled = Math.max(0, -rect.top);
+    const pct   = Math.min(1, scrolled / total);
 
-      const rect = section.getBoundingClientRect();
-      const sectionScrollHeight = section.offsetHeight - window.innerHeight;
-      const scrolled = -rect.top;
-      const progress = Math.min(Math.max(scrolled / sectionScrollHeight, 0), 1);
+    // Frame
+    const idx = Math.min(frameCount - 1, Math.floor(pct * (frameCount - 1)));
+    if (idx !== currentFrame) drawFrame(idx);
 
-      // Draw frame
-      const idx = Math.min(Math.floor(progress * (frameCount - 1)), frameCount - 1);
-      if (idx !== currentFrame) {
-        currentFrame = idx;
-        drawFrame(currentFrame);
-      }
+    // Tagline at 20%
+    if (pct >= 0.20) {
+      tagline.classList.add('visible');
+    } else {
+      tagline.classList.remove('visible');
+    }
 
-      // Text: fade in headline at 15-35%
-      if (headline) {
-        headline.classList.toggle('visible', progress >= 0.15 && progress <= 0.85);
-      }
-
-      // Callouts
-      if (callout1) callout1.classList.toggle('visible', progress >= 0.35 && progress <= 0.85);
-      if (callout2) callout2.classList.toggle('visible', progress >= 0.55 && progress <= 0.85);
-      if (callout3) callout3.classList.toggle('visible', progress >= 0.72 && progress <= 0.92);
-    });
+    // Callouts
+    let active = '';
+    for (const c of CALLOUTS) {
+      if (pct >= c.pct && pct < c.pct + 0.18) active = c.text;
+    }
+    if (callout.textContent !== active) {
+      callout.textContent = active;
+      callout.classList.toggle('visible', !!active);
+    }
   }
 
-  // Load manifest then frames
-  fetch('/assets/frames/manifest.json')
+  fetch(MANIFEST)
     .then(r => r.json())
-    .then(manifest => {
-      frameCount = manifest.frameCount;
-      const ext = manifest.ext || 'jpg';
-
-      // Pre-fill array
-      frames = new Array(frameCount);
-
-      // Load frames in batches to avoid overwhelming the browser
-      for (let i = 1; i <= frameCount; i++) {
-        const img = new Image();
+    .then(data => {
+      frameCount = data.frameCount;
+      const ext  = data.ext || 'jpg';
+      frames = Array.from({ length: frameCount }, (_, i) => {
         const num = String(i).padStart(4, '0');
-        img.src = `/assets/frames/revivex-${num}.${ext}`;
-        img.onload = () => {
-          loaded++;
-          // Draw first frame as soon as it loads
-          if (loaded === 1) {
-            resizeCanvas();
-            drawFrame(0);
-          }
-        };
-        frames[i - 1] = img;
-      }
+        return `assets/frames/revivex-${num}.${ext}`;
+      });
 
+      // Preload all frames
+      images = frames.map((src, i) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => { if (i === 0) drawFrame(0); };
+        return img;
+      });
+
+      resize();
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', resizeCanvas);
-      resizeCanvas();
+      window.addEventListener('resize', resize);
+      onScroll();
     })
-    .catch(() => {
-      // Graceful fallback: show canvas as black
-      resizeCanvas();
-    });
+    .catch(e => console.warn('Scroll sequence unavailable:', e));
 })();
 
-// ─── INTERSECTION OBSERVER (fade-in .will-fade) ────────────────────────────
-(function initFadeIn() {
-  const els = document.querySelectorAll('.will-fade');
-  if (!els.length) return;
-  if (!('IntersectionObserver' in window)) {
-    els.forEach(el => el.classList.add('visible'));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  els.forEach(el => io.observe(el));
-})();
-
-// ─── FILM PLAYER ────────────────────────────────────────────────────────────
+// ─── FILM PLAYER ─────────────────────────────────────────────────────────────
 (function initFilmPlayer() {
-  const video = document.getElementById('filmVideo');
-  const playBtn = document.getElementById('filmPlayBtn');
+  const video   = document.getElementById('filmVideo');
+  const playBtn = document.getElementById('filmPlay');
   if (!video || !playBtn) return;
 
   playBtn.addEventListener('click', () => {
     video.play();
     playBtn.classList.add('hidden');
-    video.controls = true;
+  });
+
+  video.addEventListener('ended', () => {
+    playBtn.classList.remove('hidden');
   });
 
   video.addEventListener('pause', () => {
-    if (video.ended || video.paused) {
-      playBtn.classList.remove('hidden');
-      video.controls = false;
-    }
-  });
-  video.addEventListener('ended', () => {
-    playBtn.classList.remove('hidden');
-    video.controls = false;
+    if (!video.ended) playBtn.classList.remove('hidden');
   });
 })();
 
-// ─── FAQ ACCORDION ───────────────────────────────────────────────────────────
-(function initFaq() {
-  const items = document.querySelectorAll('.faq-item');
-  items.forEach(item => {
-    const btn = item.querySelector('.faq-q');
-    const answer = item.querySelector('.faq-a');
-    if (!btn || !answer) return;
-
-    btn.addEventListener('click', () => {
-      const isOpen = btn.getAttribute('aria-expanded') === 'true';
-
-      // Close all
-      items.forEach(i => {
-        const b = i.querySelector('.faq-q');
-        const a = i.querySelector('.faq-a');
-        if (b) b.setAttribute('aria-expanded', 'false');
-        if (a) a.style.maxHeight = '0';
-      });
-
-      // Open this one if it was closed
-      if (!isOpen) {
-        btn.setAttribute('aria-expanded', 'true');
-        answer.style.maxHeight = answer.scrollHeight + 'px';
-      }
-    });
-  });
-})();
-
-// ─── WAITLIST FORM ───────────────────────────────────────────────────────────
+// ─── WAITLIST FORM ────────────────────────────────────────────────────────────
 (function initWaitlist() {
-  const form = document.getElementById('waitlistForm');
-  const emailInput = document.getElementById('emailInput');
-  const submitBtn = document.getElementById('submitBtn');
-  const msg = document.getElementById('formMsg');
-  const consentCheck = document.getElementById('consentCheck');
+  const form  = document.getElementById('waitlistForm');
+  const input = document.getElementById('emailInput');
+  const msg   = document.getElementById('formMsg');
   if (!form) return;
 
-  function setMsg(text, type) {
-    msg.textContent = text;
-    msg.className = 'form-msg ' + (type || '');
-  }
-
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    setMsg('');
+    const email = input.value.trim();
+    if (!email) return;
 
-    const email = emailInput.value.trim();
-    const consent = consentCheck ? consentCheck.checked : true;
-    const honeypot = form.querySelector('[name="website"]');
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMsg('Enter a valid email address.', 'error');
-      emailInput.focus();
-      return;
-    }
-    if (!consent) {
-      setMsg('Please agree to receive updates.', 'error');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = '...';
+    msg.textContent = '';
+    msg.className = 'form-msg';
 
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          consent,
-          website: honeypot ? honeypot.value : ''
-        })
+        body: JSON.stringify({ email }),
       });
-      const data = await res.json();
-      if (data.ok) {
-        setMsg(data.message || 'You\'re on the list.', 'success');
-        form.reset();
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        msg.textContent = data.message || 'You\'re on the list. We\'ll be in touch.';
+        msg.classList.add('success');
+        input.value = '';
       } else {
-        setMsg(data.message || 'Something went wrong.', 'error');
+        msg.textContent = data.error || 'Something went wrong. Please try again.';
+        msg.classList.add('error');
       }
     } catch {
-      setMsg('Connection error. Please try again.', 'error');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'JOIN';
+      msg.textContent = 'Network error. Please try again.';
+      msg.classList.add('error');
     }
   });
 })();
