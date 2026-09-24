@@ -225,111 +225,159 @@ button[disabled] { opacity: .6; cursor: wait; }
   .hero-sticky { position: relative; }
 }
 
-/* ---- Mobile type system: one scale, looser tracking, image-then-text cards ---- */
+/* =====================================================================
+   v12 structure system (Mos Health rhythm, Revivex brand)
+   Type scale  desktop / mobile
+   h2 section  50 / 32   lh 1.05  ls -0.035em
+   h3 card     26 / 22   lh 1.15  ls -0.025em
+   lede        18 / 16   lh 1.5
+   body        15 / 15   lh 1.55
+   eyebrow     12 / 11   uppercase .14em
+   Section rhythm  120px / 80px vertical, 48px / 20px gutters
+   ===================================================================== */
+:root { --sec: clamp(80px, 8.5vw, 120px); --wrap: 1280px; }
+.section-head-center { display: block; text-align: center; margin: 0 auto clamp(40px, 4.4vw, 64px); max-width: 760px; padding: 0 24px; }
+.section-head-center h2 { max-width: none; margin: 0 auto; }
+.section-head-center .lede { margin: 18px auto 0; max-width: 560px; }
+.section-head h2, .band-title { font-size: clamp(32px, 3.5vw, 50px); line-height: 1.05; letter-spacing: -0.035em; }
+.lede { font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+.eyebrow { font-size: 12px; letter-spacing: .14em; }
+
+/* Works-with logo strip */
+.works-with { padding: 40px var(--pad) 36px; border-bottom: 1px solid var(--line); text-align: center; }
+.works-label { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px; }
+.works-logos { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 40px; }
+.works-logos li { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 500; color: var(--ink); opacity: .78; }
+.works-logos img { width: 20px; height: 20px; }
+
+/* Problem */
+.problem { padding: var(--sec) 0; }
+.problem-grid { max-width: var(--wrap); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 var(--pad); }
+.problem-card { background: var(--paper); border-radius: var(--r-lg); padding: 32px 28px 34px; }
+.problem-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--white); display: grid; place-items: center; margin-bottom: 44px; }
+.problem-icon svg { width: 20px; height: 20px; fill: none; stroke: var(--navy); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.problem-card h3, .flow-card h3, .day-copy h3 { font-family: var(--head); font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 10px; }
+.problem-card p, .flow-card > p, .day-copy p { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+
+/* Connected ecosystem */
+.connected { padding: var(--sec) 0; background: var(--paper); }
+.flow { max-width: var(--wrap); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 var(--pad); }
+.flow-card { background: var(--white); border-radius: var(--r-lg); padding: 30px 28px; display: flex; flex-direction: column; min-height: 500px; }
+.flow-num { font-size: 12px; font-weight: 600; letter-spacing: .14em; color: var(--ink-3); margin-bottom: 36px; }
+.flow-card > p { max-width: 330px; }
+.chip-grid { margin-top: auto; padding-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.logo-chip { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--paper); font-size: 14px; font-weight: 500; }
+.logo-chip img { width: 18px; height: 18px; flex: none; }
+.app-mock { margin-top: auto; background: var(--navy); color: #fff; border-radius: 18px; padding: 20px 18px 8px; }
+.app-top { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,.6); margin-bottom: 14px; }
+.app-dot::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #9FE3B8; margin-right: 6px; vertical-align: 1px; }
+.app-title { font-family: var(--head); font-size: 20px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 6px; }
+.app-why { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.5; margin-bottom: 12px; }
+.app-row { display: flex; justify-content: space-between; font-size: 13px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,.12); }
+.app-row span { color: rgba(255,255,255,.6); }
+.screen-mock { margin-top: auto; border-radius: 18px; padding: 14px; background: linear-gradient(145deg, #E9ECEF, #C9D0D6); }
+.screen-inner { background: #0B0D10; border-radius: 10px; padding: 22px 20px; color: #fff; display: grid; gap: 10px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.screen-label { font-size: 12px; color: rgba(255,255,255,.6); }
+.screen-main { font-family: var(--head); font-size: 34px; font-weight: 500; letter-spacing: -0.03em; }
+.screen-bar { height: 3px; border-radius: 3px; background: rgba(255,255,255,.14); overflow: hidden; }
+.screen-bar i { display: block; height: 100%; width: 100%; background: #fff; }
+.screen-sub { font-size: 12px; color: rgba(255,255,255,.6); }
+.flow-note { max-width: var(--wrap); margin: 28px auto 0; padding: 0 calc(var(--pad) + 4px); color: var(--ink-2); font-size: 15px; text-align: center; }
+
+/* Statement band */
+.band { background: var(--navy); color: #fff; text-align: center; padding: clamp(96px, 10vw, 140px) 24px; }
+.band-title { margin-bottom: 14px; }
+.band-sub { font-size: 18px; color: rgba(255,255,255,.72); margin-bottom: 32px; }
+
+/* A morning with Revivex (alternating rows) */
+.day { padding: var(--sec) 0; }
+.day-rows { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--pad); display: grid; gap: 16px; }
+.day-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+.day-row:nth-child(even) .day-copy { order: 2; }
+.day-copy { background: var(--paper); border-radius: var(--r-lg); padding: clamp(32px, 4vw, 56px); display: flex; flex-direction: column; justify-content: flex-end; min-height: 420px; }
+.day-time { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: auto; padding-bottom: 40px; }
+.day-copy h3 { font-size: clamp(26px, 2.6vw, 36px); letter-spacing: -0.03em; }
+.day-copy p { max-width: 420px; font-size: 16px; }
+.day-media { position: relative; border-radius: var(--r-lg); overflow: hidden; min-height: 420px; background: var(--slate); }
+.day-media picture, .day-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Details specs */
+.details { padding: var(--sec) 0; background: var(--paper); }
+.spec-grid { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--pad); display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.spec { background: var(--white); border-radius: var(--r-md); padding: 26px 26px 28px; }
+.spec-k { display: block; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 36px; }
+.spec-v { font-family: var(--head); font-size: 20px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; }
+
+/* Waitlist + FAQ rhythm */
+.waitlist { padding: 0 var(--pad) var(--sec); background: var(--paper); }
+.faq { padding: var(--sec) 0; }
+.faq-wrap { max-width: var(--wrap); margin: 0 auto; }
+.faq summary { font-size: 18px; }
+
+@media (max-width: 980px) {
+  .problem-grid, .flow, .spec-grid { grid-template-columns: 1fr; }
+  .flow-card { min-height: 0; }
+  .chip-grid, .app-mock, .screen-mock { margin-top: 28px; }
+  .day-row { grid-template-columns: 1fr; }
+  .day-row:nth-child(even) .day-copy { order: 0; }
+  .day-copy { min-height: 0; order: 2 !important; }
+  .day-media { min-height: 0; aspect-ratio: 4 / 5; }
+}
+
+/* ---- Mobile: one scale, one gutter ---- */
 @media (max-width: 640px) {
-  :root { --pad: 16px; }
+  :root { --pad: 16px; --sec: 80px; }
   body { font-size: 15px; }
   h1, h2, h3 { letter-spacing: -0.02em; word-spacing: 0.04em; }
-  .concept-tag { color: rgba(255,255,255,.85); }
-  h2 { font-size: 30px; line-height: 1.12; }
-  h3 { font-size: 17px; line-height: 1.3; letter-spacing: -0.01em; }
   p { font-size: 15px; line-height: 1.55; }
-  .eyebrow, .on-image .eyebrow, .eyebrow-light { font-size: 11px; letter-spacing: .12em; margin-bottom: 12px; }
+  .eyebrow, .eyebrow-light { font-size: 11px; letter-spacing: .12em; margin-bottom: 12px; }
+  .section-head h2, .band-title { font-size: 32px; line-height: 1.08; letter-spacing: -0.025em; }
+  .section-head-center { padding: 0 24px; margin-bottom: 32px; }
+  .lede, .section-head-center .lede { font-size: 16px; margin-top: 14px; }
 
-  /* Hero */
   .hero-title { font-size: 34px; line-height: 1.08; letter-spacing: -0.025em; margin-bottom: 12px; }
-  .hero-sub { font-size: 15px; line-height: 1.5; max-width: 320px; }
+  .hero-sub { font-size: 15px; line-height: 1.5; max-width: 330px; }
   .hero-actions .pill { min-height: 44px; padding: 0 20px; font-size: 14px; }
-  .concept-tag { font-size: 10px; }
+  .concept-tag { font-size: 10px; color: rgba(255,255,255,.85); }
 
-  /* Statement */
-  .proof { padding: 56px 24px; text-align: left; }
-  .proof-text { font-size: 22px; line-height: 1.32; letter-spacing: -0.015em; }
+  .works-with { padding: 28px 16px 26px; }
+  .works-label { font-size: 11px; margin-bottom: 16px; }
+  .works-logos { gap: 12px 20px; }
+  .works-logos li { font-size: 13px; gap: 7px; }
+  .works-logos img { width: 16px; height: 16px; }
 
-  /* Section heads */
-  .section-head { padding: 0 24px; margin-bottom: 28px; gap: 14px; }
-  .section-head p.lede { font-size: 15px; }
-  .how, .details, .faq { padding-top: 72px; padding-bottom: 72px; }
+  .problem-card { padding: 24px 22px 26px; }
+  .problem-icon { margin-bottom: 28px; width: 40px; height: 40px; }
+  .problem-card h3, .flow-card h3 { font-size: 22px; }
+  .flow-card { padding: 24px 20px; }
+  .flow-num { margin-bottom: 22px; font-size: 11px; }
+  .logo-chip { font-size: 13px; padding: 11px 12px; }
+  .flow-note { font-size: 14.5px; padding: 0 24px; margin-top: 22px; }
 
-  /* Step cards */
-  .step-copy { left: 20px; right: 20px; bottom: 20px; }
-  .step h3 { font-size: 22px; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .step p { font-size: 14px; line-height: 1.5; }
+  .band { padding: 80px 24px; }
+  .band-sub { font-size: 16px; margin-bottom: 26px; }
 
-  /* Story cards: photo on top, text underneath so it never sits on a face */
-  .stories { padding-bottom: 72px; }
-  .story { display: block; min-height: 0; aspect-ratio: auto; background: var(--navy); }
-  .story img { position: relative; inset: auto; height: auto; aspect-ratio: 1170 / 1300; object-position: 50% 30%; }
-  .story::after { display: none; }
-  .story-copy, .story.left .story-copy { margin: 0; padding: 24px 22px 28px; max-width: none; }
-  .story h2 { font-size: 26px; margin-bottom: 10px; }
-  .story p:not(.eyebrow) { font-size: 15px; }
+  .day-copy { padding: 24px 22px 26px; }
+  .day-time { font-size: 11px; padding-bottom: 20px; }
+  .day-copy h3 { font-size: 24px; }
+  .day-copy p { font-size: 15px; }
+  .day-row { gap: 10px; }
+  .day-rows { gap: 28px; }
 
-  /* Details */
-  .detail { padding: 22px 20px; }
-  .detail-icon { margin-bottom: 18px; }
-  .detail p { font-size: 14px; }
+  .spec { padding: 20px 20px 22px; }
+  .spec-k { font-size: 11px; margin-bottom: 18px; }
+  .spec-v { font-size: 18px; }
 
-  /* Waitlist */
   .waitlist-card { padding: 48px 22px; }
   .waitlist h2 { font-size: 34px; }
   .waitlist-sub { font-size: 15px; margin-bottom: 24px; }
   .consent { font-size: 12.5px; }
 
-  /* FAQ */
   .faq-wrap { padding: 0 24px; gap: 24px; }
   .faq summary { font-size: 16px; padding: 20px 36px 20px 0; }
   .faq details p { font-size: 14.5px; padding-right: 12px; }
 
-  /* Footer */
   .footer { padding: 40px 24px 32px; }
   .footer-links { gap: 20px; font-size: 13px; }
   .footer p { font-size: 12px; }
-}
-
-/* ---- Connected to Revivex ---- */
-.connected { padding: clamp(90px, 10vw, 150px) 0 clamp(40px, 5vw, 70px); background: var(--paper); }
-.flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gut); padding: 0 var(--pad); }
-.flow-card { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px 26px; display: flex; flex-direction: column; min-height: 540px; overflow: hidden; }
-.flow-num { font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--ink-3); margin-bottom: 22px; }
-.flow-num-light { color: rgba(255,255,255,.75); display: block; margin-bottom: 12px; }
-.flow-card h3 { font-family: var(--head); font-size: 24px; font-weight: 500; letter-spacing: -0.03em; margin-bottom: 10px; }
-.flow-card > p { color: var(--ink-2); font-size: 15px; max-width: 340px; }
-.sources { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; }
-.sources li { font-size: 13px; font-weight: 500; padding: 7px 12px; border-radius: 999px; background: var(--paper-2); color: var(--ink); }
-.signals { margin-top: auto; padding-top: 28px; display: grid; gap: 14px; }
-.signals div { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: baseline; }
-.signals span { font-size: 13px; color: var(--ink-2); }
-.signals b { font-size: 13px; font-weight: 600; }
-.signals i { grid-column: 1 / -1; height: 4px; border-radius: 4px; background: var(--paper-2); position: relative; overflow: hidden; }
-.signals i::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--slate); border-radius: 4px; }
-.app-mock { margin-top: auto; background: var(--navy); color: #fff; border-radius: 18px; padding: 20px 18px; }
-.app-top { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,.6); margin-bottom: 14px; }
-.app-dot::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #9FE3B8; margin-right: 6px; vertical-align: 1px; }
-.app-title { font-family: var(--head); font-size: 20px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 6px; }
-.app-why { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.5; margin-bottom: 16px; }
-.app-row { display: flex; justify-content: space-between; font-size: 13px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.12); }
-.app-row span { color: rgba(255,255,255,.6); }
-.app-btn { margin-top: 14px; text-align: center; font-size: 13px; font-weight: 500; padding: 11px; border-radius: 999px; background: #fff; color: var(--navy); }
-.flow-card-image { padding: 0; border: 0; color: #fff; justify-content: flex-end; isolation: isolate; }
-.flow-card-image picture, .flow-card-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 50%; z-index: -2; }
-@media (max-width: 640px) { .flow-card-image img { object-position: 50% 30%; } }
-.flow-card-image::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(12,18,26,.78) 0%, rgba(12,18,26,.2) 50%, rgba(12,18,26,0) 70%); }
-.flow-image-copy { padding: 26px; }
-.flow-card-image p { color: rgba(255,255,255,.82); font-size: 15px; }
-.flow-note { padding: 28px calc(var(--pad) + 8px) 0; color: var(--ink-2); font-size: 15px; max-width: 760px; }
-@media (max-width: 980px) {
-  .flow { grid-template-columns: 1fr; }
-  .flow-card { min-height: 0; }
-  .flow-card-image { aspect-ratio: 1170 / 1452; }
-  .signals, .app-mock { margin-top: 26px; }
-}
-@media (max-width: 640px) {
-  .connected { padding: 72px 0 48px; }
-  .flow { padding: 0 16px; }
-  .flow-card { padding: 24px 20px; }
-  .flow-card h3 { font-size: 22px; }
-  .flow-card > p, .flow-card-image p { font-size: 15px; }
-  .flow-image-copy { padding: 22px 20px; }
-  .flow-note { padding: 22px 24px 0; font-size: 14.5px; }
 }
