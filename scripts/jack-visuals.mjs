@@ -1,0 +1,4 @@
+import {chromium} from 'playwright-core';import fs from 'node:fs';
+const b=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});const p=await b.newPage({viewport:{width:1440,height:1000}});await p.goto('https://www.youtube.com/watch?v=8yh6XeUUU38',{waitUntil:'domcontentloaded'});await p.locator('.ytp-large-play-button').click();await p.waitForFunction(()=>document.querySelector('video')?.readyState>=2,{timeout:20000});
+for(const t of [275,485,735,1235]) {await p.evaluate(t=>{document.querySelector('video').currentTime=t},t);await p.waitForTimeout(3000);await p.evaluate(()=>document.querySelector('video').pause());await p.screenshot({path:`../research-page-v2/jack-actual-${t}s.png`});console.log(await p.evaluate(()=>({time:document.querySelector('video').currentTime,width:document.querySelector('video').videoWidth})));}
+await b.close();

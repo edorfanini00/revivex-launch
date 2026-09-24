@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "name": "revivex-launch",
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/form", "dest": "/api/form.js" },
+    { "src": "/api/signup", "dest": "/api/signup.js" },
+    { "src": "/api/health", "dest": "/api/health.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

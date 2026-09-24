@@ -1,0 +1,1 @@
+{"name":"revivex-appliance-preview","private":true,"scripts":{"start":"python3 server.py","test":"python3 -m unittest discover -s tests -v","build":"node scripts/build.mjs","qa":"node scripts/qa.mjs"},"devDependencies":{"playwright-core":"1.55.0"}}
