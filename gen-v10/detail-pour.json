@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T15:22:49.766602Z",
+    "display_name": "Nano Banana Pro",
+    "id": "7195ed26-73ef-4026-8691-5a921c6f6703",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152249_7195ed26-73ef-4026-8691-5a921c6f6703_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "dc761e74-61fc-47cc-b072-cdeaadd1f671",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/dc761e74-61fc-47cc-b072-cdeaadd1f671.png"
+        }
+      ],
+      "prompt": "Macro close-up inside the dispensing bay: a smooth glassy stream of crystal clear water pours from the aluminum nozzle into a clear glass tumbler, light refracting through the water, tiny bubbles, drip tray slots soft in foreground. Art direction: warm blush sand seamless studio sweep, color #EFE3DE to #F6EDEA, soft diffused north window daylight from the left, gentle long soft shadow, subtle film grain, shot on Hasselblad 80mm, calm Scandinavian wellness brand campaign like Aesop or Seed. The machine is the exact same brushed aluminum appliance from the reference image: same shape, same dark OLED screen, same round dial, same open dispensing bay, same slotted drip tray. The drink is always completely clear transparent water, never colored, no green, no yellow, no milk. No text other than what is on the screen, no logos added, no people unless described.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152249_7195ed26-73ef-4026-8691-5a921c6f6703.png",
+    "status": "completed"
+  }
+]

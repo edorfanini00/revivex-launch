@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T15:22:51.539707Z",
+    "display_name": "Nano Banana Pro",
+    "id": "fe1f4c4b-3597-422d-8cee-e5d93a187662",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152251_fe1f4c4b-3597-422d-8cee-e5d93a187662_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "aa63716a-e87b-4171-a516-9aff8e691691",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/aa63716a-e87b-4171-a516-9aff8e691691.png"
+        }
+      ],
+      "prompt": "Lifestyle: the machine on a light oak kitchen counter in a calm sunlit home kitchen, morning sun raking across the counter, a woman's hand (no face) lifting the glass of clear water from the bay, linen sleeve, soft plant shadow on the wall. Background softly out of focus, warm blush wall. Art direction: warm blush sand seamless studio sweep, color #EFE3DE to #F6EDEA, soft diffused north window daylight from the left, gentle long soft shadow, subtle film grain, shot on Hasselblad 80mm, calm Scandinavian wellness brand campaign like Aesop or Seed. The machine is the exact same brushed aluminum appliance from the reference image: same shape, same dark OLED screen, same round dial, same open dispensing bay, same slotted drip tray. The drink is always completely clear transparent water, never colored, no green, no yellow, no milk. No text other than what is on the screen, no logos added, no people unless described.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152251_fe1f4c4b-3597-422d-8cee-e5d93a187662.png",
+    "status": "completed"
+  }
+]

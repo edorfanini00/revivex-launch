@@ -1,153 +1,117 @@
-/* Revivex app.js — scroll sequence, film player, waitlist */
-'use strict';
+/* Revivex v10 — scroll-scrubbed hero, reveals, parallax, waitlist */
+(() => {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ─── SCROLL SEQUENCE ─────────────────────────────────────────────────────────
-(function initScrollSeq() {
-  const section = document.getElementById('scrollSeq');
-  const canvas  = document.getElementById('seqCanvas');
-  const tagline = document.getElementById('seqTagline');
-  const callout = document.getElementById('seqCallout');
-  if (!section || !canvas) return;
+  /* Nav background after hero starts */
+  const nav = document.getElementById('nav');
+  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  onNav(); window.addEventListener('scroll', onNav, { passive: true });
 
+  /* Reveal on scroll */
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -10% 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* Scroll-scrubbed hero: frame sequence drawn to canvas (cover fit) */
+  const hero = document.getElementById('hero');
+  const canvas = document.getElementById('heroCanvas');
+  const bar = document.getElementById('heroBar');
   const ctx = canvas.getContext('2d');
-  const MANIFEST = 'assets/frames/manifest.json';
-  const CALLOUTS = [
-    { pct: 0.40, text: 'Precision dispensing, down to the milligram.' },
-    { pct: 0.60, text: 'Built for daily use. Designed for life.' },
-    { pct: 0.80, text: 'Your routine, on autopilot.' },
-  ];
+  const frames = [];
+  let count = 0, current = -1, ready = false;
 
-  let frames = [];
-  let images = [];
-  let frameCount = 0;
-  let currentFrame = -1;
-
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawFrame(currentFrame >= 0 ? currentFrame : 0);
+  function size() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(canvas.clientWidth * dpr);
+    canvas.height = Math.round(canvas.clientHeight * dpr);
+    current = -1; render();
   }
-
-  function drawFrame(index) {
-    if (!images[index] || !images[index].complete) return;
-    currentFrame = index;
-    const img = images[index];
+  function draw(img) {
     const cw = canvas.width, ch = canvas.height;
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const scale = Math.max(cw / iw, ch / ih);
-    const dw = iw * scale, dh = ih * scale;
-    ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    const focusX = window.innerWidth <= 640 ? 0.70 : 0.62;
+    const x = (cw - w) * focusX, y = (ch - h) / 2;
+    ctx.drawImage(img, x, y, w, h);
   }
-
-  function onScroll() {
-    const rect   = section.getBoundingClientRect();
-    const total  = section.offsetHeight - window.innerHeight;
-    const scrolled = Math.max(0, -rect.top);
-    const pct   = Math.min(1, scrolled / total);
-
-    // Frame
-    const idx = Math.min(frameCount - 1, Math.floor(pct * (frameCount - 1)));
-    if (idx !== currentFrame) drawFrame(idx);
-
-    // Tagline at 20%
-    if (pct >= 0.20) {
-      tagline.classList.add('visible');
-    } else {
-      tagline.classList.remove('visible');
-    }
-
-    // Callouts
-    let active = '';
-    for (const c of CALLOUTS) {
-      if (pct >= c.pct && pct < c.pct + 0.18) active = c.text;
-    }
-    if (callout.textContent !== active) {
-      callout.textContent = active;
-      callout.classList.toggle('visible', !!active);
-    }
+  function progress() {
+    const r = hero.getBoundingClientRect();
+    const total = hero.offsetHeight - window.innerHeight;
+    return Math.min(1, Math.max(0, -r.top / total));
   }
+  function render() {
+    const p = progress();
+    if (bar) bar.style.width = (p * 100) + '%';
+    if (!ready) return;
+    let i = Math.round(p * (count - 1));
+    while (i > 0 && !(frames[i] && frames[i].complete && frames[i].naturalWidth)) i--;
+    if (!frames[i] || !frames[i].naturalWidth || i === current) return;
+    current = i; draw(frames[i]);
+  }
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(() => { render(); ticking = false; }); }
+  }, { passive: true });
+  window.addEventListener('resize', size);
 
-  fetch(MANIFEST)
-    .then(r => r.json())
-    .then(data => {
-      frameCount = data.frameCount;
-      const ext  = data.ext || 'jpg';
-      frames = Array.from({ length: frameCount }, (_, i) => {
-        const num = String(i).padStart(4, '0');
-        return `assets/frames/revivex-${num}.${ext}`;
-      });
-
-      // Preload all frames
-      images = frames.map((src, i) => {
+  if (!reduce) {
+    fetch('/assets/v10/frames/manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
+      count = m.frameCount;
+      for (let i = 1; i <= count; i++) {
         const img = new Image();
-        img.src = src;
-        img.onload = () => { if (i === 0) drawFrame(0); };
-        return img;
-      });
+        img.decoding = 'async';
+        img.src = `/assets/v10/frames/f-${String(i).padStart(4, '0')}.${m.ext}`;
+        if (i === 1) img.onload = () => { ready = true; canvas.classList.add('ready'); size(); };
+        frames.push(img);
+      }
+    }).catch(() => { /* keep static fallback image */ });
+  }
 
-      resize();
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', resize);
-      onScroll();
-    })
-    .catch(e => console.warn('Scroll sequence unavailable:', e));
-})();
+  /* Gentle parallax on full-bleed image */
+  const bleed = document.querySelector('.bleed img');
+  if (bleed && !reduce) {
+    const par = () => {
+      const r = bleed.parentElement.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) return;
+      const t = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
+      bleed.style.transform = `translate3d(0, ${(-8 + t * 10).toFixed(2)}%, 0)`;
+    };
+    par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
+  }
 
-// ─── FILM PLAYER ─────────────────────────────────────────────────────────────
-(function initFilmPlayer() {
-  const video   = document.getElementById('filmVideo');
-  const playBtn = document.getElementById('filmPlay');
-  if (!video || !playBtn) return;
-
-  playBtn.addEventListener('click', () => {
-    video.play();
-    playBtn.classList.add('hidden');
-  });
-
-  video.addEventListener('ended', () => {
-    playBtn.classList.remove('hidden');
-  });
-
-  video.addEventListener('pause', () => {
-    if (!video.ended) playBtn.classList.remove('hidden');
-  });
-})();
-
-// ─── WAITLIST FORM ────────────────────────────────────────────────────────────
-(function initWaitlist() {
-  const form  = document.getElementById('waitlistForm');
-  const input = document.getElementById('emailInput');
-  const msg   = document.getElementById('formMsg');
-  if (!form) return;
+  /* Waitlist */
+  const form = document.getElementById('waitlistForm');
+  const email = document.getElementById('emailInput');
+  const consent = document.getElementById('consentInput');
+  const hp = document.getElementById('website');
+  const msg = document.getElementById('formMsg');
+  const btn = document.getElementById('submitBtn');
+  const say = (t, ok) => { msg.textContent = t; msg.className = 'form-msg ' + (ok ? 'ok' : 'err'); };
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const email = input.value.trim();
-    if (!email) return;
-
-    msg.textContent = '';
-    msg.className = 'form-msg';
-
+    const v = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { say('Enter a valid email address.', false); email.focus(); return; }
+    if (!consent.checked) { say('Please tick the box so we can email you.', false); consent.focus(); return; }
+    btn.disabled = true; btn.textContent = 'Joining…';
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: v, consent: true, website: hp.value, source: 'landing-v10' })
       });
       const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        msg.textContent = data.message || 'You\'re on the list. We\'ll be in touch.';
-        msg.classList.add('success');
-        input.value = '';
+      if (res.ok && data.ok !== false) {
+        say(data.message || "You're on the list.", true);
+        form.reset();
       } else {
-        msg.textContent = data.error || 'Something went wrong. Please try again.';
-        msg.classList.add('error');
+        say(data.message || 'Something went wrong. Please try again.', false);
       }
     } catch {
-      msg.textContent = 'Network error. Please try again.';
-      msg.classList.add('error');
+      say('Network error. Please try again.', false);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Join';
     }
   });
 })();

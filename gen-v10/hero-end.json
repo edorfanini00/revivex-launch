@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T15:22:49.360086Z",
+    "display_name": "Nano Banana Pro",
+    "id": "225aaf8c-1b5f-46fc-ae3a-02d8a7407437",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152249_225aaf8c-1b5f-46fc-ae3a-02d8a7407437_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "16:9",
+      "batch_size": 1,
+      "height": 1536,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "9691936e-985a-4816-baa2-c5f24f995c24",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/9691936e-985a-4816-baa2-c5f24f995c24.png"
+        }
+      ],
+      "prompt": "Identical composition, camera and lighting to a straight-on wide product shot: the machine stands slightly right of center on a pale travertine plinth, camera at bay height. The clear glass tumbler in the bay is now full of crystal clear still water, the final thin clear stream just ending from the nozzle, a few light caustics on the plinth. Screen shows 'Done'. Generous empty space on the left third. Art direction: warm blush sand seamless studio sweep, color #EFE3DE to #F6EDEA, soft diffused north window daylight from the left, gentle long soft shadow, subtle film grain, shot on Hasselblad 80mm, calm Scandinavian wellness brand campaign like Aesop or Seed. The machine is the exact same brushed aluminum appliance from the reference image: same shape, same dark OLED screen, same round dial, same open dispensing bay, same slotted drip tray. The drink is always completely clear transparent water, never colored, no green, no yellow, no milk. No text other than what is on the screen, no logos added, no people unless described.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 2752
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_152249_225aaf8c-1b5f-46fc-ae3a-02d8a7407437.png",
+    "status": "completed"
+  }
+]
