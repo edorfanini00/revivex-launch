@@ -1,180 +1,121 @@
-/* Revivex app.js — v6 — Scroll-driven video scrub */
+/* =========================================================
+   REVIVEX app.js — Editorial warm aesthetic
+   ========================================================= */
+
 'use strict';
 
-(function () {
+/* ---- Scroll-triggered fade-up animations ---- */
+(function initFadeUp() {
+  const els = document.querySelectorAll('.fade-up');
+  if (!els.length) return;
 
-  /* ── SCROLL-SCRUBBED HERO VIDEO ─────────────────────
-     Hero section is 300vh tall. The video element is
-     position:sticky inside, so it stays in viewport.
-     JS maps scrollY → video.currentTime as the user
-     scrolls through the 300vh hero section.
-  ──────────────────────────────────────────────────── */
-  var heroSection = document.getElementById('hero');
-  var heroVideo   = document.getElementById('heroVideo');
-  var heroContent = document.getElementById('heroContent');
-  var heroForm    = document.getElementById('heroForm');
+  // Only hide elements if IntersectionObserver is available
+  // (prevents blank page if JS/IO not supported)
+  if (!('IntersectionObserver' in window)) return;
 
-  var heroScrollHandler = null;
+  // Mark as will-animate BEFORE observing so CSS hides them
+  els.forEach((el) => el.classList.add('will-fade'));
 
-  if (heroSection && heroVideo) {
-    // Pre-load video so currentTime seeking works
-    heroVideo.load();
-
-    heroScrollHandler = function () {
-      var heroTop    = heroSection.getBoundingClientRect().top + window.scrollY;
-      var heroHeight = heroSection.offsetHeight; // 300vh
-      var scrolled   = window.scrollY - heroTop;
-      var scrollable = heroHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-
-      var progress = Math.max(0, Math.min(1, scrolled / scrollable));
-
-      // Scrub video: map scroll progress to video time
-      if (heroVideo.readyState >= 1 && heroVideo.duration) {
-        heroVideo.currentTime = progress * heroVideo.duration;
-      }
-
-      // Fade in hero headline + sub after 5% scroll
-      if (heroContent) {
-        if (progress > 0.05) {
-          heroContent.classList.add('visible');
-        } else {
-          heroContent.classList.remove('visible');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          entry.target.classList.remove('will-fade');
+          observer.unobserve(entry.target);
         }
-      }
-
-      // Show CTA form after 30% scroll
-      if (heroForm) {
-        if (progress > 0.30) {
-          heroForm.style.opacity = '1';
-          heroForm.style.pointerEvents = 'auto';
-        } else {
-          heroForm.style.opacity = '0';
-          heroForm.style.pointerEvents = 'none';
-        }
-      }
-    };
-
-    window.addEventListener('scroll', heroScrollHandler, { passive: true });
-
-    // Run once on load so initial state is correct
-    heroScrollHandler();
-
-    // If page loads mid-scroll (back button), run after video meta loads
-    heroVideo.addEventListener('loadedmetadata', heroScrollHandler);
-  }
-
-  /* ── FORM HELPERS ───────────────────────────────── */
-  function getToken(cb) {
-    fetch('/api/form')
-      .then(function (r) { return r.json(); })
-      .then(function (d) { cb(null, d.token || ''); })
-      .catch(function (e) { cb(e, ''); });
-  }
-
-  function submitSignup(email, token, honeypot, msgEl, btnEl, cb) {
-    btnEl.disabled = true;
-    fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, consent: true, token: token, website: honeypot })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        btnEl.disabled = false;
-        if (d.ok) {
-          msgEl.textContent = d.message || 'You\'re on the list.';
-          msgEl.className = msgEl.className.replace(/\berror\b/, '') + ' success';
-          cb(true);
-        } else {
-          msgEl.textContent = d.message || 'Something went wrong. Please try again.';
-          msgEl.className = msgEl.className.replace(/\bsuccess\b/, '') + ' error';
-          cb(false);
-        }
-      })
-      .catch(function () {
-        btnEl.disabled = false;
-        msgEl.textContent = 'Network error. Please try again.';
-        msgEl.className = msgEl.className.replace(/\bsuccess\b/, '') + ' error';
-        cb(false);
       });
-  }
+    },
+    { threshold: 0.08, rootMargin: '0px 0px -20px 0px' }
+  );
 
-  function wireForm(formId, msgId) {
-    var form = document.getElementById(formId);
-    var msgEl = document.getElementById(msgId);
-    if (!form || !msgEl) return;
+  els.forEach((el) => observer.observe(el));
+})();
 
-    var emailInput    = form.querySelector('input[type="email"]');
-    var honeypotInput = form.querySelector('input[name="website"]');
-    var btn           = form.querySelector('button[type="submit"]');
+/* ---- Signup form handler ---- */
+function setupForm(formEl, msgEl) {
+  if (!formEl || !msgEl) return;
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      msgEl.textContent = '';
-      msgEl.className = msgEl.className.replace(/\b(error|success)\b/g, '');
+  formEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      var email = emailInput ? emailInput.value.trim() : '';
-      if (!email) {
-        msgEl.textContent = 'Please enter your email address.';
-        msgEl.className += ' error';
-        return;
-      }
+    // Honeypot check
+    const hp = formEl.querySelector('.hp');
+    if (hp && hp.value) return;
 
-      var honeypot = honeypotInput ? honeypotInput.value : '';
+    const emailInput = formEl.querySelector('input[type="email"]');
+    const email = emailInput ? emailInput.value.trim() : '';
 
-      getToken(function (err, token) {
-        if (err) {
-          msgEl.textContent = 'Unable to connect. Please try again.';
-          msgEl.className += ' error';
-          return;
-        }
-        submitSignup(email, token, honeypot, msgEl, btn, function (ok) {
-          if (ok && emailInput) emailInput.value = '';
-        });
-      });
-    });
-  }
-
-  wireForm('heroForm', 'heroMsg');
-  wireForm('waitlistForm', 'waitlistMsg');
-
-  /* ── SCROLL FADE-UP (features, waitlist, faq) ───── */
-  function initFadeUp() {
-    var els = document.querySelectorAll('.fade-up');
-    if (!els.length) return;
-
-    if (!window.IntersectionObserver) {
-      for (var i = 0; i < els.length; i++) {
-        els[i].classList.add('visible');
-      }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      msgEl.textContent = 'Please enter a valid email address.';
+      msgEl.className = 'form-msg error';
       return;
     }
 
-    var observer = new IntersectionObserver(function (entries) {
-      for (var j = 0; j < entries.length; j++) {
-        var entry = entries[j];
-        if (entry.isIntersecting) {
-          var el = entry.target;
-          var delay = el.getAttribute('data-delay');
-          if (delay) {
-            el.style.transitionDelay = delay + 'ms';
-          }
-          el.classList.add('visible');
-          observer.unobserve(el);
-        }
-      }
-    }, { threshold: 0.12 });
-
-    for (var k = 0; k < els.length; k++) {
-      observer.observe(els[k]);
+    const submitBtn = formEl.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '…';
     }
-  }
+    msgEl.textContent = '';
+    msgEl.className = 'form-msg';
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initFadeUp);
-  } else {
-    initFadeUp();
-  }
+    // Get CSRF token
+    let token = null;
+    try {
+      const tokRes = await fetch('/api/form');
+      if (tokRes.ok) {
+        const tokData = await tokRes.json();
+        token = tokData.token || null;
+      }
+    } catch { /* ignore */ }
 
-})();
+    // Wait 1s per server requirement
+    await new Promise((r) => setTimeout(r, 1100));
+
+    try {
+      const body = { email, consent: true };
+      if (token) body.token = token;
+
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        msgEl.textContent = "You're on the list. We'll be in touch.";
+        msgEl.className = 'form-msg success';
+        if (emailInput) emailInput.value = '';
+      } else {
+        msgEl.textContent = data.message || 'Something went wrong. Please try again.';
+        msgEl.className = 'form-msg error';
+      }
+    } catch {
+      msgEl.textContent = 'Network error. Please try again.';
+      msgEl.className = 'form-msg error';
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+  });
+}
+
+setupForm(document.getElementById('heroForm'), document.getElementById('heroMsg'));
+setupForm(document.getElementById('waitlistForm'), document.getElementById('waitlistMsg'));
+
+/* ---- Nav CTA smooth scroll ---- */
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
