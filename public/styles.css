@@ -453,3 +453,116 @@ button[disabled] { opacity: .6; cursor: wait; }
   .spec-line li { font-size: 13px; padding: 9px 13px; }
 }
 .photo-ui .app-title, .photo-ui .app-row b { color: #fff; }
+
+/* =====================================================================
+   v14 cinematic scenes (healthrevivex style: full-bleed photo + frosted glass UI)
+   ===================================================================== */
+.scene { position: relative; margin: 12px var(--pad) 0; border-radius: var(--r-lg); overflow: hidden; min-height: clamp(620px, 88vh, 900px); color: #fff; isolation: isolate; display: flex; align-items: flex-end; }
+.scene > picture, .scene > picture img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.scene > picture img { object-fit: cover; z-index: -2; }
+.scene::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.scene-left::after { background: linear-gradient(90deg, rgba(14,22,34,.55) 0%, rgba(14,22,34,.2) 38%, rgba(14,22,34,0) 60%), linear-gradient(0deg, rgba(14,22,34,.35) 0%, rgba(14,22,34,0) 40%); }
+.scene-right::after { background: linear-gradient(270deg, rgba(14,22,34,.55) 0%, rgba(14,22,34,.2) 38%, rgba(14,22,34,0) 60%), linear-gradient(0deg, rgba(14,22,34,.35) 0%, rgba(14,22,34,0) 40%); }
+.scene-copy { position: relative; padding: clamp(32px, 4.5vw, 72px); max-width: 540px; }
+.scene-right .scene-copy { margin-left: auto; }
+.scene-copy h2 { font-family: var(--head); font-weight: 500; font-size: clamp(34px, 3.6vw, 54px); line-height: 1.04; letter-spacing: -0.035em; margin-bottom: 14px; }
+.scene-copy p:not(.eyebrow-light) { font-size: 17px; line-height: 1.5; color: rgba(255,255,255,.82); max-width: 420px; }
+.scene-copy .pill { margin-top: 26px; }
+.eyebrow-light { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.72); margin-bottom: 14px; }
+
+/* Frosted glass panels */
+.glass { position: absolute; z-index: 2; color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); border-radius: 22px; box-shadow: 0 30px 60px -30px rgba(10,20,35,.5); }
+.glass-hud { left: clamp(32px, 6vw, 96px); top: clamp(40px, 8vh, 96px); width: 340px; padding: 20px; }
+.scene-left .glass-hud { left: auto; right: auto; left: 38%; }
+.hud-head { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,.8); margin-bottom: 14px; }
+.hud-sync::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #9FE3B8; margin-right: 6px; vertical-align: 1px; }
+.hud-body { display: flex; align-items: center; gap: 20px; }
+.hud-ring { width: 84px; height: 84px; transform: rotate(-90deg); flex: none; }
+.ring-bg { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 7; }
+.ring-fg { fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; }
+.hud-stats { display: grid; gap: 8px; flex: 1; }
+.hud-stats div { display: flex; justify-content: space-between; font-size: 13px; }
+.hud-stats span { color: rgba(255,255,255,.7); }
+.hud-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.g-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 12px; font-weight: 500; }
+.g-chip img { width: 13px; height: 13px; }
+
+.glass-note { left: clamp(32px, 5vw, 80px); top: 50%; transform: translateY(-50%); width: 340px; padding: 18px; background: rgba(255,255,255,.78); color: var(--ink); border-color: rgba(255,255,255,.6); }
+.scene-right .glass-note { left: auto; right: auto; left: 44%; top: 22%; transform: none; }
+.note-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+.note-logo { height: 10px; width: auto; }
+.note-title { font-family: var(--head); font-size: 20px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 12px; }
+.note-row { display: flex; gap: 12px; align-items: center; padding: 12px; background: rgba(255,255,255,.85); border-radius: 14px; }
+.note-row b { display: block; font-size: 14px; font-weight: 600; }
+.note-row span { font-size: 12.5px; color: var(--ink-2); }
+.note-dot { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(145deg, #DDE3E8, #B9C3CC); flex: none; }
+
+.glass-screen { right: clamp(32px, 5vw, 80px); top: clamp(40px, 8vh, 96px); width: 240px; padding: 20px; display: grid; gap: 10px; background: rgba(10,13,18,.55); border-color: rgba(255,255,255,.16); }
+.gs-label, .gs-sub { font-size: 12px; color: rgba(255,255,255,.65); }
+.gs-main { font-family: var(--head); font-size: 36px; font-weight: 500; letter-spacing: -0.03em; }
+.gs-bar { height: 3px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; }
+.gs-bar i { display: block; height: 100%; width: 100%; background: #fff; }
+
+/* Steps row */
+.steps { padding: var(--sec) 0; }
+.steps-row { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--pad); display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.hstep h3 { font-family: var(--head); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; margin: 6px 0 4px; color: var(--ink); }
+.hstep p { font-size: 15px; color: var(--ink-2); }
+.hstep .photo { aspect-ratio: 3 / 4; }
+.works-with { border-bottom: 0; }
+
+@media (max-width: 980px) {
+  .steps-row { grid-template-columns: 1fr 1fr; gap: 28px 12px; }
+  .glass-hud, .scene-left .glass-hud { left: auto; right: 24px; width: 300px; }
+  .scene-right .glass-note { left: 24px; }
+}
+@media (max-width: 640px) {
+  .scene { margin: 10px 10px 0; min-height: 0; aspect-ratio: 9 / 16; max-height: 820px; border-radius: 22px; }
+  .scene-left::after, .scene-right::after { background: linear-gradient(0deg, rgba(14,22,34,.72) 0%, rgba(14,22,34,.3) 38%, rgba(14,22,34,0) 58%); }
+  .scene-copy, .scene-right .scene-copy { padding: 24px 22px 26px; margin: 0; }
+  .scene-copy h2 { font-size: 30px; line-height: 1.08; letter-spacing: -0.025em; margin-bottom: 10px; }
+  .scene-copy p:not(.eyebrow-light) { font-size: 15px; }
+  .eyebrow-light { font-size: 11px; margin-bottom: 10px; }
+  .scene-copy .pill { margin-top: 18px; }
+  .glass { border-radius: 18px; }
+  .glass-hud, .scene-left .glass-hud { left: 14px; right: 14px; top: 14px; width: auto; padding: 14px; }
+  .hud-ring { width: 64px; height: 64px; }
+  .hud-chips { margin-top: 12px; }
+  .scene-right .glass-note, .glass-note { left: 14px; right: 14px; top: 14px; width: auto; transform: none; padding: 14px; }
+  .note-title { font-size: 18px; }
+  .glass-screen { right: 14px; top: 14px; width: 190px; padding: 16px; }
+  .gs-main { font-size: 30px; }
+  .steps-row { gap: 24px 10px; padding: 0 12px; }
+  .hstep h3 { font-size: 18px; }
+  .hstep p { font-size: 13.5px; }
+  .hstep .step-tag { margin-top: 12px; }
+}
+
+/* v14 fixes */
+.steps { display: block; }
+.glass-hud { background: rgba(18, 28, 42, .38); border-color: rgba(255,255,255,.22); }
+.hud-stats span { color: rgba(255,255,255,.82); }
+@media (max-width: 640px) {
+  /* Phone: photo card with the glass panel on it, text below on the page — nothing covers faces */
+  .scene { display: block; aspect-ratio: auto; max-height: none; min-height: 0; overflow: visible; border-radius: 0; margin: 56px 12px 0; color: var(--ink); }
+  .scene::after { display: none; }
+  .scene > picture { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; }
+  .scene > picture img { position: absolute; inset: 0; object-position: center 78%; z-index: 0; }
+  .scene-copy, .scene-right .scene-copy { padding: 20px 6px 0; max-width: none; }
+  .scene-copy h2 { color: var(--ink); }
+  .scene-copy p:not(.eyebrow-light) { color: var(--ink-2); }
+  .eyebrow-light { color: var(--ink-3); }
+  .scene .pill-white { background: var(--navy); color: #fff; }
+  .glass-hud, .scene-left .glass-hud { top: 12px; left: 12px; right: 12px; padding: 12px 14px; }
+  .hud-body { gap: 14px; }
+  .hud-ring { width: 54px; height: 54px; }
+  .hud-stats div { font-size: 12.5px; }
+  .hud-chips { margin-top: 10px; }
+  .g-chip { font-size: 11.5px; padding: 6px 9px; }
+  .scene-right .glass-note, .glass-note { top: 12px; left: 12px; right: 12px; }
+  .glass-screen { top: 12px; right: 12px; width: 170px; padding: 14px; gap: 8px; }
+  .gs-main { font-size: 26px; }
+  .scene + .scene { margin-top: 48px; }
+}
+.photo > picture { position: absolute; inset: 0; }
+.photo > picture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

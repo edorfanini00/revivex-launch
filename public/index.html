@@ -77,110 +77,71 @@
     </ul>
   </section>
 
-  <!-- PROBLEM -->
-  <section class="problem" aria-labelledby="problem-title">
-    <header class="section-head section-head-center reveal">
-      <p class="eyebrow">Why routines fall apart</p>
-      <h2 id="problem-title">The routine is fixed.<br>You aren't.</h2>
-    </header>
-    <div class="photo-grid">
-      <article class="photo-card reveal">
-        <div class="photo"><img src="/assets/v13/p-wake.jpg" alt="A woman stretching on the edge of her bed at dawn" loading="lazy"></div>
-        <h3>Your body changes daily</h3>
-        <p>Sleep, stress and training move. The scoop doesn't.</p>
-      </article>
-      <article class="photo-card reveal">
-        <div class="photo"><img src="/assets/v13/p-data.jpg" alt="A hand wearing a smart ring and fitness band on a linen duvet" loading="lazy"></div>
-        <h3>Your data sits in five apps</h3>
-        <p>None of them talk to your routine.</p>
-      </article>
-      <article class="photo-card reveal">
-        <div class="photo"><img src="/assets/v13/p-tubs.jpg" alt="Supplement tubs, a shaker and a pill organizer on a counter" loading="lazy"></div>
-        <h3>Consistency runs on willpower</h3>
-        <p>Until a busy week. Then it's the first thing to go.</p>
-      </article>
+  <!-- SCENE 1: CONNECT -->
+  <section class="scene scene-left" id="connected" aria-labelledby="s1-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s1-connect-m.jpg"><img src="/assets/v14/s1-connect.jpg" alt="A man holding a plank on a terrace at dawn wearing a fitness band" loading="lazy"></picture>
+    <div class="scene-copy reveal">
+      <p class="eyebrow-light">Connected</p>
+      <h2 id="s1-title">Connect your wearables and biomarkers.</h2>
+      <p>Apple Health, Oura, WHOOP, Fitbit and your Revivex results, in one place.</p>
+    </div>
+    <div class="glass glass-hud reveal" aria-hidden="true">
+      <div class="hud-head"><span>Recovery</span><span class="hud-sync">Synced</span></div>
+      <div class="hud-body">
+        <svg class="hud-ring" viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" class="ring-bg"/><circle cx="40" cy="40" r="32" class="ring-fg" stroke-dasharray="201" stroke-dashoffset="72"/></svg>
+        <div class="hud-stats">
+          <div><span>Sleep</span><b>6h 12m</b></div>
+          <div><span>HRV</span><b>48 ms</b></div>
+          <div><span>Strain</span><b>High</b></div>
+        </div>
+      </div>
+      <div class="hud-chips"><span class="g-chip"><img src="/assets/logos/apple.svg" alt="" width="14" height="14">Apple Health</span><span class="g-chip"><img src="/assets/logos/oura.svg" alt="" width="14" height="14">Oura</span><span class="g-chip"><img src="/assets/logos/whoop.svg" alt="" width="14" height="14">WHOOP</span></div>
     </div>
   </section>
 
-  <!-- CONNECTED ECOSYSTEM -->
-  <section class="connected" id="connected">
-    <header class="section-head section-head-center reveal">
-      <p class="eyebrow">Connected to Revivex</p>
-      <h2>Your data builds the drink.</h2>
-    </header>
-    <div class="photo-grid">
-      <article class="photo-card reveal">
-        <div class="photo photo-ui"><img src="/assets/v13/e-move.jpg" alt="A man stretching at dawn wearing a fitness band and ring" loading="lazy">
-          <div class="float float-top chip-grid" aria-hidden="true">
-            <span class="logo-chip"><img src="/assets/logos/apple.svg" alt="" width="16" height="16">Apple Health</span><span class="logo-chip"><img src="/assets/logos/oura.svg" alt="" width="16" height="16">Oura</span><span class="logo-chip"><img src="/assets/logos/whoop.svg" alt="" width="16" height="16">WHOOP</span><span class="logo-chip"><img src="/assets/logos/fitbit.svg" alt="" width="16" height="16">Fitbit</span><span class="logo-chip"><img src="/assets/logos/blood.svg" alt="" width="16" height="16">Biomarkers</span><span class="logo-chip"><img src="/assets/logos/goals.svg" alt="" width="16" height="16">Your goals</span>
-          </div>
-        </div>
-        <span class="step-tag">01</span>
-        <h3>Revivex reads you</h3>
-        <p>Your wearables and biomarker results, in one place.</p>
-      </article>
-      <article class="photo-card reveal">
-        <div class="photo photo-ui"><img src="/assets/v13/e-phone.jpg" alt="A woman checking her phone by the window in the morning" loading="lazy">
-          <div class="float float-top app-mock" aria-hidden="true">
-            <div class="app-top"><span>Today</span><span class="app-dot">Synced 6:40</span></div>
-            <p class="app-title">Recovery morning</p>
-            <div class="app-row"><span>Sleep</span><b>6h 12m</b></div>
-            <div class="app-row"><span>Recovery</span><b>Low</b></div>
-          </div>
-        </div>
-        <span class="step-tag">02</span>
-        <h3>The app sets your routine</h3>
-        <p>Adjusted to last night, within the limits of your plan.</p>
-      </article>
-      <article class="photo-card reveal">
-        <div class="photo photo-ui"><img src="/assets/v13/e-machine.jpg" alt="The Revivex machine beside a eucalyptus sprig with a full glass" loading="lazy">
-          <div class="float float-top screen-mock" aria-hidden="true">
-            <div class="screen-inner">
-              <span class="screen-label">Recovery morning</span>
-              <span class="screen-main">Ready</span>
-              <span class="screen-bar"><i></i></span>
-            </div>
-          </div>
-        </div>
-        <span class="step-tag">03</span>
-        <h3>The machine pours it</h3>
-        <p>One touch. Measured, blended, poured.</p>
-      </article>
+  <!-- SCENE 2: ROUTINE -->
+  <section class="scene scene-right" aria-labelledby="s2-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s2-routine-m.jpg"><img src="/assets/v14/s2-routine.jpg" alt="A woman checking her phone by the window" loading="lazy"></picture>
+    <div class="scene-copy reveal">
+      <p class="eyebrow-light">The Revivex app</p>
+      <h2 id="s2-title">Your routine, set by your data.</h2>
+      <p>Short night, hard session? Today leans toward recovery.</p>
+    </div>
+    <div class="glass glass-note reveal" aria-hidden="true">
+      <div class="note-top"><img src="/assets/brand/logo-dark.png" alt="" class="note-logo"><span>now</span></div>
+      <p class="note-title">Your routine is ready</p>
+      <div class="note-row"><span class="note-dot"></span><div><b>Recovery morning</b><span>350 ml · waiting on your machine</span></div></div>
     </div>
   </section>
 
-  <!-- MACHINE FEATURE (full bleed) -->
-  <section class="feature reveal" aria-label="The Revivex machine">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v13/g-hero-m.jpg"><img src="/assets/v13/g-hero.jpg" alt="The Revivex machine on a travertine counter in a calm home" loading="lazy"></picture>
-    <div class="feature-copy">
-      <h2>Let your data do the measuring.</h2>
+  <!-- SCENE 3: MACHINE -->
+  <section class="scene scene-left" aria-labelledby="s3-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg"><img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a stone kitchen island with a skyline view" loading="lazy"></picture>
+    <div class="scene-copy reveal">
+      <p class="eyebrow-light">The machine</p>
+      <h2 id="s3-title">One touch. Poured.</h2>
+      <p>Measured, blended and poured inside. Just take the glass.</p>
       <a href="#waitlist" class="pill pill-white">Join the waitlist</a>
     </div>
+    <div class="glass glass-screen reveal" aria-hidden="true">
+      <span class="gs-label">Recovery morning</span>
+      <span class="gs-main">Done</span>
+      <span class="gs-bar"><i></i></span>
+      <span class="gs-sub">350 ml · 6:46</span>
+    </div>
   </section>
 
-  <!-- A MORNING WITH REVIVEX -->
-  <section class="day" id="how" aria-labelledby="day-title">
+  <!-- HOW IT WORKS (4 steps) -->
+  <section class="steps" id="how" aria-labelledby="steps-title">
     <header class="section-head section-head-center reveal">
       <p class="eyebrow">How it works</p>
-      <h2 id="day-title">A morning with Revivex</h2>
+      <h2 id="steps-title">Four steps. No scooping.</h2>
     </header>
-    <div class="day-rows">
-      <article class="day-row reveal">
-        <div class="day-copy"><span class="day-time">Overnight</span><h3>Your data syncs</h3><p>Sleep and recovery from your ring or watch.</p></div>
-        <div class="day-media"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/lifestyle-desk-m.jpg"><img src="/assets/v11/lifestyle-desk.jpg" alt="A man at dawn holding a glass of water" loading="lazy"></picture></div>
-      </article>
-      <article class="day-row reveal">
-        <div class="day-copy"><span class="day-time">6:40</span><h3>Your routine is ready</h3><p>Waiting on the screen when you wake up.</p></div>
-        <div class="day-media"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-screen-m.jpg"><img src="/assets/v11/detail-screen.jpg" alt="The machine's screen showing the morning routine" loading="lazy"></picture></div>
-      </article>
-      <article class="day-row reveal">
-        <div class="day-copy"><span class="day-time">6:45</span><h3>One touch</h3><p>Weighed, blended and poured inside.</p></div>
-        <div class="day-media"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-pour-m.jpg"><img src="/assets/v11/detail-pour.jpg" alt="A clear stream pouring into a glass" loading="lazy"></picture></div>
-      </article>
-      <article class="day-row reveal">
-        <div class="day-copy"><span class="day-time">6:46</span><h3>Take the glass</h3><p>Nothing to scoop, shake or rinse.</p></div>
-        <div class="day-media"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/lifestyle-kitchen-m.jpg"><img src="/assets/v11/lifestyle-kitchen.jpg" alt="A woman taking a glass from the Revivex machine" loading="lazy"></picture></div>
-      </article>
+    <div class="steps-row">
+      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/p-data.jpg" alt="A hand wearing a smart ring and fitness band" loading="lazy"></div><span class="step-tag">01</span><h3>Sync</h3><p>Your data syncs overnight.</p></article>
+      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/e-phone.jpg" alt="A woman checking her phone in the morning" loading="lazy"></div><span class="step-tag">02</span><h3>Set</h3><p>The app sets today's routine.</p></article>
+      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-pour-m.jpg"><img src="/assets/v11/detail-pour.jpg" alt="Clear water pouring into a glass" loading="lazy"></picture></div><span class="step-tag">03</span><h3>Pour</h3><p>One touch on the machine.</p></article>
+      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-tank-m.jpg"><img src="/assets/v11/detail-tank.jpg" alt="Lifting the water tank out of the machine" loading="lazy"></picture></div><span class="step-tag">04</span><h3>Refill</h3><p>Top up the tank at the tap.</p></article>
     </div>
   </section>
 
@@ -193,7 +154,7 @@
     <div class="gallery">
       <figure class="g-item g-tall reveal"><img src="/assets/v13/g-side.jpg" alt="Side profile of the Revivex machine" loading="lazy"><figcaption>Brushed aluminum</figcaption></figure>
       <figure class="g-item reveal"><img src="/assets/v13/g-hand.jpg" alt="A hand turning the machine dial" loading="lazy"><figcaption>One dial, one screen</figcaption></figure>
-      <figure class="g-item reveal"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-tank-m.jpg"><img src="/assets/v11/detail-tank.jpg" alt="Lifting the clear water tank out of the machine" loading="lazy"></picture><figcaption>Refillable tank, no plumbing</figcaption></figure>
+      <figure class="g-item reveal"><img src="/assets/v13/e-machine.jpg" alt="The Revivex machine beside a eucalyptus sprig" loading="lazy"><figcaption>Made for the counter</figcaption></figure>
     </div>
     <ul class="spec-line reveal">
       <li>350 ml or 250 ml</li><li>Blends inside</li><li>No plumbing</li><li>Pauses when unsure</li>
