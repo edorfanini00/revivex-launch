@@ -566,3 +566,75 @@ button[disabled] { opacity: .6; cursor: wait; }
 }
 .photo > picture { position: absolute; inset: 0; }
 .photo > picture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* declutter */
+.hero-progress { display: none !important; }
+.hstep h3 { margin-top: 16px; }
+
+/* =====================================================================
+   v15 reading flow
+   One left edge for every heading, text always on a calm background,
+   one content width (1296px), one section rhythm.
+   ===================================================================== */
+:root { --wrap: 1296px; --edge: max(var(--pad), calc((100vw - var(--wrap)) / 2)); --sec: clamp(96px, 10vw, 150px); }
+
+.block, .steps, .details { padding: var(--sec) 0 0; }
+.details { padding-bottom: var(--sec); background: transparent; }
+.waitlist { background: transparent; padding-top: 0; }
+
+.split-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 48px; align-items: end; margin: 0 var(--edge) clamp(32px, 3.4vw, 48px); max-width: var(--wrap); }
+.split-head h2 { font-family: var(--head); font-weight: 500; font-size: clamp(36px, 4.2vw, 60px); line-height: 1.02; letter-spacing: -0.04em; color: var(--ink); max-width: 13ch; margin: 0; }
+.split-side p { font-size: 18px; line-height: 1.5; color: var(--ink-2); max-width: 34ch; margin: 0; }
+.split-side .pill { margin-top: 22px; }
+.pill-dark { background: var(--navy); color: #fff; }
+.pill-dark:hover { background: #1c2f4d; }
+
+/* Photos span the same content width as the text above */
+.scene { margin: 0 var(--edge); max-width: var(--wrap); min-height: 0; aspect-ratio: 16 / 8.2; display: block; }
+.scene::after { display: none; }
+.scene > picture img { object-position: center 60%; }
+
+/* Keep panels clear of faces/machine: consistent top-right placement */
+.glass-hud, .scene-left .glass-hud { left: auto; right: 32px; top: 32px; }
+.scene-right .glass-note, .glass-note { left: auto; right: 32px; top: 32px; transform: none; }
+.glass-screen { right: 32px; top: 32px; }
+
+.steps-row, .gallery { padding: 0; margin: 0 var(--edge); max-width: var(--wrap); }
+.hstep h3 { font-size: 20px; margin: 18px 0 4px; }
+.hstep p { font-size: 15.5px; }
+
+.works-with { padding: 44px var(--edge) 0; }
+.faq { padding-top: var(--sec); }
+.faq-wrap { margin: 0 var(--edge); max-width: var(--wrap); }
+
+@media (max-width: 980px) {
+  .split-head { grid-template-columns: 1fr; gap: 16px; }
+  .split-head h2 { max-width: 16ch; }
+  .scene { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 640px) {
+  :root { --pad: 20px; --sec: 88px; }
+  .split-head { margin: 0 20px 24px; gap: 12px; }
+  .split-head h2 { font-size: 34px; line-height: 1.06; letter-spacing: -0.03em; max-width: none; }
+  .split-side p { font-size: 16px; }
+  .split-side .pill { margin-top: 18px; }
+  .scene { margin: 0 12px; aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; }
+  .scene > picture { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
+  .scene + .scene { margin-top: 0; }
+  .glass-hud, .scene-left .glass-hud, .scene-right .glass-note, .glass-note { left: 12px; right: 12px; top: 12px; }
+  .glass-screen { right: 12px; top: 12px; }
+  .steps-row { margin: 0 20px; }
+  .gallery { margin: 0 12px; }
+  .works-with { padding: 36px 20px 0; }
+  .faq-wrap { margin: 0 20px; }
+}
+/* balanced line breaks, no orphans */
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+.split-head h2 { max-width: 15ch; }
+.split-side p { font-size: 18px; color: var(--ink-2); }
+.hstep p { font-size: 15.5px; color: var(--ink-2); }
+@media (min-width: 981px) {
+  .hero-frame { margin-left: auto; margin-right: auto; width: auto; max-width: calc(100vw - 2 * var(--edge)); }
+  .hero-copy { left: clamp(40px, 4.4vw, 72px); }
+}

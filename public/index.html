@@ -20,7 +20,6 @@
 
 <header class="nav" id="nav">
   <nav class="nav-links" aria-label="Sections">
-    <a href="#connected">Connected</a>
     <a href="#how">How it works</a>
     <a href="#details">Design</a>
     <a href="#faq">FAQ</a>
@@ -43,19 +42,11 @@
         <div class="hero-veil" aria-hidden="true"></div>
 
         <div class="hero-copy">
-          <span class="chip reveal-now">In development</span>
           <h1 class="hero-title reveal-now">Your daily drink, prepared for you.</h1>
           <p class="hero-sub reveal-now">It reads your wearables and biomarkers, then measures, blends and pours your routine.</p>
           <div class="hero-actions reveal-now">
             <a href="#waitlist" class="pill pill-white">Join the waitlist</a>
-            <a href="#how" class="pill pill-glass">How it works</a>
           </div>
-        </div>
-
-        <div class="hero-pillars" aria-hidden="true">
-          <div><h3>Reads your data</h3><p>Wearables and biomarkers.</p></div>
-          <div><h3>Blended inside</h3><p>Pours ready to drink.</p></div>
-          <div><h3>No plumbing</h3><p>A tank you fill at the tap.</p></div>
         </div>
 
         <div class="hero-progress" aria-hidden="true"><span id="heroBar"></span></div>
@@ -77,12 +68,15 @@
   </section>
 
   <!-- SCENE 1: CONNECT -->
-  <section class="scene scene-left" id="connected" aria-labelledby="s1-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s1-connect-m.jpg"><img src="/assets/v14/s1-connect.jpg" alt="A man holding a plank on a terrace at dawn wearing a fitness band" loading="lazy"></picture>
-    <div class="scene-copy reveal">
-      <h2 id="s1-title">It starts with how you slept.</h2>
+  <section class="block" id="connected">
+  <header class="split-head reveal">
+    <h2 id="s1-title">It starts with how you slept.</h2>
+    <div class="split-side">
       <p>Sleep, recovery and training from your ring or watch, plus your Revivex results.</p>
     </div>
+  </header>
+  <div class="scene scene-left" aria-labelledby="s1-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s1-connect-m.jpg"><img src="/assets/v14/s1-connect.jpg" alt="A man holding a plank on a terrace at dawn wearing a fitness band" loading="lazy"></picture>
     <div class="glass glass-hud reveal" aria-hidden="true">
       <div class="hud-head"><span>Recovery</span><span class="hud-sync">Synced</span></div>
       <div class="hud-body">
@@ -93,66 +87,72 @@
           <div><span>Strain</span><b>High</b></div>
         </div>
       </div>
-      <div class="hud-chips"><span class="g-chip"><img src="/assets/logos/apple.svg" alt="" width="14" height="14">Apple Health</span><span class="g-chip"><img src="/assets/logos/oura.svg" alt="" width="14" height="14">Oura</span><span class="g-chip"><img src="/assets/logos/whoop.svg" alt="" width="14" height="14">WHOOP</span></div>
     </div>
+  </div>
   </section>
 
   <!-- SCENE 2: ROUTINE -->
-  <section class="scene scene-right" aria-labelledby="s2-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s2-routine-m.jpg"><img src="/assets/v14/s2-routine.jpg" alt="A woman checking her phone by the window" loading="lazy"></picture>
-    <div class="scene-copy reveal">
-      <h2 id="s2-title">Today's routine, set overnight.</h2>
+  <section class="block">
+  <header class="split-head reveal">
+    <h2 id="s2-title">Today's routine, set overnight.</h2>
+    <div class="split-side">
       <p>Short night or hard session? The app adjusts, within the limits of your plan.</p>
     </div>
+  </header>
+  <div class="scene scene-right" aria-labelledby="s2-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s2-routine-m.jpg"><img src="/assets/v14/s2-routine.jpg" alt="A woman checking her phone by the window" loading="lazy"></picture>
     <div class="glass glass-note reveal" aria-hidden="true">
       <div class="note-top"><img src="/assets/brand/logo-dark.png" alt="" class="note-logo"><span>now</span></div>
       <p class="note-title">Your routine is ready</p>
       <div class="note-row"><span class="note-dot"></span><div><b>Recovery morning</b><span>350 ml · waiting on your machine</span></div></div>
     </div>
+  </div>
   </section>
 
   <!-- SCENE 3: MACHINE -->
-  <section class="scene scene-left" aria-labelledby="s3-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg"><img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a stone kitchen island with a skyline view" loading="lazy"></picture>
-    <div class="scene-copy reveal">
-      <h2 id="s3-title">One touch. Poured.</h2>
+  <section class="block">
+  <header class="split-head reveal">
+    <h2 id="s3-title">One touch. Poured.</h2>
+    <div class="split-side">
       <p>Measured and blended inside. Just take the glass.</p>
-      <a href="#waitlist" class="pill pill-white">Join the waitlist</a>
+        <a href="#waitlist" class="pill pill-dark">Join the waitlist</a>
     </div>
+  </header>
+  <div class="scene scene-left" aria-labelledby="s3-title">
+    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg"><img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a stone kitchen island with a skyline view" loading="lazy"></picture>
     <div class="glass glass-screen reveal" aria-hidden="true">
       <span class="gs-label">Recovery morning</span>
       <span class="gs-main">Done</span>
       <span class="gs-bar"><i></i></span>
-      <span class="gs-sub">350 ml · 6:46</span>
     </div>
+  </div>
   </section>
 
   <!-- HOW IT WORKS (4 steps) -->
   <section class="steps" id="how" aria-labelledby="steps-title">
-    <header class="section-head section-head-center reveal">
+    <header class="split-head reveal">
       <h2 id="steps-title">Four steps. No scooping.</h2>
+      <div class="split-side"><p>No scoops, shakers or tubs on the counter.</p></div>
     </header>
     <div class="steps-row">
-      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/p-data.jpg" alt="A hand wearing a smart ring and fitness band" loading="lazy"></div><span class="step-tag">01</span><h3>Sync</h3><p>Your data syncs overnight.</p></article>
-      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/e-phone.jpg" alt="A woman checking her phone in the morning" loading="lazy"></div><span class="step-tag">02</span><h3>Set</h3><p>The app sets today's routine.</p></article>
-      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-pour-m.jpg"><img src="/assets/v11/detail-pour.jpg" alt="Clear water pouring into a glass" loading="lazy"></picture></div><span class="step-tag">03</span><h3>Pour</h3><p>One touch on the machine.</p></article>
-      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-tank-m.jpg"><img src="/assets/v11/detail-tank.jpg" alt="Lifting the water tank out of the machine" loading="lazy"></picture></div><span class="step-tag">04</span><h3>Refill</h3><p>Top up the tank at the tap.</p></article>
+      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/p-data.jpg" alt="A hand wearing a smart ring and fitness band" loading="lazy"></div><h3>Sync</h3><p>Your data syncs overnight.</p></article>
+      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/e-phone.jpg" alt="A woman checking her phone in the morning" loading="lazy"></div><h3>Set</h3><p>The app sets today's routine.</p></article>
+      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-pour-m.jpg"><img src="/assets/v11/detail-pour.jpg" alt="Clear water pouring into a glass" loading="lazy"></picture></div><h3>Pour</h3><p>One touch on the machine.</p></article>
+      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-tank-m.jpg"><img src="/assets/v11/detail-tank.jpg" alt="Lifting the water tank out of the machine" loading="lazy"></picture></div><h3>Refill</h3><p>Top up the tank at the tap.</p></article>
     </div>
   </section>
 
   <!-- DESIGN GALLERY -->
   <section class="details" id="details">
-    <header class="section-head section-head-center reveal">
+    <header class="split-head reveal">
       <h2>Quiet on the counter.</h2>
+      <div class="split-side"><p>Brushed aluminum, one dial and a clear tank that lifts out.</p></div>
     </header>
     <div class="gallery">
-      <figure class="g-item g-tall reveal"><img src="/assets/v13/g-side.jpg" alt="Side profile of the Revivex machine" loading="lazy"><figcaption>Brushed aluminum</figcaption></figure>
-      <figure class="g-item reveal"><img src="/assets/v13/g-hand.jpg" alt="A hand turning the machine dial" loading="lazy"><figcaption>One dial, one screen</figcaption></figure>
-      <figure class="g-item reveal"><img src="/assets/v13/e-machine.jpg" alt="The Revivex machine beside a eucalyptus sprig" loading="lazy"><figcaption>Made for the counter</figcaption></figure>
+      <figure class="g-item g-tall reveal"><img src="/assets/v13/g-side.jpg" alt="Side profile of the Revivex machine" loading="lazy"></figure>
+      <figure class="g-item reveal"><img src="/assets/v13/g-hand.jpg" alt="A hand turning the machine dial" loading="lazy"></figure>
+      <figure class="g-item reveal"><img src="/assets/v13/e-machine.jpg" alt="The Revivex machine beside a eucalyptus sprig" loading="lazy"></figure>
     </div>
-    <ul class="spec-line reveal">
-      <li>350 or 250 ml</li><li>Blends inside</li><li>Refillable tank</li><li>One-touch pour</li>
-    </ul>
   </section>
 
   <!-- WAITLIST -->
