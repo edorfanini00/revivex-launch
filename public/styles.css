@@ -705,3 +705,96 @@ p { text-wrap: pretty; }
 .faq-head, .faq-list { padding: 0; margin: 0; }
 .nav .btn, .nav.scrolled .btn, .nav-cta.btn { background: var(--navy); color: #fff; }
 .nav .btn:hover { background: #1d3354; }
+
+/* v17 mobile polish + final button system */
+.btn, .nav .btn, .nav.scrolled .btn, .nav-cta.btn {
+  background: #0A0A0A;
+  color: #fff;
+}
+.btn:hover, .nav .btn:hover { background: #1D1D1D; }
+.hero .btn {
+  background: #fff;
+  color: var(--navy);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+}
+.hero .btn:hover { background: rgba(255,255,255,.92); }
+
+@media (max-width: 640px) {
+  :root { --sec: 72px; }
+  body { font-size: 15px; }
+
+  /* Hero: clearer phone crop, less text pressure, white CTA */
+  .hero-frame { border-radius: 0 0 18px 18px; }
+  .hero-copy {
+    left: 20px;
+    right: 20px;
+    top: auto;
+    bottom: 28px;
+    transform: none;
+    max-width: 330px;
+  }
+  .hero-title {
+    font-size: 31px;
+    line-height: 1.04;
+    letter-spacing: -0.026em;
+    margin-bottom: 10px;
+    max-width: 10.5ch;
+  }
+  .hero-sub {
+    font-size: 14.5px;
+    line-height: 1.45;
+    max-width: 315px;
+    margin-bottom: 18px;
+    color: rgba(255,255,255,.88);
+  }
+  .hero-actions .btn {
+    width: auto;
+    height: 46px;
+    padding: 0 22px;
+    font-size: 14px;
+  }
+  .hero-veil {
+    background: linear-gradient(0deg, rgba(8,14,22,.78) 0%, rgba(8,14,22,.52) 23%, rgba(8,14,22,.08) 58%, rgba(8,14,22,0) 100%);
+  }
+
+  /* Seed/Timeline-style mobile rhythm: smaller headings, calmer spacing */
+  .works-with { padding: 26px 22px 4px; }
+  .works-logos { gap: 12px 18px; }
+  .works-logos li { font-size: 13px; }
+
+  .block, .steps, .details { padding-top: 72px; }
+  .split-head {
+    margin: 0 22px 22px;
+    gap: 10px;
+  }
+  .split-head h2,
+  .cta-copy h2,
+  .faq-head h2 {
+    font-size: 30px;
+    line-height: 1.06;
+    letter-spacing: -0.026em;
+  }
+  .split-side p,
+  .cta-copy p {
+    font-size: 15.5px;
+    line-height: 1.48;
+    max-width: 31ch;
+  }
+  .scene { margin: 0 12px; border-radius: 20px; }
+  .glass { transform: scale(.94); transform-origin: top right; }
+  .glass-hud, .scene-left .glass-hud, .scene-right .glass-note, .glass-note { left: 10px; right: 10px; top: 10px; }
+  .glass-screen { right: 10px; top: 10px; }
+
+  .steps-row { margin: 0 22px; gap: 26px 12px; }
+  .hstep h3 { font-size: 18px; margin-top: 12px; }
+  .hstep p { font-size: 14px; line-height: 1.45; }
+  .hstep .photo { border-radius: 18px; }
+
+  .gallery { margin: 0 12px; gap: 10px; }
+  .cta { padding-top: 72px; }
+  .cta-inner { margin: 0 12px; padding: 30px 22px; border-radius: 22px; }
+  .cta .btn, .cta input[type=email] { height: 50px; }
+  .faq { padding-top: 72px; }
+  .faq summary { font-size: 16px; }
+  .faq details p { font-size: 14.5px; }
+}
