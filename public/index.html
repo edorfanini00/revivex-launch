@@ -28,7 +28,7 @@
     <img class="logo-light" src="/assets/brand/logo-light.png" alt="Revivex" width="448" height="63">
     <img class="logo-dark" src="/assets/brand/logo-dark.png" alt="" width="448" height="63">
   </a>
-  <a href="#waitlist" class="pill pill-white nav-cta">Join the waitlist</a>
+  <a href="#waitlist" class="btn nav-cta">Join the waitlist</a>
 </header>
 
 <main id="top">
@@ -45,7 +45,7 @@
           <h1 class="hero-title reveal-now">Your supplements, blended every morning.</h1>
           <p class="hero-sub reveal-now">A countertop machine that reads your sleep, recovery and biomarkers, then measures and blends the right supplements into one drink.</p>
           <div class="hero-actions reveal-now">
-            <a href="#waitlist" class="pill pill-white">Join the waitlist</a>
+            <a href="#waitlist" class="btn">Join the waitlist</a>
           </div>
         </div>
 
@@ -115,7 +115,7 @@
     <h2 id="s3-title">One touch. Your blend, poured.</h2>
     <div class="split-side">
       <p>The machine measures each supplement, blends it with water and pours one glass.</p>
-        <a href="#waitlist" class="pill pill-dark">Join the waitlist</a>
+        <a href="#waitlist" class="btn">Join the waitlist</a>
     </div>
   </header>
   <div class="scene scene-left" aria-labelledby="s3-title">
@@ -156,17 +156,17 @@
   </section>
 
   <!-- WAITLIST -->
-  <section class="waitlist" id="waitlist">
-    <div class="waitlist-card reveal">
-      <picture><source media="(max-width: 640px)" srcset="/assets/v11/m/hero-end-m.jpg"><img src="/assets/v11/hero-end.jpg" alt="" aria-hidden="true" loading="lazy"></picture>
-      <div class="waitlist-inner">
+  <section class="cta" id="waitlist">
+    <div class="cta-inner reveal">
+      <div class="cta-copy">
         <h2>Be first to try it.</h2>
-        <p class="waitlist-sub">It's in development. Join and we'll tell you when it's ready.</p>
-        <form class="waitlist-form" id="waitlistForm" novalidate>
+        <p>Revivex is in development. Join the waitlist and we'll tell you when it's ready.</p>
+      </div>
+      <form class="waitlist-form" id="waitlistForm" novalidate>
           <label class="sr-only" for="emailInput">Email address</label>
           <div class="field-row">
-            <input type="email" id="emailInput" name="email" placeholder="you@email.com" autocomplete="email" required>
-            <button type="submit" class="pill pill-white" id="submitBtn">Join the waitlist</button>
+            <input type="email" id="emailInput" name="email" placeholder="Email address" autocomplete="email" required>
+            <button type="submit" class="btn" id="submitBtn">Join the waitlist</button>
           </div>
           <div class="hp" aria-hidden="true">
             <label for="website">Website</label>
@@ -178,14 +178,13 @@
           </label>
           <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
         </form>
-      </div>
     </div>
   </section>
 
   <!-- FAQ -->
   <section class="faq" id="faq">
     <div class="faq-wrap">
-      <header class="section-head reveal">
+      <header class="faq-head reveal">
         <h2>Questions</h2>
       </header>
       <div class="faq-list">
@@ -224,13 +223,16 @@
 </main>
 
 <footer class="footer">
-  <a href="#top" class="logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
-  <nav class="footer-links" aria-label="Footer">
-    <a href="https://healthrevivex.com" rel="noopener">Revivex Health</a>
-    <a href="/privacy.html">Privacy</a>
-    <a href="#waitlist">Early access</a>
-  </nav>
-  <p>&copy; 2026 Revivex. The Revivex machine is in development and not for sale.</p>
+  <div class="footer-top">
+    <a href="#top" class="logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="#how">How it works</a>
+      <a href="#faq">Questions</a>
+      <a href="https://healthrevivex.com" rel="noopener">Revivex Health</a>
+      <a href="/privacy.html">Privacy</a>
+    </nav>
+  </div>
+  <p class="footer-legal">&copy; 2026 Revivex. The Revivex machine is in development and not for sale.</p>
 </footer>
 
 <script src="/app.js" defer></script>
