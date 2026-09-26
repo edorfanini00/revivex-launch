@@ -903,3 +903,5 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
     line-height: 1.52;
   }
 }
+
+.hero-title { text-wrap: normal; }
