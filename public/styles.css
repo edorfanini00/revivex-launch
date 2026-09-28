@@ -905,3 +905,124 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 }
 
 .hero-title { text-wrap: normal; }
+
+/* =====================================================================
+   v20 visual polish — drinklinc-level cleanliness
+   Issues fixed:
+   1) works-with section spacing too tight
+   2) glass overlay HUDs removed — photos speak alone
+   3) split-head inconsistent line heights unified
+   4) 4-step hstep photos too small — better ratio + spacing
+   5) design gallery breathing room
+   6) section-to-section vertical rhythm compressed
+   7) FAQ accordion padding between items
+   ===================================================================== */
+
+/* 1. Works-with: more breathing room above/below */
+.works-with {
+  padding: 72px var(--edge) 72px;
+  border-bottom: 1px solid var(--line);
+}
+@media (max-width: 640px) {
+  .works-with { padding: 52px 22px 52px; }
+}
+
+/* 2. Hide all glass overlay HUDs — scene photos are strong alone */
+.glass-hud,
+.glass-note,
+.glass-screen {
+  display: none !important;
+}
+
+/* 3. Split-head: unify line height and weight, consistent spacing */
+.split-head {
+  gap: 40px;
+  margin-bottom: clamp(40px, 4.5vw, 64px);
+}
+.split-head h2 {
+  font-size: clamp(38px, 4.5vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.034em;
+  max-width: 14ch;
+}
+.split-side p {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+@media (max-width: 640px) {
+  .split-head h2 {
+    font-size: 30px;
+    line-height: 1.07;
+    letter-spacing: -0.022em;
+  }
+  .split-side p { font-size: 15px; }
+}
+
+/* 4. 4-step cards: taller image ratio, more space between card and text */
+.hstep .photo {
+  aspect-ratio: 3 / 3.8;
+  border-radius: 18px;
+}
+.hstep h3 {
+  font-size: 19px;
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+.hstep p { font-size: 15px; line-height: 1.5; }
+.steps-row {
+  gap: 24px;
+}
+@media (max-width: 640px) {
+  .hstep .photo { aspect-ratio: 4 / 4.5; border-radius: 16px; }
+  .hstep h3 { font-size: 17px; margin-top: 16px; }
+  .steps-row { gap: 20px 12px; }
+}
+
+/* 5. Design gallery: more vertical height and padding, cleaner proportions */
+.gallery {
+  gap: 16px;
+  height: clamp(700px, 70vw, 960px);
+}
+.details {
+  padding-top: clamp(100px, 11vw, 160px);
+  padding-bottom: clamp(100px, 11vw, 160px);
+}
+@media (max-width: 980px) {
+  .gallery { height: auto; gap: 14px; }
+  .g-tall { aspect-ratio: 3 / 4; }
+  .g-item:not(.g-tall) { aspect-ratio: 3 / 4; }
+}
+@media (max-width: 640px) {
+  .gallery { gap: 10px; }
+  .details { padding-top: 72px; padding-bottom: 72px; }
+}
+
+/* 6. Section-to-section vertical rhythm: expand --sec + inter-block spacing */
+:root { --sec: clamp(110px, 11vw, 160px); }
+.block, .steps { padding-top: var(--sec); }
+/* Add breathing gap between scene blocks */
+.block + .block { margin-top: 0; }
+.scene { margin-bottom: 0; }
+/* Scenes get consistent large top margin from their .block */
+
+/* 7. FAQ: more padding between items */
+.faq-list details {
+  border-top: 1px solid var(--line);
+}
+.faq summary {
+  padding-top: 28px;
+  padding-bottom: 28px;
+  font-size: 18px;
+}
+.faq details p {
+  padding-bottom: 30px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.faq { padding-top: var(--sec); padding-bottom: var(--sec); }
+@media (max-width: 640px) {
+  .faq summary { padding-top: 22px; padding-bottom: 22px; font-size: 16px; }
+  .faq details p { padding-bottom: 24px; font-size: 15px; }
+  :root { --sec: 88px; }
+}
