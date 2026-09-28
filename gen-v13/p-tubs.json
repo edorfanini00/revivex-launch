@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T23:32:23.303234Z",
+    "display_name": "Nano Banana Pro",
+    "id": "42cba7c2-bc41-4a7d-93d0-e6cb4de064f6",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_42cba7c2-bc41-4a7d-93d0-e6cb4de064f6_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "Still life on a pale stone kitchen counter: several plain unlabeled white supplement tubs, a plastic shaker bottle, a weekly pill organizer and loose capsules, slightly messy, muted and quiet, soft window light. Editorial wellness photography for a premium longevity brand. Cool, calm, desaturated palette: fog gray, soft slate blue-gray, warm off-white linen, pale stone and light oak. Soft natural window daylight, gentle shadows, medium format, shallow depth of field, fine grain, real skin texture, candid and unposed. No text, no logos, no brand names on anything.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_42cba7c2-bc41-4a7d-93d0-e6cb4de064f6.png",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T16:33:10.554797Z",
+    "display_name": "Nano Banana Pro",
+    "id": "ed0d12f1-8598-4f49-9efa-3d975692e6e7",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163310_ed0d12f1-8598-4f49-9efa-3d975692e6e7_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "74d76f78-1cad-4a4b-9ec2-2433aace5027",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/74d76f78-1cad-4a4b-9ec2-2433aace5027.png"
+        }
+      ],
+      "prompt": "Identical vertical composition, camera and light: the machine centered in the upper-middle on a pale honed concrete counter, straight-on at bay height, filling about 60 percent of the frame width, fog-gray room with tall soft window behind. The clear glass tumbler in the bay is now full of crystal clear still water, faint caustics on the concrete. Screen shows 'Done'. Bottom 35 percent calm empty concrete counter front for text. Top 12 percent plain soft wall. Art direction matching the Revivex health brand: cool, calm, desaturated palette of fog gray, soft slate blue-gray and warm off-white; soft overcast daylight, pale honed concrete and light stone, minimalist modern architecture, quiet and premium like a high-end longevity clinic. Photoreal, medium format, crisp detail, gentle depth of field. The machine is the exact same brushed aluminum countertop appliance from the reference image: same shape, same dark screen, same round dial, same open dispensing bay, same slotted drip tray. Any drink is completely clear, colorless water. No added text or logos, no warm pink or beige cast.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163310_ed0d12f1-8598-4f49-9efa-3d975692e6e7.png",
+    "status": "completed"
+  }
+]

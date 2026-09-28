@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T22:38:09.82845Z",
+    "display_name": "Nano Banana Pro",
+    "id": "5e9fb918-806e-4ac8-89b5-a65baedb994e",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_223809_5e9fb918-806e-4ac8-89b5-a65baedb994e_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "A man in a neutral gray t-shirt doing a slow stretch on a wooden floor by a large window at dawn, wearing a fitness band and a smart ring, serene, cool light, lots of calm space in the upper half. Editorial wellness photography for a premium longevity brand. Cool, calm, desaturated palette: fog gray, soft slate blue-gray, warm off-white linen, pale stone and light oak. Soft natural window daylight, gentle shadows, medium format, shallow depth of field, fine grain, real skin texture, candid and unposed. No text, no logos, no brand names on anything.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_223809_5e9fb918-806e-4ac8-89b5-a65baedb994e.png",
+    "status": "completed"
+  }
+]

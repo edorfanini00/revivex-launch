@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T16:34:38.416748Z",
+    "display_name": "Nano Banana Pro",
+    "id": "43dc7d03-47c5-48ff-a9fb-6a10317c969f",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163438_43dc7d03-47c5-48ff-a9fb-6a10317c969f_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "6f5c5b7b-24d7-4af6-ab2d-e198bf477172",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/6f5c5b7b-24d7-4af6-ab2d-e198bf477172_resize.jpg"
+        }
+      ],
+      "prompt": "Keep this exact image identical: same camera, framing, room, window, counter, light, machine position and size. Change only two things: the clear glass tumbler in the dispensing bay is now full of crystal clear, colorless still water with faint caustics on the counter, and the screen text reads 'Done'. Nothing else changes.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163438_43dc7d03-47c5-48ff-a9fb-6a10317c969f.png",
+    "status": "completed"
+  }
+]

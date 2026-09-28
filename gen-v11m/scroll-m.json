@@ -1,0 +1,51 @@
+[
+  {
+    "created_at": "2026-09-24T16:35:17.802961Z",
+    "display_name": "Seedance 2.5",
+    "id": "3f858439-b5a8-4404-b340-eb1e132dc02d",
+    "job_type": "seedance_2_5",
+    "min_result_url": null,
+    "params": {
+      "aspect_ratio": "9:16",
+      "bitrate_mode": "standard",
+      "draft": false,
+      "draft_job_id": null,
+      "duration": 5,
+      "extension_mode": null,
+      "generate_audio": true,
+      "genre": "auto",
+      "height": 1920,
+      "medias": [
+        {
+          "data": {
+            "id": "2b7b6dac-5268-4069-ad87-852cc2d79be8",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/2b7b6dac-5268-4069-ad87-852cc2d79be8_resize.jpg"
+          },
+          "role": "start_image"
+        },
+        {
+          "data": {
+            "id": "2e876a77-5d7a-4607-8138-79039ec05017",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/2e876a77-5d7a-4607-8138-79039ec05017_resize.jpg"
+          },
+          "role": "end_image"
+        }
+      ],
+      "model": "default",
+      "multi_prompt": [],
+      "multi_shot_mode": "custom",
+      "multi_shots": false,
+      "prompt": "Locked-off camera, no camera movement, no cuts, one continuous shot. Premium brushed aluminum appliance on a pale concrete counter in a calm fog-gray minimalist room with a tall soft window. The screen changes from Ready to Done. A smooth, glassy, perfectly clear stream of water pours from the nozzle and steadily fills the clear glass tumbler from empty to full, gentle bubbles. Water completely colorless. Cool overcast daylight, calm, photoreal. No people.",
+      "prompt_language": "en",
+      "reference_elements": [],
+      "resolution": "1080p",
+      "speedramp": "auto",
+      "width": 1080
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163517_3f858439-b5a8-4404-b340-eb1e132dc02d.mp4",
+    "status": "completed",
+    "thumbnail_url": "https://cdn.higgsfield.ai/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_163517_3f858439-b5a8-4404-b340-eb1e132dc02d_thumbnail.webp"
+  }
+]

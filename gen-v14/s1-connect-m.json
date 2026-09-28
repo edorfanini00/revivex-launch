@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T23:41:55.681953Z",
+    "display_name": "Nano Banana Pro",
+    "id": "3311efd7-b88a-4dbf-992f-b439aace8948",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234155_3311efd7-b88a-4dbf-992f-b439aace8948_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "Vertical: a fit man in his thirties in a gray t-shirt holding a plank on a yoga mat on a high-rise concrete terrace at dawn, wearing a fitness band and smart ring, city skyline and mountains in soft haze, the man in the lower half of the frame, open calm sky in the upper half. Cinematic editorial photograph, luxury high-rise apartment, floor-to-ceiling windows with a hazy city skyline and soft mountains in the distance, cool blue-gray morning light, desaturated slate and fog tones with warm oak and pale stone accents, soft haze, medium format, natural skin texture, candid, calm, aspirational. No text, no logos, no screens with readable text, no UI overlays.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234155_3311efd7-b88a-4dbf-992f-b439aace8948.png",
+    "status": "completed"
+  }
+]

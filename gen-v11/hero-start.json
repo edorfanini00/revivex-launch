@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T16:20:13.597818Z",
+    "display_name": "Nano Banana Pro",
+    "id": "ed35eb4a-a453-4dd1-94a1-a303d98dd46c",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162013_ed35eb4a-a453-4dd1-94a1-a303d98dd46c_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "16:9",
+      "batch_size": 1,
+      "height": 1536,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "d18b69db-ef1f-4473-9ffe-f05e1e1e0b3c",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/d18b69db-ef1f-4473-9ffe-f05e1e1e0b3c.png"
+        }
+      ],
+      "prompt": "Wide hero shot. The machine stands on a pale honed concrete counter, slightly right of center, straight-on front view at bay height, in a minimalist fog-gray room with a large soft window behind. An empty clear glass tumbler sits in the dispensing bay. Screen shows 'Morning' and 'Ready'. The left 45 percent of the frame is calm empty wall and soft light for headline text. Art direction matching the Revivex health brand: cool, calm, desaturated palette of fog gray, soft slate blue-gray and warm off-white; soft overcast daylight from large windows, pale concrete and light stone surfaces, minimalist modern architecture, quiet and premium like a high-end longevity clinic. Photoreal, shot on medium format, gentle depth of field, subtle grain. The machine is the exact same brushed aluminum countertop appliance from the reference image: same shape, same dark screen, same round dial, same open dispensing bay, same slotted drip tray. Any drink is completely clear, colorless water. No added text or logos, no warm pink or beige cast, no orange tint.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 2752
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162013_ed35eb4a-a453-4dd1-94a1-a303d98dd46c.png",
+    "status": "completed"
+  }
+]

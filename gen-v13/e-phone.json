@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T23:32:23.385182Z",
+    "display_name": "Nano Banana Pro",
+    "id": "4e7baf19-675b-43e1-a0db-d1ead8176fff",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_4e7baf19-675b-43e1-a0db-d1ead8176fff_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "A woman in a soft oatmeal knit sweater sitting by a window with a cup nearby, looking down at her phone held low so the screen is not visible, calm morning, cool soft light, calm empty space in the upper half. Editorial wellness photography for a premium longevity brand. Cool, calm, desaturated palette: fog gray, soft slate blue-gray, warm off-white linen, pale stone and light oak. Soft natural window daylight, gentle shadows, medium format, shallow depth of field, fine grain, real skin texture, candid and unposed. No text, no logos, no brand names on anything.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_4e7baf19-675b-43e1-a0db-d1ead8176fff.png",
+    "status": "completed"
+  }
+]

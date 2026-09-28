@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T23:32:23.291503Z",
+    "display_name": "Nano Banana Pro",
+    "id": "9fc84bc8-b7a4-4ff9-beee-c6ede336810d",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_9fc84bc8-b7a4-4ff9-beee-c6ede336810d_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "A woman in her thirties sitting on the edge of a bed in white linen sheets at dawn, stretching gently, tired but calm, soft cool window light, minimalist bedroom. Editorial wellness photography for a premium longevity brand. Cool, calm, desaturated palette: fog gray, soft slate blue-gray, warm off-white linen, pale stone and light oak. Soft natural window daylight, gentle shadows, medium format, shallow depth of field, fine grain, real skin texture, candid and unposed. No text, no logos, no brand names on anything.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233223_9fc84bc8-b7a4-4ff9-beee-c6ede336810d.png",
+    "status": "completed"
+  }
+]

@@ -20,7 +20,7 @@
   const ctx = canvas.getContext('2d');
   // Phones get native portrait frames (1080x1920) so nothing is upscaled from a desktop crop.
   const MOBILE = window.matchMedia('(max-width: 640px), (orientation: portrait) and (max-width: 900px)').matches;
-  const FRAMES = MOBILE ? '/assets/v11/frames-m/' : '/assets/v11/frames/';
+  const FRAMES = MOBILE ? '/assets/v11/frames-m-opt/' : '/assets/v11/frames-opt/';
   const frames = [];
   let count = 0, current = -1, ready = false;
 

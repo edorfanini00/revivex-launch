@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T23:41:58.026718Z",
+    "display_name": "Nano Banana Pro",
+    "id": "4be3e6fa-db13-4403-858f-7b3e17157f2f",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234158_4be3e6fa-db13-4403-858f-7b3e17157f2f_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "53c31df2-f3a3-48f1-af5c-bf562c57c3a7",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/53c31df2-f3a3-48f1-af5c-bf562c57c3a7.png"
+        }
+      ],
+      "prompt": "Vertical: the machine on a pale stone kitchen island in the lower half of the frame, a full clear glass of water in its bay, a ceramic vase with eucalyptus beside it, the tall window behind shows a hazy skyline and mountains, calm space above. The appliance is the exact brushed aluminum countertop machine from the reference image: same boxy shape, dark screen, round dial, open dispensing bay and slotted drip tray. Any drink is completely clear colorless water in a clear glass. Cinematic editorial photograph, luxury high-rise apartment, floor-to-ceiling windows with a hazy city skyline and soft mountains in the distance, cool blue-gray morning light, desaturated slate and fog tones with warm oak and pale stone accents, soft haze, medium format, natural skin texture, candid, calm, aspirational. No text, no logos, no screens with readable text, no UI overlays.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234158_4be3e6fa-db13-4403-858f-7b3e17157f2f.png",
+    "status": "completed"
+  }
+]

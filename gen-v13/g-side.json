@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T23:32:25.790212Z",
+    "display_name": "Nano Banana Pro",
+    "id": "d3b80167-10bb-4fa8-91fe-793a8d737167",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233225_d3b80167-10bb-4fa8-91fe-793a8d737167_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "23acef0a-4fe8-4436-bdd0-19dbb52e918d",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/23acef0a-4fe8-4436-bdd0-19dbb52e918d.png"
+        }
+      ],
+      "prompt": "Clean side profile of the machine on a light oak surface against a soft fog-gray wall, a single soft shadow, minimal and sculptural, like a design museum product photo. The appliance is the exact brushed aluminum countertop machine from the reference image: same boxy shape, same dark screen, same round dial, same open dispensing bay and slotted drip tray. Any drink is completely clear, colorless water in a clear glass. Editorial wellness photography for a premium longevity brand. Cool, calm, desaturated palette: fog gray, soft slate blue-gray, warm off-white linen, pale stone and light oak. Soft natural window daylight, gentle shadows, medium format, shallow depth of field, fine grain, real skin texture, candid and unposed. No text, no logos, no brand names on anything.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_233225_d3b80167-10bb-4fa8-91fe-793a8d737167.png",
+    "status": "completed"
+  }
+]

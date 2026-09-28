@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T16:20:12.981947Z",
+    "display_name": "Nano Banana Pro",
+    "id": "845fa12d-ad5c-41bf-9f50-f12fabcdb53d",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162012_845fa12d-ad5c-41bf-9f50-f12fabcdb53d_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "55ab5f8d-8384-4504-ae8a-28793b7bb15a",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/55ab5f8d-8384-4504-ae8a-28793b7bb15a.png"
+        }
+      ],
+      "prompt": "Lifestyle: a man in a neutral gray t-shirt on a concrete terrace at dawn with a misty skyline, holding a clear glass of water, the machine softly out of focus on a stone ledge beside him. Cool, serene, slate blue sky. Art direction matching the Revivex health brand: cool, calm, desaturated palette of fog gray, soft slate blue-gray and warm off-white; soft overcast daylight from large windows, pale concrete and light stone surfaces, minimalist modern architecture, quiet and premium like a high-end longevity clinic. Photoreal, shot on medium format, gentle depth of field, subtle grain. The machine is the exact same brushed aluminum countertop appliance from the reference image: same shape, same dark screen, same round dial, same open dispensing bay, same slotted drip tray. Any drink is completely clear, colorless water. No added text or logos, no warm pink or beige cast, no orange tint.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162012_845fa12d-ad5c-41bf-9f50-f12fabcdb53d.png",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "created_at": "2026-09-24T16:20:13.052333Z",
+    "display_name": "Nano Banana Pro",
+    "id": "c8166883-53d1-4bdc-844c-3c9576e51f57",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162013_c8166883-53d1-4bdc-844c-3c9576e51f57_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "4:5",
+      "batch_size": 1,
+      "height": 2304,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "9f6ff8e6-6a09-456c-b614-2cb2ba9bde98",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/9f6ff8e6-6a09-456c-b614-2cb2ba9bde98.png"
+        }
+      ],
+      "prompt": "Macro close-up of the machine's dark screen and round brushed aluminum dial, shallow depth of field, screen shows minimal white text 'Morning' with a thin progress line. Cool daylight, brushed metal grain visible. Art direction matching the Revivex health brand: cool, calm, desaturated palette of fog gray, soft slate blue-gray and warm off-white; soft overcast daylight from large windows, pale concrete and light stone surfaces, minimalist modern architecture, quiet and premium like a high-end longevity clinic. Photoreal, shot on medium format, gentle depth of field, subtle grain. The machine is the exact same brushed aluminum countertop appliance from the reference image: same shape, same dark screen, same round dial, same open dispensing bay, same slotted drip tray. Any drink is completely clear, colorless water. No added text or logos, no warm pink or beige cast, no orange tint.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1856
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_162013_c8166883-53d1-4bdc-844c-3c9576e51f57.png",
+    "status": "completed"
+  }
+]

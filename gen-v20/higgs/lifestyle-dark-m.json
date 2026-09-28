@@ -1,0 +1,34 @@
+[
+  {
+    "created_at": "2026-09-26T22:11:10.761193Z",
+    "display_name": "Nano Banana Pro",
+    "id": "dc6fac77-65da-4309-912f-6b983df3f220",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260926_221110_dc6fac77-65da-4309-912f-6b983df3f220_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "31444303-6eb4-4cc9-912b-3fb9f5f11912",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/31444303-6eb4-4cc9-912b-3fb9f5f11912_resize.jpg"
+        },
+        {
+          "id": "80c66f28-d04c-4690-9be8-679b3d4985ae",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/80c66f28-d04c-4690-9be8-679b3d4985ae_resize.jpg"
+        }
+      ],
+      "prompt": "Vertical elegant kitchen/living room at night with black stone counter and city lights out of focus. The black metal machine sits in lower half as a luxury appliance, screen softly glowing, clear glass in bay, cinematic premium. Use the reference as exact product geometry: a black graphite metal countertop supplement blending machine with a large glass touchscreen, open dispensing bay, slim horizontal dispensing slot, metal frame, and clear glass tumbler. No manual dial, no knobs, no colored drink, no green liquid. The drink is clear water only. Premium black-on-black product photography like Linc: dark studio, hard softbox spotlight, brushed metal highlights, cinematic contrast, clean modern Fortune 500 wellness technology, photoreal, no extra text except simple screen UI.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260926_221110_dc6fac77-65da-4309-912f-6b983df3f220.png",
+    "status": "completed"
+  }
+]

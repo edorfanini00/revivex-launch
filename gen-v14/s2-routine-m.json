@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-24T23:41:55.832153Z",
+    "display_name": "Nano Banana Pro",
+    "id": "208f29a9-9c4b-4ad5-8f2c-9a6945f5372c",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234155_208f29a9-9c4b-4ad5-8f2c-9a6945f5372c_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "9:16",
+      "batch_size": 1,
+      "height": 2752,
+      "input_image": null,
+      "input_images": [],
+      "prompt": "Vertical: a woman in her late thirties in a cream linen shirt sitting in a modern lounge chair by a tall window, looking down at her phone held low so the screen is not visible, subject in the lower half, calm space above. Cinematic editorial photograph, luxury high-rise apartment, floor-to-ceiling windows with a hazy city skyline and soft mountains in the distance, cool blue-gray morning light, desaturated slate and fog tones with warm oak and pale stone accents, soft haze, medium format, natural skin texture, candid, calm, aspirational. No text, no logos, no screens with readable text, no UI overlays.",
+      "resolution": "2k",
+      "surface": null,
+      "width": 1536
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33ibdd5nxAJxCc3puNAhqvohS9s/hf_20260924_234155_208f29a9-9c4b-4ad5-8f2c-9a6945f5372c.png",
+    "status": "completed"
+  }
+]
