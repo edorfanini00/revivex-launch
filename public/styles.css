@@ -204,7 +204,7 @@ button[disabled] { opacity: .6; cursor: wait; }
   .hero-veil { background: linear-gradient(0deg, rgba(15, 22, 32, .62) 0%, rgba(15, 22, 32, .32) 30%, rgba(15, 22, 32, 0) 48%), linear-gradient(180deg, rgba(15, 22, 32, .4) 0%, rgba(15, 22, 32, 0) 16%); }
   .hero-copy { top: auto; bottom: 26px; transform: none; left: 20px; right: 20px; }
   .hero-copy .chip { margin-bottom: 14px; height: 24px; font-size: 10px; }
-  .hero-title { font-size: 20px; letter-spacing: -0.024em; white-space: normal; margin-bottom: 10px; }
+  .hero-title { font-size: clamp(32px, 9.2vw, 44px); letter-spacing: -0.034em; white-space: normal; margin-bottom: 12px; }
   .hero-sub { margin-bottom: 20px; font-size: 14.5px; }
   .hero-copy { bottom: 20px; }
   .hero-pillars, .hero-progress { display: none; }
