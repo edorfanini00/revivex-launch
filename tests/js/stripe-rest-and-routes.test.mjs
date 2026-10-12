@@ -36,10 +36,13 @@ test('create sends form-encoded exact params, pinned API version and Idempotency
   assert.equal(form.get('mode'), 'payment');
   assert.equal(form.get('line_items[0][price]'), 'price_TESTDEPOSIT01');
   assert.equal(form.get('line_items[0][quantity]'), '1');
-  assert.equal(form.get('payment_method_types[0]'), 'card');
+  assert.equal(form.get('payment_method_types[0]'), null, 'rejected by API 2026-09-30.endive');
+  assert.equal(form.get('allowed_payment_method_types[0]'), 'card');
+  assert.equal(form.get('allowed_payment_method_types[1]'), null);
+  assert.equal(form.get('branding_settings[display_name]'), 'Revivex');
   assert.equal(form.get('adaptive_pricing[enabled]'), 'false');
   assert.equal(form.get('success_url'), 'https://revivex-launch.vercel.app/reservation.html?session_id={CHECKOUT_SESSION_ID}');
-  assert.equal(form.get('metadata[terms_version]'), 'deposit-terms-v1');
+  assert.equal(form.get('metadata[terms_version]'), 'deposit-terms-v2');
   assert.equal(form.get('payment_intent_data[metadata][purpose]'), 'revivex_preorder_deposit');
   assert.equal(form.get('metadata[utm_campaign]'), 'morning_simplified_preorder');
   assert.equal(form.get('payment_intent_data[metadata][utm_source]'), 'x');
@@ -107,7 +110,7 @@ test('real default Vercel exports fail closed with an unconfigured (production) 
     assert.equal(r.json().url, undefined);
     r = res();
     await checkout(req({ method: 'GET' }), r);
-    assert.equal(r.json().available, false);
+    assert.equal(r.json().configured, false);
     r = res();
     await reservation(req({ method: 'GET', url: '/api/reservation?session_id=cs_test_abcdefghij' }), r);
     assert.equal(r.statusCode, 503);
@@ -205,6 +208,8 @@ test('Stripe error bodies (messages, PII) never reach the browser response or lo
   await h(req({ body: createBody(token) }), r);
   assert.equal(r.json().state, 'unavailable');
   const out = r.body + lines.join('\n');
-  for (const leak of ['buyer-pii', '4242', 'card 4242 declined', 'customer_email', SECRET]) assert.ok(!out.includes(leak), leak);
+  for (const leak of ['buyer-pii', '4242', 'card 4242 declined', SECRET]) assert.ok(!out.includes(leak), leak);
+  assert.ok(!r.body.includes('customer_email'), 'param name not sent to the browser');
   assert.match(lines.join('\n'), /card_declined/);
+  assert.match(lines.join('\n'), /"param":"customer_email"/, 'parameter NAME is logged for diagnosis (never message text)');
 });

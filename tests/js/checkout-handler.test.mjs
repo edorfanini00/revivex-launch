@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCheckoutHandler, checkoutSessionParams, MESSAGES } from '../../lib/deposit-handlers.js';
 import { idempotencyKeyFor, readOperation, issueOperation, OPERATION_MAX_AGE_S } from '../../lib/operation-token.js';
-import { readCheckoutConfig } from '../../lib/deposit-config.js';
+import { readCheckoutConfig, DEPOSIT } from '../../lib/deposit-config.js';
 import { makeLogger, createInstanceRateLimiter } from '../../lib/http.js';
 import { StripeCallError } from '../../lib/stripe-rest.js';
 import { ENV, ORIGIN, SECRET, SIGNING, fakeKey, account, price, product, session, fakeProvider, req, res, startBody, createBody, logSink } from '../fixtures/deposit-fixtures.mjs';
@@ -62,13 +62,15 @@ test('create uses exact server-controlled amount, price, quantity and redirects'
   const [[, params, key]] = creates(h.provider);
   assert.equal(params.mode, 'payment');
   assert.deepEqual(params.line_items, [{ price: 'price_TESTDEPOSIT01', quantity: 1 }]);
-  assert.deepEqual(params.payment_method_types, ['card']);
+  assert.equal(params.payment_method_types, undefined, 'rejected by API 2026-09-30.endive');
+  assert.deepEqual(params.allowed_payment_method_types, ['card']);
+  assert.deepEqual(params.branding_settings, { display_name: 'Revivex' });
   assert.deepEqual(params.adaptive_pricing, { enabled: false });
   assert.equal(params.allow_promotion_codes, false);
   assert.equal(params.success_url, `${ORIGIN}/reservation.html?session_id={CHECKOUT_SESSION_ID}`);
   assert.equal(params.cancel_url, `${ORIGIN}/#reserve`);
   assert.equal(params.metadata.purpose, 'revivex_preorder_deposit');
-  assert.equal(params.metadata.terms_version, 'deposit-terms-v1');
+  assert.equal(params.metadata.terms_version, 'deposit-terms-v2');
   assert.deepEqual(params.payment_intent_data.metadata, params.metadata);
   for (const k of ['automatic_tax', 'shipping_address_collection', 'shipping_options', 'discounts', 'subscription_data', 'setup_intent_data', 'customer_email', 'consent_collection', 'invoice_creation', 'saved_payment_method_options']) assert.equal(params[k], undefined, k);
   assert.equal(params.payment_intent_data.setup_future_usage, undefined);
@@ -146,7 +148,8 @@ test('operation older than Stripe idempotency retention is never re-sent; asks t
   r = await call(h, createBody(token));
   assert.equal(r.statusCode, 409);
   assert.equal(r.json().state, 'reconcile');
-  assert.match(r.json().message, /could not confirm the status of your earlier checkout attempt/);
+  assert.match(r.json().message, /could not confirm whether your earlier checkout attempt was paid/);
+  assert.match(r.json().message, /card statement/);
   assert.match(r.json().message, /support@revivex\.store/);
   assert.doesNotMatch(r.json().message, /No payment|not charged/i);
   h.time.t = T0 + 25 * 3600 * 1000;
@@ -245,10 +248,11 @@ test('live mode requires explicit approval of this exact terms version', () => {
   const live = { ...ENV, STRIPE_MODE: 'live', STRIPE_SECRET_KEY: fakeKey('rk', 'live') };
   assert.deepEqual(readCheckoutConfig(live).problems, ['REVIVEX_LIVE_APPROVED_TERMS_VERSION']);
   assert.equal(readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v0' }).ok, false);
-  const ok = readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v1' });
+  assert.equal(readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v1' }).ok, false, 'approval of the superseded v1 terms does not carry over');
+  const ok = readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: DEPOSIT.termsVersion });
   assert.equal(ok.ok, true);
   assert.equal(ok.config.live, true);
-  assert.equal(readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v1', REVIVEX_SITE_ORIGIN: 'http://127.0.0.1:4310' }).ok, false, 'no plain-HTTP origin in live mode');
+  assert.equal(readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: DEPOSIT.termsVersion, REVIVEX_SITE_ORIGIN: 'http://127.0.0.1:4310' }).ok, false, 'no plain-HTTP origin in live mode');
   assert.equal(readCheckoutConfig({ ...ENV, REVIVEX_SITE_ORIGIN: 'http://127.0.0.1:4310' }).ok, true, 'loopback harness allowed in test mode');
 });
 
@@ -299,14 +303,14 @@ test('created session must match amount, currency, mode, metadata and Stripe-hos
   }
 });
 
-test('failure states: pre-write is retry/unavailable; after create is uncertain (never claims no payment)', async () => {
+test('failure states: pre-write is retry/unavailable; after create is uncertain or reconcile (never claims no payment)', async () => {
   const cases = [
     ['verify', new StripeCallError('api', { status: 401, type: 'invalid_request_error' }), 503, 'unavailable'],
     ['verify', new StripeCallError('timeout'), 503, 'retry'],
     ['verify', new StripeCallError('api', { status: 500, type: 'api_error' }), 503, 'retry'],
     ['create', new StripeCallError('timeout'), 503, 'uncertain'],
     ['create', new StripeCallError('network'), 503, 'uncertain'],
-    ['create', new StripeCallError('api', { status: 500, type: 'api_error' }), 503, 'uncertain'],
+    ['create', new StripeCallError('api', { status: 500, type: 'api_error' }), 409, 'reconcile'], // Stripe saves 500s under the key
     ['create', new StripeCallError('api', { status: 429, type: 'rate_limit_error' }), 503, 'uncertain'],
     ['create', new StripeCallError('api', { status: 409, type: 'idempotency_error' }), 503, 'uncertain'],
     ['create', new StripeCallError('api', { status: 400, type: 'invalid_request_error', code: 'parameter_unknown' }), 503, 'unavailable'],
@@ -323,7 +327,8 @@ test('failure states: pre-write is retry/unavailable; after create is uncertain 
     assert.equal(d.url, undefined);
     assert.equal(d.message, MESSAGES[state]);
     assert.doesNotMatch(d.message, /No payment has been taken|not been charged|were not charged/i);
-    if (state === 'uncertain') assert.match(d.message, /Check your payment confirmation before trying again/);
+    if (state === 'uncertain') assert.match(d.message, /Check your card statement or banking app/);
+    if (state === 'reconcile') assert.match(d.message, /support@revivex\.store/);
   }
 });
 
@@ -440,14 +445,15 @@ test('GET status exposes availability and the official contact only; method gate
   let h = setup();
   let r = res();
   await h.handler(req({ method: 'GET' }), r);
-  assert.deepEqual(r.json(), { ok: true, available: true, mode: 'test', amount: 10000, currency: 'usd', termsVersion: 'deposit-terms-v1', supportEmail: 'support@revivex.store' });
+  assert.deepEqual(r.json(), { ok: true, configured: true, siteOrigin: ORIGIN, mode: 'test', amount: 10000, currency: 'usd', termsVersion: DEPOSIT.termsVersion, supportEmail: 'support@revivex.store' });
   assert.ok(!r.body.includes(SECRET) && !r.body.includes('acct_') && !r.body.includes('price_') && !r.body.includes('signing'));
   assert.equal(h.provider.calls.length, 0);
 
   h = setup({ env: {} });
   r = res();
   await h.handler(req({ method: 'GET' }), r);
-  assert.equal(r.json().available, false);
+  assert.equal(r.json().configured, false);
+  assert.equal(r.json().siteOrigin, null);
   assert.equal(r.json().mode, null);
   assert.equal(r.json().supportEmail, 'support@revivex.store', 'contact stays visible for existing depositors');
 

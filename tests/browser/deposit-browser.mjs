@@ -80,6 +80,12 @@ try {
     check(overflow <= 0, `${tag}: no horizontal overflow`, overflow);
     const bodyText = await page.locator('body').innerText();
     check(!/safe dosing|Join the waitlist|nothing is for sale/i.test(bodyText), `${tag}: removed safe-dosing / waitlist / not-for-sale copy`);
+    check(!/convert/i.test(bodyText) && !/before[^.]{0,40}final order/i.test(bodyText), `${tag}: no refund cutoff in rendered page`);
+    check((await page.locator('label.consent').innerText()).replace(/\s+/g, ' ').trim() === 'I agree to the deposit terms.', `${tag}: consent checkbox carries no extra condition`);
+    const csp = await page.evaluate(async () => (await fetch('/', { cache: 'no-store' })).headers.get('content-security-policy'));
+    check(/frame-ancestors 'none'/.test(csp || ''), `${tag}: CSP with frame-ancestors none served`);
+    if (vp.name === 'desktop') await page.waitForFunction(() => document.getElementById('heroCanvas').classList.contains('ready'), null, { timeout: 10000 }).catch(() => {});
+    check(vp.name !== 'desktop' || await page.evaluate(() => document.getElementById('heroCanvas').classList.contains('ready')), `${tag}: hero frame sequence still loads under CSP`);
     check(await page.locator('script[type="application/ld+json"]').count() === 0, `${tag}: bogus PreOrder $0 JSON-LD removed`);
     await page.waitForTimeout(400);
     await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-02-reserve-panel.png`) });
@@ -159,37 +165,71 @@ try {
     const replayId = page.url().split('/').pop();
     await page.goBack({ waitUntil: 'networkidle' });
     await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
-    await api('/__synthetic/fail-next?kind=reject&n=3', 'POST'); // unrelated new key would fail; same key replays
     if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
     await Promise.all([page.waitForURL(/checkout\.stripe\.com/), btn.click()]);
     check(page.url().endsWith(replayId), `${tag}: replay after back is stable`);
     await page.goBack({ waitUntil: 'networkidle' });
 
-    // Persistent uncertainty with a brand-new operation: message is not a "no payment" claim
-    await page.evaluate(() => sessionStorage.removeItem('revivex.depositOperation'));
-    await page.reload({ waitUntil: 'networkidle' });
+    // Paid, but the visitor never reached the receipt: the stored operation replays.
+    // Stripe replays the SAVED open session, so the server must read current state
+    // and send the visitor to the receipt, never back to the paid Stripe page.
+    await api(`/__synthetic/pay?session_id=${replayId}`, 'POST');
     await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
-    // queue already has 3 'reject' (500) failures: first create + 2 auto-retries all fail
+    if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
+    await Promise.all([page.waitForURL(/reservation\.html\?session_id=/), btn.click()]);
+    check(page.url().endsWith(`/reservation.html?session_id=${replayId}`), `${tag}: paid operation replay routes to receipt, not Stripe`);
+    await page.waitForFunction(() => document.getElementById('receipt').dataset.state !== 'loading');
+    check(await page.locator('#receipt').getAttribute('data-state') === 'confirmed', `${tag}: paid replay receipt confirmed`);
+    check(await page.evaluate(() => sessionStorage.getItem('revivex.depositOperation')) === null, `${tag}: paid receipt clears stored operation`);
+
+    // Stripe-saved 500: every retry would replay it, so go straight to reconcile.
+    await page.goto(`${S}/#reserve`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
+    const c500 = (await api('/__synthetic/state')).sessionCount;
+    await api('/__synthetic/fail-next?kind=save500&n=1', 'POST');
     if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
     await btn.click();
-    await page.waitForFunction(() => /could not confirm/.test(document.getElementById('reserveMsg').textContent), null, { timeout: 10000 });
+    await page.waitForFunction(() => !document.getElementById('reserveRestart').hidden, null, { timeout: 8000 });
+    const m500 = await page.locator('#reserveMsg').innerText();
+    check(/could not confirm whether your earlier checkout attempt was paid/.test(m500) && /card statement/.test(m500) && /support@revivex\.store/.test(m500) && !/No payment/i.test(m500), `${tag}: saved 500 -> bounded reconcile copy`, m500);
+    check((await api('/__synthetic/state')).sessionCount === c500, `${tag}: saved 500 created nothing and minted no new operation`);
+    await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-06b-saved-500-reconcile.png`) });
+    await page.locator('#reserveRestart').click();
+
+    // Unknown outcomes (network lost before Stripe) are retried with the same operation,
+    // then bounded: after 6 unknowns the visitor gets the reconcile path, not a dead end.
+    await api('/__synthetic/fail-next?kind=lost&n=6', 'POST');
+    await btn.click();
+    await page.waitForFunction(() => /could not confirm the checkout status/.test(document.getElementById('reserveMsg').textContent), null, { timeout: 10000 });
     const um = await page.locator('#reserveMsg').innerText();
-    check(/We could not confirm the checkout status\. Check your payment confirmation before trying again\./.test(um) && !/No payment/i.test(um), `${tag}: uncertain message is truthful`, um);
+    check(/Check your card statement or banking app/.test(um) && !/No payment/i.test(um), `${tag}: uncertain message is truthful`, um);
+    check(await page.locator('#reserveRestart').isHidden(), `${tag}: first round of unknowns keeps the same operation`);
     const opBefore = await page.evaluate(() => sessionStorage.getItem('revivex.depositOperation'));
     await page.reload({ waitUntil: 'networkidle' });
     const opAfter = await page.evaluate(() => sessionStorage.getItem('revivex.depositOperation'));
-    check(opBefore && opBefore === opAfter && JSON.parse(opAfter).attempted === true, `${tag}: operation survives reload`);
+    check(opBefore && JSON.parse(opBefore).token === JSON.parse(opAfter).token && JSON.parse(opAfter).attempted === true, `${tag}: operation survives reload`);
     await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-06-uncertain.png`) });
+    await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
+    if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
+    await btn.click();
+    await page.waitForFunction(() => !document.getElementById('reserveRestart').hidden, null, { timeout: 10000 });
+    check(/card statement/.test(await page.locator('#reserveMsg').innerText()), `${tag}: repeated unknowns end in the reconcile path (bounded)`);
+    await page.locator('#reserveRestart').click();
+
+    // Make a fresh attempted operation for the age test.
+    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), btn.click()]);
+    await page.goBack({ waitUntil: 'networkidle' });
 
     // Operation older than the idempotency window -> reconcile prompt, explicit restart only
     await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
     await api('/__synthetic/advance-clock?hours=24', 'POST');
     const c1 = (await api('/__synthetic/state')).sessionCount;
-    await page.locator('#termsInput').check();
+    await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
+    if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
     await btn.click();
     await page.waitForFunction(() => !document.getElementById('reserveRestart').hidden, null, { timeout: 5000 });
     const rm = await page.locator('#reserveMsg').innerText();
-    check(/earlier checkout attempt/.test(rm) && /support@revivex\.store/.test(rm), `${tag}: aged attempt asks to reconcile`, rm);
+    check(/earlier checkout attempt/.test(rm) && /support@revivex\.store/.test(rm) && /card statement/.test(rm), `${tag}: aged attempt asks to reconcile`, rm);
     check((await api('/__synthetic/state')).sessionCount === c1, `${tag}: aged attempt created nothing`);
     await btn.click();
     check((await api('/__synthetic/state')).sessionCount === c1, `${tag}: reserve blocked until explicit restart`);
@@ -199,7 +239,7 @@ try {
     check((await api('/__synthetic/state')).sessionCount === c1 + 1, `${tag}: explicit restart starts one new attempt`);
     await api('/__synthetic/advance-clock?hours=-24', 'POST');
 
-    check(consoleErrors.filter(e => !/Failed to load resource/.test(e)).length === 0, `${tag}: no console errors`, consoleErrors.join(' | '));
+    check(consoleErrors.filter(e => !/Failed to load resource/.test(e)).length === 0, `${tag}: no console errors (incl. CSP violations)`, consoleErrors.join(' | '));
     await ctx.close();
   }
 
@@ -221,6 +261,36 @@ try {
     await ctx.close();
   }
 
+  // Non-canonical host (alias): checkout is not offered there; visitor gets a link.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true });
+    let stripeHits = 0;
+    await ctx.route('https://checkout.stripe.com/**', r => { stripeHits++; return r.abort(); });
+    const page = await ctx.newPage();
+    await page.goto(`http://localhost:${SP}/#reserve`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => /Reservations are taken on/.test(document.getElementById('reserveMsg').textContent), null, { timeout: 5000 });
+    check(await page.locator('#reserveBtn').isDisabled(), 'alias host: reserve button disabled (no dead button)');
+    check(await page.locator('#reserveMsg a').getAttribute('href') === `${S}/#reserve`, 'alias host: links to canonical origin');
+    check(stripeHits === 0, 'alias host: never opens checkout');
+    await page.locator('#reserve').screenshot({ path: path.join(OUT, 'mobile-08-alias-host.png') });
+    await ctx.close();
+  }
+
+  // Rendered terms / receipt copy: no refund cutoff.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    for (const p of ['/deposit-terms.html', '/privacy.html', '/reservation.html?session_id=cs_test_NOPE0000000']) {
+      await page.goto(`${S}${p}`, { waitUntil: 'networkidle' });
+      const t = await page.locator('body').innerText();
+      check(!/convert/i.test(t) && !/before[^.]{0,40}final order/i.test(t), `rendered ${p.split('?')[0]}: no refund cutoff`);
+    }
+    await page.goto(`${S}/deposit-terms.html`, { waitUntil: 'networkidle' });
+    check(/deposit-terms-v2/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v2');
+    await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v2.png'), fullPage: true });
+    await ctx.close();
+  }
+
   // ---------------- Unconfigured (production-like) runs ----------------
   const UP = 4394;
   harnesses.push(await startHarness('unconfigured', UP));
@@ -239,7 +309,7 @@ try {
     await page.locator('#termsInput').check();
     await page.locator('#reserveBtn').click({ force: true }).catch(() => {});
     const r = await page.evaluate(async () => {
-      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v1' }) });
+      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v2' }) });
       const b = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'browser-qa@example.test', consent: true }) });
       return { a: a.status, aj: await a.json(), b: b.status, bj: await b.json() };
     });

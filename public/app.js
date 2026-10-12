@@ -89,8 +89,9 @@
      signed operation token issued by the server (no Stripe call) and kept in
      sessionStorage with an "attempted" flag. Retries re-send the same token so Stripe
      replays the same session. A token that was ever sent for creation is never silently
-     replaced: if the server cannot use it any more, the visitor is asked to check for a
-     receipt first and only an explicit click starts a new reservation. */
+     replaced: if the server cannot use it any more, or the outcome stays unknown after
+     a bounded number of tries, the visitor is asked to check their card statement or
+     contact support first, and only an explicit click starts a new reservation. */
   const form = document.getElementById('reserveForm');
   const terms = document.getElementById('termsInput');
   const btn = document.getElementById('reserveBtn');
@@ -101,6 +102,7 @@
   const ATTR_KEY = 'revivex.attribution';
   const LABEL = btn.textContent;
   const AUTO_RETRIES = 2;
+  const UNCERTAIN_LIMIT = 6; // unknown outcomes per attempt before the reconcile path
   let available = false, termsVersion = null, inFlight = false;
 
   const say = (t, ok) => { msg.textContent = t || ''; msg.className = 'form-msg ' + (ok ? 'ok' : 'err'); };
@@ -128,15 +130,29 @@
 
   function idle() { inFlight = false; btn.disabled = !available; btn.textContent = LABEL; btn.removeAttribute('aria-busy'); }
   const UNAVAILABLE = 'Reservations are temporarily unavailable. This page cannot open a checkout right now.';
-  const UNCERTAIN = 'We could not confirm the checkout status. Check your payment confirmation before trying again.';
+  const UNCERTAIN = 'We could not confirm the checkout status. Check your card statement or banking app for a $100 Revivex payment before trying again.';
+  const RECONCILE = 'We could not confirm whether your earlier checkout attempt was paid. Before reserving again, check your card statement or banking app for a $100 Revivex payment (a receipt email may not arrive). If you were charged, or are unsure, contact support@revivex.store and we will check it for you.';
 
   fetch('/api/checkout', { headers: { Accept: 'application/json' }, cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(d => {
-      available = d.available === true && typeof d.termsVersion === 'string';
+      // `configured` only means the server has a complete configuration; Stripe can
+      // still refuse, which the create step reports. Checkout is only offered on the
+      // canonical origin, because the server refuses POSTs from any other host.
+      const configured = d.configured === true && typeof d.termsVersion === 'string';
       termsVersion = d.termsVersion;
       if (d.mode === 'test') testNote.hidden = false;
-      if (!available) say(UNAVAILABLE, false);
+      if (configured && d.siteOrigin && d.siteOrigin !== location.origin) {
+        available = false;
+        say('Reservations are taken on ', false);
+        const a = document.createElement('a');
+        a.href = d.siteOrigin + '/#reserve';
+        a.textContent = d.siteOrigin.replace(/^https?:\/\//, '');
+        msg.append(a, '.');
+      } else {
+        available = configured;
+        if (!available) say(UNAVAILABLE, false);
+      }
       idle();
     })
     .catch(() => { available = false; say(UNAVAILABLE, false); idle(); });
@@ -211,16 +227,22 @@
           window.location.assign(d.reservationUrl);
           return;
         }
-        if (d.state === 'uncertain' && n < AUTO_RETRIES) { n++; await sleep(1200 * n); continue; }
+        if (d.state === 'uncertain') {
+          op.uncertain = (op.uncertain || 0) + 1;
+          saveOp(op);
+          if (op.uncertain >= UNCERTAIN_LIMIT) { say(RECONCILE, false); restart.hidden = false; break; }
+          if (n < AUTO_RETRIES) { n++; await sleep(1200 * n); continue; }
+        } else if (op.uncertain) { op.uncertain = 0; saveOp(op); }
         if (d.state === 'expired') { dropOp(); say(d.message, false); break; }
-        if ((d.state === 'reconcile' || d.state === 'invalid_operation') && !wasAttempted && fresh === 0) {
-          // This token never reached Stripe before, so replacing it cannot duplicate anything.
+        if ((d.state === 'reconcile' || d.state === 'invalid_operation') && d.preWrite === true && !wasAttempted && fresh === 0) {
+          // Neither this request nor any earlier one sent this token to Stripe, so
+          // replacing it cannot duplicate anything.
           dropOp(); op = null; fresh++;
           continue;
         }
         if (d.state === 'reconcile' || d.state === 'invalid_operation') {
           // Ask before ever starting another attempt that could take a second deposit.
-          say(d.message || UNCERTAIN, false);
+          say(d.message || RECONCILE, false);
           restart.hidden = false;
           break;
         }

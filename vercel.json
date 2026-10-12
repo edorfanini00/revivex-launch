@@ -12,12 +12,54 @@
     }
   ],
   "routes": [
-    { "src": "/api/form", "dest": "/api/form.js" },
-    { "src": "/api/signup", "dest": "/api/signup.js" },
-    { "src": "/api/health", "dest": "/api/health.js" },
-    { "src": "/api/checkout", "dest": "/api/checkout.js", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } },
-    { "src": "/api/reservation", "dest": "/api/reservation.js", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } },
-    { "src": "/reservation.html", "dest": "/public/reservation.html", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex" } },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    {
+      "src": "/api/form",
+      "dest": "/api/form.js"
+    },
+    {
+      "src": "/api/signup",
+      "dest": "/api/signup.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/checkout",
+      "dest": "/api/checkout.js",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer"
+      }
+    },
+    {
+      "src": "/api/reservation",
+      "dest": "/api/reservation.js",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer"
+      }
+    },
+    {
+      "src": "/reservation.html",
+      "dest": "/public/reservation.html",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer",
+        "X-Robots-Tag": "noindex",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff"
+      }
+    }
   ]
 }

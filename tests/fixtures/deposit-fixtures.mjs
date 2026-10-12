@@ -1,6 +1,7 @@
 // LOCAL/MOCK fixtures only. These objects imitate Stripe response shapes for
 // unit tests; they are not Stripe sandbox evidence.
 import { Readable } from 'node:stream';
+import { DEPOSIT } from '../../lib/deposit-config.js';
 
 // Fake key-shaped values are assembled at runtime so secret scanners never see a literal key.
 export const fakeKey = (kind, mode) => [kind, mode, 'FAKE'.repeat(5) + '1234'].join('_');
@@ -34,6 +35,7 @@ export function session(o = {}) {
   return {
     id, object: 'checkout.session', livemode: false, mode: 'payment', status: 'open', payment_status: 'unpaid',
     currency: 'usd', amount_total: 10000, url: `https://checkout.stripe.com/c/pay/${id}`,
+    allowed_payment_method_types: ['card'], payment_method_types: ['card'], branding_settings: { display_name: 'Revivex' },
     metadata: { purpose: 'revivex_preorder_deposit', terms_version: 'deposit-terms-v1', operation: 'x' },
     customer_details: { email: 'buyer-pii@example.test', name: 'Pat Example' },
     client_secret: 'cs_secret_SHOULD_NEVER_LEAK',
@@ -57,15 +59,27 @@ export function paidSession(o = {}, piOverrides = {}, chargeOverrides = {}) {
 // Fake provider recording calls. Each method can be replaced per test.
 export function fakeProvider(overrides = {}) {
   const calls = [];
-  const p = {
-    calls,
+  const created = new Map();
+  const defaults = {
     getAccount: async () => { calls.push(['getAccount']); return account(); },
     getPrice: async id => { calls.push(['getPrice', id]); return price(); },
     createCheckoutSession: async (params, key) => { calls.push(['create', params, key]); return session(); },
-    retrieveCheckoutSession: async id => { calls.push(['retrieve', id]); return paidSession({ id }); },
-    ...overrides,
+    // Current state of a session this fake created; otherwise a paid session (receipt tests).
+    retrieveCheckoutSession: async id => { calls.push(['retrieve', id]); return created.has(id) ? created.get(id) : paidSession({ id }); },
   };
-  return p;
+  const impl = { ...defaults, ...overrides };
+  return {
+    calls,
+    created,
+    getAccount: (...a) => impl.getAccount(...a),
+    getPrice: (...a) => impl.getPrice(...a),
+    createCheckoutSession: async (...a) => {
+      const s = await impl.createCheckoutSession(...a);
+      if (s && typeof s === 'object' && typeof s.id === 'string') created.set(s.id, s);
+      return s;
+    },
+    retrieveCheckoutSession: (...a) => impl.retrieveCheckoutSession(...a),
+  };
 }
 
 export function req({ method = 'POST', url = '/api/checkout', headers = {}, body } = {}) {
@@ -91,8 +105,9 @@ export function res() {
   return r;
 }
 
-export const startBody = (o = {}) => ({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v1', ...o });
-export const createBody = (operation, o = {}) => ({ step: 'create', operation, termsAccepted: true, termsVersion: 'deposit-terms-v1', ...o });
+export const TV = DEPOSIT.termsVersion;
+export const startBody = (o = {}) => ({ step: 'start', termsAccepted: true, termsVersion: TV, ...o });
+export const createBody = (operation, o = {}) => ({ step: 'create', operation, termsAccepted: true, termsVersion: TV, ...o });
 
 export function logSink() {
   const lines = [];

@@ -34,7 +34,9 @@
     refund.hidden = state !== 'confirmed';
     retry.hidden = !RETRYABLE.has(state);
     if (d && d.mode === 'test') document.querySelectorAll('[data-when="test"]').forEach(el => { el.hidden = false; });
-    if (state === 'confirmed') { try { sessionStorage.removeItem('revivex.depositOperation'); } catch { /* ignore */ } }
+    // A paid deposit exists for this checkout: drop the stored attempt so pressing
+    // Reserve again starts a deliberate new reservation rather than replaying this one.
+    if (paid) { try { sessionStorage.removeItem('revivex.depositOperation'); } catch { /* ignore */ } }
   }
 
   async function check() {
