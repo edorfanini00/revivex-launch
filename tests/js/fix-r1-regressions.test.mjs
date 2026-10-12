@@ -241,3 +241,22 @@ test('HTML responses carry a CSP with frame-ancestors none', () => {
     assert.doesNotMatch(csp, /unsafe-eval/);
   }
 });
+
+// ---- security review C7 (rerun on fix-r1): retrieve after create ----
+test('retrieve 404 after create is unavailable (never shown); retrieve timeout is uncertain', async () => {
+  const { StripeCallError } = await import('../../lib/stripe-rest.js');
+  for (const [err, status, state] of [[new StripeCallError('api', { status: 404, type: 'invalid_request_error', code: 'resource_missing' }), 502, 'unavailable'], [new StripeCallError('timeout'), 503, 'uncertain']]) {
+    const s = setup();
+    s.synth.provider.retrieveCheckoutSession = async () => { throw err; };
+    const r = await call(s.checkout, createBody(await start(s)));
+    assert.equal(r.statusCode, status);
+    assert.equal(r.json().state, state);
+    assert.equal(r.json().url, undefined);
+  }
+});
+
+// ---- correctness F6: desktop hero subtitle must keep the base 3-line layout ----
+test('hero subtitle keeps design-intent wording without lengthening the original line', () => {
+  const s = read('public/index.html');
+  assert.match(s, /<p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight\. One touch in the morning and your blend is ready\.<\/p>/);
+});
