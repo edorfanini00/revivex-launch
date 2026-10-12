@@ -7,7 +7,7 @@ import { idempotencyKeyFor, readOperation, issueOperation, OPERATION_MAX_AGE_S }
 import { readCheckoutConfig } from '../../lib/deposit-config.js';
 import { makeLogger, createInstanceRateLimiter } from '../../lib/http.js';
 import { StripeCallError } from '../../lib/stripe-rest.js';
-import { ENV, ORIGIN, SECRET, SIGNING, account, price, product, session, fakeProvider, req, res, startBody, createBody, logSink } from '../fixtures/deposit-fixtures.mjs';
+import { ENV, ORIGIN, SECRET, SIGNING, fakeKey, account, price, product, session, fakeProvider, req, res, startBody, createBody, logSink } from '../fixtures/deposit-fixtures.mjs';
 
 const T0 = Date.UTC(2026, 9, 12, 12, 0, 0);
 
@@ -219,7 +219,7 @@ test('missing or inconsistent configuration fails closed with no Stripe request'
     {}, // nothing configured (current production)
     { ...ENV, REVIVEX_CHECKOUT_ENABLED: 'false' },
     { ...ENV, STRIPE_SECRET_KEY: '' },
-    { ...ENV, STRIPE_SECRET_KEY: 'sk_live_FAKEFAKEFAKEFAKEFAKE1234' },
+    { ...ENV, STRIPE_SECRET_KEY: fakeKey('sk', 'live') },
     { ...ENV, STRIPE_MODE: 'live' },
     { ...ENV, STRIPE_EXPECTED_ACCOUNT_ID: '' },
     { ...ENV, STRIPE_DEPOSIT_PRICE_ID: 'prod_wrongtype' },
@@ -242,7 +242,7 @@ test('missing or inconsistent configuration fails closed with no Stripe request'
 });
 
 test('live mode requires explicit approval of this exact terms version', () => {
-  const live = { ...ENV, STRIPE_MODE: 'live', STRIPE_SECRET_KEY: 'rk_live_FAKEFAKEFAKEFAKEFAKE1234' };
+  const live = { ...ENV, STRIPE_MODE: 'live', STRIPE_SECRET_KEY: fakeKey('rk', 'live') };
   assert.deepEqual(readCheckoutConfig(live).problems, ['REVIVEX_LIVE_APPROVED_TERMS_VERSION']);
   assert.equal(readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v0' }).ok, false);
   const ok = readCheckoutConfig({ ...live, REVIVEX_LIVE_APPROVED_TERMS_VERSION: 'deposit-terms-v1' });

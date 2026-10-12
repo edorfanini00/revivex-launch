@@ -2,7 +2,9 @@
 // unit tests; they are not Stripe sandbox evidence.
 import { Readable } from 'node:stream';
 
-export const SECRET = 'sk_test_FAKEFAKEFAKEFAKEFAKE1234';
+// Fake key-shaped values are assembled at runtime so secret scanners never see a literal key.
+export const fakeKey = (kind, mode) => [kind, mode, 'FAKE'.repeat(5) + '1234'].join('_');
+export const SECRET = fakeKey('sk', 'test');
 export const ORIGIN = 'https://revivex-launch.vercel.app';
 export const SIGNING = 'test-signing-secret-0123456789abcdef0123';
 

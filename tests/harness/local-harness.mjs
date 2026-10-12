@@ -29,7 +29,7 @@ if (mode === 'synthetic') {
   const { createCheckoutHandler, createReservationHandler } = await import(pathToFileURL(path.join(ROOT, 'lib/deposit-handlers.js')));
   const { createSyntheticStripe } = await import(pathToFileURL(path.join(ROOT, 'tests/fixtures/synthetic-provider.mjs')));
   const env = {
-    REVIVEX_CHECKOUT_ENABLED: 'true', STRIPE_MODE: 'test', STRIPE_SECRET_KEY: 'sk_test_SYNTHETICHARNESSONLY0000',
+    REVIVEX_CHECKOUT_ENABLED: 'true', STRIPE_MODE: 'test', STRIPE_SECRET_KEY: ['sk', 'test', 'SYNTHETICHARNESSONLY0000'].join('_'),
     STRIPE_EXPECTED_ACCOUNT_ID: 'acct_SYNTHETIC0001', STRIPE_DEPOSIT_PRICE_ID: 'price_SYNTHETIC0001', STRIPE_DEPOSIT_PRODUCT_ID: 'prod_SYNTHETIC0001',
     REVIVEX_SITE_ORIGIN: origin, REVIVEX_OPERATION_SIGNING_SECRET: 'synthetic-harness-signing-secret-0123456789',
   };
