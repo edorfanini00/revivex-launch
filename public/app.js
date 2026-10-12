@@ -1,4 +1,4 @@
-/* Revivex v10 — scroll-scrubbed hero, reveals, parallax, waitlist */
+/* Revivex v10 — scroll-scrubbed hero, reveals, parallax, deposit reservation */
 (() => {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -84,38 +84,152 @@
     par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
   }
 
-  /* Waitlist */
-  const form = document.getElementById('waitlistForm');
-  const email = document.getElementById('emailInput');
-  const consent = document.getElementById('consentInput');
-  const hp = document.getElementById('website');
-  const msg = document.getElementById('formMsg');
-  const btn = document.getElementById('submitBtn');
-  const say = (t, ok) => { msg.textContent = t; msg.className = 'form-msg ' + (ok ? 'ok' : 'err'); };
+  /* Reserve: refundable $100 deposit through Stripe-hosted Checkout.
+     The server fixes amount, price and redirect URLs. Each checkout attempt uses one
+     signed operation token issued by the server (no Stripe call) and kept in
+     sessionStorage with an "attempted" flag. Retries re-send the same token so Stripe
+     replays the same session. A token that was ever sent for creation is never silently
+     replaced: if the server cannot use it any more, the visitor is asked to check for a
+     receipt first and only an explicit click starts a new reservation. */
+  const form = document.getElementById('reserveForm');
+  const terms = document.getElementById('termsInput');
+  const btn = document.getElementById('reserveBtn');
+  const restart = document.getElementById('reserveRestart');
+  const msg = document.getElementById('reserveMsg');
+  const testNote = document.getElementById('testModeNote');
+  const OP_KEY = 'revivex.depositOperation';
+  const ATTR_KEY = 'revivex.attribution';
+  const LABEL = btn.textContent;
+  const AUTO_RETRIES = 2;
+  let available = false, termsVersion = null, inFlight = false;
+
+  const say = (t, ok) => { msg.textContent = t || ''; msg.className = 'form-msg ' + (ok ? 'ok' : 'err'); };
+  const memory = {};
+  const store = {
+    get(k) { try { return sessionStorage.getItem(k); } catch { return memory[k] || null; } },
+    set(k, v) { memory[k] = v; try { sessionStorage.setItem(k, v); } catch { /* storage blocked: memory only */ } },
+    del(k) { delete memory[k]; try { sessionStorage.removeItem(k); } catch { /* ignore */ } },
+  };
+  const readOp = () => { try { const o = JSON.parse(store.get(OP_KEY) || 'null'); return o && typeof o.token === 'string' ? o : null; } catch { return null; } };
+  const saveOp = o => store.set(OP_KEY, JSON.stringify(o));
+  const dropOp = () => store.del(OP_KEY);
+
+  /* Campaign attribution: first allowlisted UTM values seen in this tab. The server
+     re-validates them and binds them into the operation token. Nothing else is read. */
+  (() => {
+    const q = new URLSearchParams(location.search), a = {};
+    for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content']) {
+      const v = q.get(k);
+      if (v && /^[a-z0-9][a-z0-9_]{0,39}$/.test(v)) a[k] = v;
+    }
+    if (Object.keys(a).length && !store.get(ATTR_KEY)) store.set(ATTR_KEY, JSON.stringify(a));
+  })();
+  const attribution = () => { try { return JSON.parse(store.get(ATTR_KEY) || '{}'); } catch { return {}; } };
+
+  function idle() { inFlight = false; btn.disabled = !available; btn.textContent = LABEL; btn.removeAttribute('aria-busy'); }
+  const UNAVAILABLE = 'Reservations are temporarily unavailable. This page cannot open a checkout right now.';
+  const UNCERTAIN = 'We could not confirm the checkout status. Check your payment confirmation before trying again.';
+
+  fetch('/api/checkout', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => {
+      available = d.available === true && typeof d.termsVersion === 'string';
+      termsVersion = d.termsVersion;
+      if (d.mode === 'test') testNote.hidden = false;
+      if (!available) say(UNAVAILABLE, false);
+      idle();
+    })
+    .catch(() => { available = false; say(UNAVAILABLE, false); idle(); });
+
+  // Coming back from Stripe with the Back button can restore a frozen "busy" page.
+  window.addEventListener('pageshow', e => { if (e.persisted) idle(); });
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function post(body) {
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: JSON.stringify({ termsAccepted: true, termsVersion, ...body }),
+      });
+      return await res.json().catch(() => ({ state: 'uncertain' }));
+    } catch {
+      return { state: 'uncertain' };
+    }
+  }
+  async function begin() {
+    const d = await post({ step: 'start', attribution: attribution() });
+    if (d.state !== 'started' || typeof d.operation !== 'string') return { error: d };
+    const op = { token: d.operation, attempted: false };
+    saveOp(op);
+    return { op };
+  }
+
+  restart.addEventListener('click', () => {
+    dropOp();
+    restart.hidden = true;
+    say('', true);
+    btn.focus();
+  });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const v = email.value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { say('Enter a valid email address.', false); email.focus(); return; }
-    if (!consent.checked) { say('Please tick the box so we can email you.', false); consent.focus(); return; }
-    btn.disabled = true; btn.textContent = 'Joining…';
+    if (inFlight || !available || !restart.hidden) return;
+    if (!terms.checked) { say('Please agree to the deposit terms first.', false); terms.focus(); return; }
+
+    inFlight = true;
+    let leaving = false;
+    btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = 'Opening secure checkout\u2026';
+    say('', true);
     try {
-      const res = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: v, consent: true, website: hp.value, source: 'landing-v11' })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.ok !== false) {
-        say(data.message || "You're on the list.", true);
-        form.reset();
-      } else {
-        say(data.message || 'Something went wrong. Please try again.', false);
+      let op = readOp(), fresh = 0;
+      for (let n = 0; ; ) {
+        if (!op) {
+          const b = await begin();
+          if (b.error) {
+            // No checkout was created by this request; uncertain only if the network failed.
+            say(b.error.message || (b.error.state === 'uncertain' ? 'Checkout could not be opened. Please try again.' : UNAVAILABLE), false);
+            if (b.error.state === 'unavailable') available = false;
+            break;
+          }
+          op = b.op;
+        }
+        const wasAttempted = op.attempted === true;
+        op.attempted = true;
+        saveOp(op);
+        const d = await post({ step: 'create', operation: op.token });
+
+        if (d.state === 'redirect' && typeof d.url === 'string' && d.url.startsWith('https://checkout.stripe.com/')) {
+          leaving = true; // keep the button busy while the browser leaves
+          window.location.assign(d.url);
+          return;
+        }
+        if (d.state === 'complete' && typeof d.reservationUrl === 'string' && d.reservationUrl.startsWith('/reservation.html?session_id=')) {
+          leaving = true;
+          window.location.assign(d.reservationUrl);
+          return;
+        }
+        if (d.state === 'uncertain' && n < AUTO_RETRIES) { n++; await sleep(1200 * n); continue; }
+        if (d.state === 'expired') { dropOp(); say(d.message, false); break; }
+        if ((d.state === 'reconcile' || d.state === 'invalid_operation') && !wasAttempted && fresh === 0) {
+          // This token never reached Stripe before, so replacing it cannot duplicate anything.
+          dropOp(); op = null; fresh++;
+          continue;
+        }
+        if (d.state === 'reconcile' || d.state === 'invalid_operation') {
+          // Ask before ever starting another attempt that could take a second deposit.
+          say(d.message || UNCERTAIN, false);
+          restart.hidden = false;
+          break;
+        }
+        if (d.state === 'unavailable') available = false;
+        say(d.message || UNCERTAIN, false);
+        break;
       }
-    } catch {
-      say('Network error. Please try again.', false);
     } finally {
-      btn.disabled = false; btn.textContent = 'Join the waitlist';
+      if (!leaving) idle();
     }
   });
 })();

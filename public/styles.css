@@ -1026,3 +1026,49 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   .faq details p { padding-bottom: 24px; font-size: 15px; }
   :root { --sec: 88px; }
 }
+
+/* =====================================================================
+   Refundable preorder deposit: reserve panel, terms/privacy/receipt pages.
+   Uses the existing closing-CTA card; no change to hero or scene layout.
+   ===================================================================== */
+.anchor-alias { position: absolute; }
+.reserve-form { display: grid; gap: 16px; }
+.cta .deposit-panel { margin: 0; padding: 18px 20px; border-radius: var(--r-md); background: #fff; border: 1px solid rgba(15,31,56,.12); font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.cta .deposit-panel b { color: var(--ink); font-weight: 600; }
+.cta .reserve-form .consent { margin-top: 0; }
+.cta .reserve-form .btn { width: 100%; }
+.cta .reserve-form .btn:disabled { background: rgba(10,10,10,.28); cursor: not-allowed; transform: none; }
+.cta .reserve-form .btn[aria-busy="true"] { background: #0A0A0A; cursor: progress; }
+.deposit-note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); }
+.deposit-note a { color: var(--ink-2); }
+.cta .reserve-form .form-msg { margin: 0; min-height: 0; }
+.cta .reserve-form .form-msg:empty { display: none; }
+.cta .reserve-form .form-msg.err { color: #9A2B12; }
+.deposit-test, .doc-alert { margin: 0; padding: 10px 14px; border-radius: 12px; background: #FFF4D6; color: #5C4300; font-size: 13.5px; line-height: 1.45; }
+.faq details p a { color: var(--ink); }
+
+.doc-page { background: var(--white); }
+.doc-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; max-width: 760px; margin: 0 auto; padding: 28px 24px; }
+.doc-logo img { height: 14px; width: auto; display: block; }
+.doc-back { font-size: 14px; color: var(--ink-2); }
+.doc { max-width: 760px; margin: 0 auto; padding: 24px 24px 96px; }
+.doc-kicker { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 14px; }
+.doc h1 { font-family: var(--head); font-weight: 500; font-size: clamp(34px, 5vw, 52px); line-height: 1.04; letter-spacing: -0.03em; margin: 0 0 20px; }
+.doc h2 { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; margin: 36px 0 10px; }
+.doc p, .doc li { font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+.doc p { margin: 0 0 12px; }
+.doc ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.doc b { color: var(--ink); font-weight: 600; }
+.doc a { color: var(--ink); }
+.doc .doc-alert { margin: 16px 0; }
+.receipt-facts { margin: 28px 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.receipt-facts div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.receipt-facts dt { color: var(--ink-2); }
+.receipt-facts dd { margin: 0; font-weight: 600; color: var(--ink); word-break: break-all; text-align: right; }
+@media (max-width: 640px) {
+  .doc-head { padding: 20px; }
+  .doc { padding: 12px 20px 72px; }
+  .cta .deposit-panel { padding: 16px; font-size: 14.5px; }
+}
+.cta .link-btn { justify-self: start; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.reserve-form [hidden], .doc [hidden] { display: none !important; }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Your reservation | Revivex</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="doc-page">
+<header class="doc-head">
+  <a href="/" class="doc-logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
+  <a href="/" class="doc-back">Back to Revivex</a>
+</header>
+<main class="doc receipt" id="receipt" data-state="loading" aria-live="polite">
+  <p class="doc-kicker">Reservation status</p>
+  <h1 id="receiptTitle">Checking your deposit with Stripe&hellip;</h1>
+  <p id="receiptText">This page asks Stripe directly. It does not rely on the link you arrived from.</p>
+  <dl class="receipt-facts" id="receiptFacts" hidden>
+    <div><dt>Amount</dt><dd id="receiptAmount"></dd></div>
+    <div><dt>Payment reference</dt><dd id="receiptRef"></dd></div>
+  </dl>
+  <p class="doc-alert" data-when="test" hidden>Test mode. No real payment was taken.</p>
+  <div id="receiptRefund" hidden>
+    <h2>Refunds</h2>
+    <p>Your deposit is fully refundable any time before you convert it into a final order. To request a refund, email <a href="mailto:support@revivex.store">support@revivex.store</a> from the address you used at checkout and include the payment reference above. See the <a href="/deposit-terms.html">deposit terms</a>.</p>
+  </div>
+  <p><button type="button" class="btn" id="receiptRetry" hidden>Check again</button></p>
+  <noscript><p class="doc-alert">This page needs JavaScript to check your deposit with Stripe.</p></noscript>
+</main>
+<script src="/legal.js" defer></script>
+<script src="/reservation.js" defer></script>
+</body>
+</html>

@@ -15,6 +15,9 @@
     { "src": "/api/form", "dest": "/api/form.js" },
     { "src": "/api/signup", "dest": "/api/signup.js" },
     { "src": "/api/health", "dest": "/api/health.js" },
+    { "src": "/api/checkout", "dest": "/api/checkout.js", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } },
+    { "src": "/api/reservation", "dest": "/api/reservation.js", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } },
+    { "src": "/reservation.html", "dest": "/public/reservation.html", "headers": { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex" } },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
