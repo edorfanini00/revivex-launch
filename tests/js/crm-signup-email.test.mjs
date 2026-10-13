@@ -163,9 +163,9 @@ test('preorder confirmation: content, escaping, absolute https assets, plain tex
     paidAt: '2026-10-13T15:00:00Z', origin: 'https://reserve.healthrevivex.com',
   });
   assert.equal(m.subject, 'Your Revivex preorder is confirmed');
-  assert.equal(m.preheader, 'Your $100 deposit is in. Here is what happens next.');
+  assert.equal(m.preheader, 'We received your $100 deposit.');
   assert.doesNotMatch(m.html, /<script>|alert\(1\)/);
-  assert.match(m.html, /You&rsquo;re in, there\./, 'unusable name falls back to "there"');
+  assert.match(m.html, /Thank you\. We received your \$100&nbsp;deposit\./, 'unusable name falls back to a plain thank you');
   assert.match(m.html, /o&#39;brien&quot;&lt;x&gt;@example\.test/);
   assert.match(m.html, /\$100\.00/);
   assert.match(m.html, /October 13, 2026/);
@@ -173,7 +173,7 @@ test('preorder confirmation: content, escaping, absolute https assets, plain tex
   assert.match(m.html, /E5F6G7H8/);
   assert.match(m.html, /href="https:\/\/reserve\.healthrevivex\.com\/reservation\.html\?session_id=cs_live_a1B2c3D4e5F6g7H8"/);
   assert.match(m.html, /View your preorder/);
-  assert.match(m.html, /v:roundrect/, 'Outlook button');
+  assert.match(m.html, />View your preorder<\/a>/, 'ordinary text link also works without CSS');
   for (const src of m.html.match(/src="[^"]+"/g)) assert.match(src, /^src="https:\/\/reserve\.healthrevivex\.com\/assets\//);
   for (const img of m.html.match(/<img [^>]+>/g)) assert.match(img, /alt="[^"]+"/);
   assert.match(m.html, /max-width:600px/);
@@ -182,8 +182,24 @@ test('preorder confirmation: content, escaping, absolute https assets, plain tex
   assert.match(m.html, /deposit-terms\.html/);
   assert.match(m.html, /privacy\.html/);
   assert.match(m.html, /support@revivex\.store/);
-  assert.match(m.text, /You're in, there\./);
+  assert.match(m.text, /Thank you\. We received your \$100 deposit\./);
+  assert.match(m.html, /src="https:\/\/reserve\.healthrevivex\.com\/assets\/email\/revivex-machine\.png"/);
+  assert.match(m.html, /prefers-color-scheme: dark/, 'deliberate dark mode');
+  assert.match(renderPreorderConfirmation({ sessionId: 'cs_x', email: 'a@b.test', name: 'Pat Example', origin: 'https://reserve.healthrevivex.com' }).text, /^Your preorder is confirmed\.\n\nThank you, Pat\./);
   assert.match(m.text, /Order reference: E5F6G7H8/);
+  for (const out of [m.html, m.text]) {
+    assert.match(out, /credited toward your machine/);
+    assert.match(out, /never charge the balance automatically/);
+    assert.match(out, /price and shipping date have not been announced/);
+    assert.match(out, /We will email you first/);
+    assert.match(out, /fully refundable at any time/);
+    assert.match(out, /Reply to this email/);
+    assert.doesNotMatch(out, /Unsubscribe|You're in|What happens next|border-radius/);
+  }
+  assert.match(m.html, /href="mailto:support@revivex\.store"/);
+  assert.match(m.html, /prefers-color-scheme: dark/);
+  assert.match(m.html, /assets\/email\/revivex-machine\.png/);
+
   const copy = s => s.replace(/<[^>]+>/g, ' ').replace(/https?:\/\/\S+|[\w.'"&;#+<>-]+@[\w.-]+/g, ' ').replace(/<!--[\s\S]*?-->/g, ' ');
   for (const out of [copy(m.html.slice(m.html.indexOf('<body'))), copy(m.text)]) {
     assert.doesNotMatch(out, /[‐-―]|&[mn]dash;| - /, 'no dashes in customer copy');
@@ -193,7 +209,10 @@ test('preorder confirmation: content, escaping, absolute https assets, plain tex
 
 test('welcome email: escaping, unsubscribe link, transactional footer copy', () => {
   const m = renderWelcome({ firstName: 'Ana"><img src=x>', unsubscribeUrl: 'https://reserve.healthrevivex.com/api/unsubscribe?t=a.b', origin: 'https://reserve.healthrevivex.com' });
+  assert.equal(m.subject, "You're on the Revivex list");
   assert.doesNotMatch(m.html, /<img src=x>/);
+  assert.match(m.html, /Thank you\. We will write/);
+  assert.doesNotMatch(m.html, /border-radius|Launch updates<|friend/);
   assert.match(m.html, /Unsubscribe/);
   assert.match(m.html, /api\/unsubscribe\?t=a\.b/);
   assert.match(m.text, /Unsubscribe: https:\/\/reserve\.healthrevivex\.com\/api\/unsubscribe\?t=a\.b/);

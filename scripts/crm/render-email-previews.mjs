@@ -3,6 +3,8 @@
 // Usage: node scripts/crm/render-email-previews.mjs <output dir>
 import fs from 'node:fs';
 import path from 'node:path';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { chromium } from 'playwright-core';
 import { renderPreorderConfirmation, renderWelcome } from '../../lib/email/index.js';
 
@@ -16,6 +18,7 @@ const emails = {
 };
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const files = [];
+const captures = [];
 for (const [name, msg] of Object.entries(emails)) {
   fs.writeFileSync(path.join(out, `${name}.html`), msg.html);
   fs.writeFileSync(path.join(out, `${name}.txt`), msg.text);
@@ -27,6 +30,16 @@ for (const [name, msg] of Object.entries(emails)) {
       const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 2, colorScheme: scheme });
       await page.goto(`file://${tmp}`);
       await page.waitForLoadState('networkidle');
+      const evidence = await page.evaluate(() => ({
+        viewport: innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        background: getComputedStyle(document.body).backgroundColor,
+        images: [...document.images].map(img => ({ src: img.src.split('/assets/')[1], loaded: img.complete && img.naturalWidth > 0, width: img.naturalWidth, height: img.naturalHeight })),
+      }));
+      assert.equal(evidence.viewport, width);
+      assert.ok(evidence.documentWidth <= width, `${name} overflows at ${width}`);
+      assert.ok(evidence.images.every(img => img.loaded), `${name} missing local image`);
+      captures.push({ name, width, scheme, ...evidence });
       const f = path.join(out, `${name}-${width}-${scheme}.png`);
       await page.screenshot({ path: f, fullPage: true });
       files.push(f);
@@ -36,4 +49,9 @@ for (const [name, msg] of Object.entries(emails)) {
   fs.unlinkSync(tmp);
 }
 await browser.close();
+fs.writeFileSync(path.join(out, 'render-manifest.json'), JSON.stringify({
+  renderedAt: new Date().toISOString(), assetMode: 'local files, not hosted-image or mail-client proof',
+  htmlHashes: Object.fromEntries(Object.entries(emails).map(([name, msg]) => [name, crypto.createHash('sha256').update(msg.html).digest('hex')])),
+  captures,
+}, null, 2) + '\n');
 console.log(files.join('\n'));

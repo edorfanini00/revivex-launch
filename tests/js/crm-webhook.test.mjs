@@ -116,7 +116,7 @@ test('paid deposit: one row with customer details, customer merged as transactio
     assert.equal(msg.subject, 'Your Revivex preorder is confirmed');
     assert.equal(opts.idempotencyKey, 'preorder-confirmation/cs_test_PAID0000001');
     assert.equal(cfg.replyTo, 'support@revivex.store');
-    assert.match(msg.html, /You&rsquo;re in, Pat\./);
+    assert.match(msg.html, /Thank you, Pat\. We received your \$100&nbsp;deposit\./);
     assert.ok(msg.text.length > 200);
     const [sub] = await s.db.query('select * from subscribers');
     assert.equal(sub.email, 'buyer-pii@example.test');
