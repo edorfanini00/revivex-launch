@@ -1178,23 +1178,3 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   .split-side .cta-terms { font-size: 12.5px; }
   .nav .form-msg.cta-msg { right: 16px; }
 }
-
-/* The fixed nav Preorder: the deposit is disclosed right beside the button (a quiet two
-   line tag that links to the terms) and is the button's accessible description. */
-.nav-order { justify-self: end; display: flex; align-items: center; gap: 14px; }
-.nav-terms { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: inherit; text-decoration: none; text-align: right; white-space: nowrap; font-size: 12px; line-height: 1.2; letter-spacing: -0.005em; }
-.nav-terms-amt { font-weight: 500; }
-.nav-terms-ref { opacity: .72; }
-.nav-terms:hover .nav-terms-ref, .nav-terms:focus-visible .nav-terms-ref { opacity: 1; text-decoration: underline; text-underline-offset: 2px; }
-.nav-terms:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
-.nav:not(.scrolled) .nav-terms { text-shadow: 0 1px 10px rgba(0, 0, 0, .28); }
-@media (max-width: 640px) {
-  /* Phones: the bright top of the portrait hero sits behind the nav, so the tag and the
-     button share one tinted capsule that keeps the small text readable. (No
-     backdrop-filter: it would become the containing block of the nav error message.) */
-  .nav-order { gap: 10px; padding: 3px 3px 3px 14px; border-radius: 999px; background: rgba(16, 20, 26, .46); transition: background .4s; }
-  .nav.scrolled .nav-order { background: rgba(10, 10, 10, .05); }
-  .nav-terms { font-size: 11px; gap: 1px; }
-  .nav:not(.scrolled) .nav-terms { text-shadow: none; }
-  .nav:not(.scrolled) .nav-terms-ref { opacity: .82; }
-}

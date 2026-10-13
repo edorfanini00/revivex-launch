@@ -38,18 +38,17 @@ test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet
   assert.doesNotMatch(html, /<style|style="/, 'the CSP allows no inline style');
 });
 
-test('every Preorder button discloses the deposit next to it, with the terms link; no dashes', () => {
+test('hero and mid Preorder disclose the deposit next to them, with the terms link; the nav has no tag; no dashes', () => {
   const lines = html.match(/<p class="cta-terms[^"]*">[^\n]*<\/p>/g) || [];
   assert.equal(lines.length, 2, 'hero and mid page disclosure lines');
   for (const l of lines) assert.match(l, /\$100 fully refundable deposit, credited toward your machine\. By preordering you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
-  const nav = html.match(/<div class="nav-order">[\s\S]*?<\/div>/)[0];
-  assert.match(nav, /<a href="\/deposit-terms\.html" class="nav-terms" id="navTerms">/);
-  assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout aria-describedby="navTerms">Preorder<\/a>/);
-  assert.equal(nav.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(), '$100 deposit, Fully refundable Preorder');
+  const nav = html.match(/<header class="nav"[\s\S]*?<\/header>/)[0];
+  assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout>Preorder<\/a>/, 'the nav Preorder stands alone');
+  assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|refundable/i, 'no deposit tag in the nav (owner request)');
   const note = html.match(/<p class="deposit-note">[^\n]*<\/p>/)[0];
   assert.match(note, /^<p class="deposit-note">Preordering means you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
   assert.match(note, /href="\/privacy\.html"/);
-  for (const t of [...lines, nav, note]) assert.doesNotMatch(t.replace(/<[^>]+>/g, ''), /[–—]| - /);
+  for (const t of [...lines, note]) assert.doesNotMatch(t.replace(/<[^>]+>/g, ''), /[–—]| - /);
 });
 
 test('server still requires termsAccepted and the current terms version (unchanged contract)', async () => {

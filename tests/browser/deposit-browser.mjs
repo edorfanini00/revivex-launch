@@ -166,18 +166,17 @@ try {
     const disclosures = await page.$$eval('.hero-terms, .split-side .cta-terms', els => els.map(e => [e.textContent.replace(/\s+/g, ' ').trim(), e.querySelector('a') && e.querySelector('a').getAttribute('href')]));
     check(disclosures.length === 2 && disclosures.every(([t, h]) => t === '$100 fully refundable deposit, credited toward your machine. By preordering you accept the deposit terms.' && h === '/deposit-terms.html'), `${tag}: hero and mid page disclose the deposit and that preordering accepts the linked terms`, JSON.stringify(disclosures));
     check(await page.locator('.hero-terms').isVisible(), `${tag}: hero disclosure visible under the hero button`);
-    // The fixed nav Preorder discloses the deposit right beside it, at the top and once
-    // scrolled, and the disclosure is the button's accessible description.
+    // The fixed nav Preorder stands alone (owner request): no deposit tag, capsule or
+    // description beside it, at the top and once scrolled; the button sits at the right
+    // edge, centred on the logo and inside the viewport.
     for (const where of ['top', 'scrolled']) {
       if (where === 'top') { await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await page.waitForTimeout(600); }
       if (where === 'scrolled') { await page.evaluate(() => window.scrollTo({ top: document.getElementById('details').offsetTop, behavior: 'instant' })); await page.waitForTimeout(600); }
       const nd = await page.evaluate(() => {
-        const b = document.querySelector('.nav-cta'), d = document.getElementById(b.getAttribute('aria-describedby') || '-'), logo = document.querySelector('.nav .logo').getBoundingClientRect();
-        if (!d) return { missing: true };
-        const r = d.getBoundingClientRect(), br = b.getBoundingClientRect(), vw = document.documentElement.clientWidth;
-        return { text: d.textContent.replace(/\s+/g, ' ').trim(), href: d.getAttribute('href'), visible: r.width > 0 && getComputedStyle(d).visibility === 'visible' && getComputedStyle(d).display !== 'none', inside: r.left >= 0 && r.right <= vw, besideButton: r.right <= br.left && Math.abs((r.top + r.bottom) / 2 - (br.top + br.bottom) / 2) <= 6, clearOfLogo: r.left >= logo.right + 8, scrolled: document.getElementById('nav').classList.contains('scrolled') };
+        const nav = document.getElementById('nav'), b = nav.querySelector('.nav-cta'), br = b.getBoundingClientRect(), logo = nav.querySelector('.logo').getBoundingClientRect(), vw = document.documentElement.clientWidth;
+        return { tag: !!nav.querySelector('.nav-order, .nav-terms, #navTerms, a[href="/deposit-terms.html"]'), describedBy: b.getAttribute('aria-describedby'), parentIsNav: b.parentElement === nav, depositText: /\$100|refundable/i.test(nav.textContent), inside: br.left >= 0 && br.right <= vw, centred: Math.abs((br.top + br.bottom) / 2 - (logo.top + logo.bottom) / 2) <= 3, clearOfLogo: br.left >= logo.right + 8, scrolled: nav.classList.contains('scrolled') };
       });
-      check(nd.text === '$100 deposit, Fully refundable' && nd.href === '/deposit-terms.html' && nd.visible && nd.inside && nd.besideButton && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has the deposit disclosure beside it (${where}), linked to the terms and as its description`, JSON.stringify(nd));
+      check(!nd.tag && nd.describedBy === null && nd.parentIsNav && !nd.depositText && nd.inside && nd.centred && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has no deposit tag beside it (${where}), centred on the logo and inside the viewport`, JSON.stringify(nd));
     }
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     const note = page.locator('#reserveForm .deposit-note');
@@ -465,8 +464,8 @@ try {
       const b = await page.evaluate(s => { const e = document.querySelector(s); return { text: e.textContent.trim(), busy: e.hasAttribute('aria-busy'), minWidth: e.style.minWidth }; }, sel);
       check(await note.isVisible() && /Check your card statement/.test(await note.innerText()), `${vp.name}: ${name} failure shows the friendly message next to that button`, await note.innerText().catch(() => ''));
       check(b.text === 'Preorder' && !b.busy && b.minWidth === '', `${vp.name}: ${name} button restored after the failure`, JSON.stringify(b));
-      const ov = await page.evaluate(s => { const r = document.querySelector(s).nextElementSibling.getBoundingClientRect(), vw = document.documentElement.clientWidth; return { overflow: document.documentElement.scrollWidth - vw, left: Math.round(r.left), right: Math.round(r.right), vw }; }, sel);
-      check(ov.overflow <= 0 && ov.left >= 8 && ov.right <= ov.vw - 8, `${vp.name}: ${name} failure message fully inside the viewport, no horizontal overflow`, JSON.stringify(ov));
+      const ov = await page.evaluate(s => { const r = document.querySelector(s).nextElementSibling.getBoundingClientRect(), vw = document.documentElement.clientWidth; return { overflow: document.documentElement.scrollWidth - vw, left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), vw, vh: innerHeight }; }, sel);
+      check(ov.overflow <= 0 && ov.left >= 8 && ov.right <= ov.vw - 8 && ov.top >= 0 && ov.bottom <= ov.vh, `${vp.name}: ${name} failure message fully inside the viewport, no horizontal overflow`, JSON.stringify(ov));
       await revealed(page, sel);
       if (name === 'mid') await page.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center', behavior: 'instant' }), sel);
       await page.waitForTimeout(200);
@@ -526,8 +525,7 @@ try {
     const page = await ctx.newPage();
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     check(await page.locator('.nav-cta').getAttribute('role') === null, `${tag}: Preorder links stay plain links (no enhancement ran)`);
-    const navTerms = page.locator('#navTerms');
-    check(await navTerms.isVisible(), `${tag}: nav deposit disclosure visible`);
+    check(await page.locator('#nav .nav-order, #nav .nav-terms, #navTerms').count() === 0, `${tag}: no nav deposit tag`);
     // A real pointer click at the link (Playwright's actionability wait for stable
     // animation frames does not settle with page JavaScript disabled).
     await page.waitForTimeout(1300); // hero copy rise animation
