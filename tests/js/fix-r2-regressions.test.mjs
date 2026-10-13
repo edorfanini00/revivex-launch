@@ -73,13 +73,13 @@ test('the global ceiling still bounds Stripe-calling creates, and is checked bef
   assert.equal(stripeCalls(s), before, 'no provider call once the ceiling is reached');
 });
 
-test('start has its own per-instance ceiling, separate from the create ceiling', async () => {
-  const s = setup({ limiter: createInstanceRateLimiter({ limit: 1000, windowMs: 60_000 }), startLimiter: createInstanceRateLimiter({ limit: 2, windowMs: 60_000 }) });
-  const legit = (await call(s.checkout, startBody(), from('192.0.2.10'))).json().operation;
-  assert.equal((await call(s.checkout, startBody(), from('198.51.100.1'))).statusCode, 200);
-  const r = await call(s.checkout, startBody(), from('198.51.100.2'));
-  assert.equal(r.statusCode, 429);
-  assert.equal((await call(s.checkout, createBody(legit), from('192.0.2.10'))).json().state, 'redirect', 'start ceiling does not block create');
+// r3 (R3-2): start no longer has a global ceiling (per-IP only); the start-ceiling test
+// was replaced by the reviewer's R5 probe in fix-r3-regressions.test.mjs.
+test('start is never blocked by the create ceiling', async () => {
+  const s = setup({ limiter: createInstanceRateLimiter({ limit: 1000, windowMs: 60_000 }), globalLimiter: createInstanceRateLimiter({ limit: 1, windowMs: 60_000 }) });
+  const first = (await call(s.checkout, startBody(), from('192.0.2.10'))).json().operation;
+  assert.equal((await call(s.checkout, createBody(first), from('192.0.2.10'))).json().state, 'redirect');
+  for (let i = 0; i < 50; i++) assert.equal((await call(s.checkout, startBody(), from(`198.51.100.${i}`))).statusCode, 200);
 });
 
 test('reservation: malformed and cross-mode lookups never use up the global ceiling (it only counts Stripe lookups)', async () => {

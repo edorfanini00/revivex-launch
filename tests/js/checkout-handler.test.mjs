@@ -351,7 +351,7 @@ test('same operation always maps to the same idempotency key and identical param
   assert.equal(JSON.stringify(checkoutSessionParams(readCheckoutConfig(ENV).config, op)), bodies[0]);
 });
 
-test('concurrent duplicate clicks send identical idempotent creates (Stripe returns one session)', async () => {
+test('concurrent duplicate clicks share one idempotent create (Stripe returns one session)', async () => {
   const byKey = new Map();
   const provider = fakeProvider({
     createCheckoutSession: async (p, k) => {
@@ -364,9 +364,12 @@ test('concurrent duplicate clicks send identical idempotent creates (Stripe retu
   const h = setup({ provider });
   const token = await start(h);
   const [a, b] = await Promise.all([call(h, createBody(token)), call(h, createBody(token))]);
-  assert.deepEqual([a.json().state, b.json().state].sort(), ['redirect', 'uncertain']);
+  // r3 (R3-1): the in-flight duplicate shares the first request's outcome instead of
+  // racing Stripe's idempotency lock.
+  assert.deepEqual([a.json().state, b.json().state], ['redirect', 'redirect']);
+  assert.equal(a.json().url, b.json().url);
   const c = await call(h, createBody(token));
-  assert.equal(c.json().url, a.json().url || b.json().url, 'retry replays the same session');
+  assert.equal(c.json().url, a.json().url, 'retry replays the same session');
   assert.equal(byKey.size, 1);
 });
 
@@ -425,6 +428,7 @@ test('attribution: changed later attribution cannot alter a started operation (n
   await call(h, createBody(token));
   const r = await call(h, createBody(token, { attribution: { utm_source: 'x' } }));
   assert.equal(r.json().state, 'unexpected_field', 'create cannot carry new attribution');
+  h.time.t += 61_000; // past the replay cache (r3), so the retry reaches Stripe again
   await call(h, createBody(token));
   assert.equal(bodies[0], bodies[1]);
   assert.equal(JSON.parse(bodies[0]).metadata.utm_source, 'instagram');
@@ -438,7 +442,8 @@ test('best-effort instance rate limit returns 429 with Retry-After before callin
   const r = await call(h, createBody(token));
   assert.equal(r.statusCode, 429);
   assert.ok(Number(r.headers['retry-after']) > 0);
-  assert.equal(creates(provider).length, 2);
+  // r3 (R3-1): the second create is a replay answered after one status read, no create.
+  assert.equal(creates(provider).length, 1);
 });
 
 test('GET status exposes availability and the official contact only; method gate', async () => {
