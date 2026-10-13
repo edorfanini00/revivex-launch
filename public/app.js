@@ -351,3 +351,54 @@
   // Without the script the section button stays disabled (nothing could take a deposit).
   refresh();
 })();
+
+/* Launch updates signup: email plus optional first name, posted to /api/signup.
+   The reply is the same for new and existing addresses. Nothing is kept in the browser. */
+(() => {
+  const EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/;
+  const attribution = () => { try { return JSON.parse(sessionStorage.getItem('revivex.attribution') || '{}'); } catch { return {}; } };
+  for (const form of document.querySelectorAll('.signup-form')) {
+    const email = form.querySelector('input[name=email]');
+    const name = form.querySelector('input[name=firstName]');
+    const hp = form.querySelector('input[name=website]');
+    const btn = form.querySelector('button[type=submit]');
+    const msg = form.querySelector('.signup-msg');
+    let sending = false;
+    const say = (text, err) => { msg.textContent = text; msg.classList.toggle('err', !!err); };
+    email.addEventListener('input', () => email.removeAttribute('aria-invalid'));
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (sending) return;
+      const value = email.value.trim();
+      if (!EMAIL.test(value) || value.length > 254) {
+        email.setAttribute('aria-invalid', 'true');
+        say('Please enter a valid email address.', true);
+        email.focus();
+        return;
+      }
+      sending = true;
+      btn.setAttribute('aria-busy', 'true');
+      say('');
+      try {
+        const r = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email: value, firstName: name.value.trim(), website: hp.value, source: form.dataset.source, attribution: attribution() }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok) {
+          form.classList.add('done');
+          say(d.message || "Thanks. You're on the list.");
+        } else {
+          say(d.message || 'Sign up is not available right now. Please try again later.', true);
+        }
+      } catch {
+        say('We could not reach the server. Please try again.', true);
+      } finally {
+        sending = false;
+        btn.removeAttribute('aria-busy');
+      }
+    });
+  }
+})();
