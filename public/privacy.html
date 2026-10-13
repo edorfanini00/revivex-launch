@@ -33,13 +33,18 @@
     <li>Pages are hosted on Vercel, which processes standard request data such as your IP address to deliver the site.</li>
     <li>The Inter typeface is loaded from Google Fonts, which receives your IP address when the page loads.</li>
     <li>Our checkout functions keep your IP address in temporary memory to limit repeated requests. They log event names and error codes only, never your email address, name or payment details.</li>
-    <li>If you arrive from one of our campaign links, up to four short campaign labels from the link (utm_source, utm_medium, utm_campaign, utm_content, for example &ldquo;instagram&rdquo;) are attached to your Stripe payment record so we can see which campaign led to deposits. No other link details, referrer or click identifiers are kept.</li>
-    <li>Your browser keeps a signed checkout attempt ID and those campaign labels in session storage so a retry reuses the same checkout. It is removed when you close the tab. This site sets no cookies and runs no analytics or advertising trackers. Stripe&rsquo;s checkout page, on Stripe&rsquo;s own domain, may use its own cookies.</li>
+    <li>If you arrive from one of our campaign links, up to four short campaign labels from the link (utm_source, utm_medium, utm_campaign, utm_content, for example &ldquo;instagram&rdquo;) are attached to your Stripe payment record so we can see which campaign led to deposits. No other link details, referrer or click identifiers are added to that record.</li>
+    <li>Your browser keeps a signed checkout attempt ID and those campaign labels in session storage so a retry reuses the same checkout. It is removed when you close the tab. Apart from the Meta pixel described below, this site sets no cookies and runs no other analytics or advertising trackers. Stripe&rsquo;s checkout page, on Stripe&rsquo;s own domain, may use its own cookies.</li>
   </ul>
+
+  <h2>Meta pixel</h2>
+  <p>We use the Meta pixel and Meta&rsquo;s Conversions API to measure our ads on Facebook and Instagram. They tell Meta when you view a page on this site, when you open checkout, and when a $100 deposit is confirmed as paid. With these events Meta receives your IP address, browser details, the Meta cookies the pixel sets on this site (_fbp and _fbc) and, for a paid deposit, a hashed (scrambled) copy of the email address you gave Stripe. We never send Meta your name, your card details or your email address in readable form. Meta handles this data under the <a href="https://www.facebook.com/privacy/policy/" rel="noopener">Meta Privacy Policy</a>.</p>
+  <p>To opt out, turn on Global Privacy Control in your browser (some browsers, such as Firefox and Brave, include it as a setting). When your browser sends it, this site does not load the Meta pixel and sends nothing to Meta. You can also block third party cookies in your browser, or change how Meta uses this data in your Facebook or Instagram ad preferences.</p>
 
   <h2>Keeping and deleting records</h2>
   <p>Deposit payment records are kept in Stripe for as long as they are needed to manage your deposit, refunds and any final order, and to keep payment records we are legally required to keep. To ask about or delete your information, or to request a refund, email the contact above.</p>
 </main>
+<script type="module" src="/meta-pixel.js"></script>
 <script src="/legal.js" defer></script>
 </body>
 </html>

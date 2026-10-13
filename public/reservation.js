@@ -37,6 +37,8 @@
     // A paid deposit exists for this checkout: drop the stored attempt so pressing
     // Reserve again starts a deliberate new reservation rather than replaying this one.
     if (paid) { try { sessionStorage.removeItem('revivex.depositOperation'); } catch { /* ignore */ } }
+    // Measurement hook (public/meta-pixel.js); only "confirmed" counts as a paid deposit there.
+    try { window.dispatchEvent(new CustomEvent('revivex:deposit-status', { detail: { state, sessionId } })); } catch { /* ignore */ }
   }
 
   async function check() {

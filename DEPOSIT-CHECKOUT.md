@@ -56,6 +56,8 @@ The legacy `/api/signup` always returns 503 "Nothing was saved" and logs nothing
 | `REVIVEX_SITE_ORIGIN` | the single canonical origin, e.g. `https://revivex-launch.vercel.app` (https, no path) |
 | `REVIVEX_OPERATION_SIGNING_SECRET` | **must** be generated with `openssl rand -base64 48` and stored only in Vercel env. The code rejects anything under 32 characters or with fewer than 10 distinct characters; that is a sanity check, not an entropy guarantee. Rotating it sends in-flight attempts to the reconcile path. |
 | `REVIVEX_LIVE_APPROVED_TERMS_VERSION` | live only: `deposit-terms-v2`, after sign-off on terms, merchant identity, refund handling and tax/jurisdiction |
+| `META_CAPI_ACCESS_TOKEN` | optional: Meta Conversions API token (Events Manager → dataset → Settings). Unset = server events off. Never logged. |
+| `META_TEST_EVENT_CODE` | optional, temporary: `TEST…` code from Events Manager → Test events, to watch server events arrive. Remove after checking. |
 
 ## Provider setup (scoped; no merchant-wide setting changes needed by the code)
 
@@ -80,12 +82,23 @@ The legacy `/api/signup` always returns 503 "Nothing was saved" and logs nothing
   - for distributed floods and the token-pool residual above: enable Vercel bot protection, or a Firewall challenge rule, on `POST /api/checkout` (the page's own `fetch` must still pass it; verify in a preview deployment). Otherwise the owner explicitly accepts the residual above.
 - **Live control (decision recorded 2026-10-13):** the control for the residual above is a Vercel Firewall challenge / bot protection rule on `POST /api/checkout`. The owner accepted the remaining residual risk (availability only, no money risk) on 2026-10-13. The Firewall configuration is not part of this code and has not been verified on a deployment here; confirm it is active before `vercel --prod` (Deploy step 4).
 
+## Meta pixel and Conversions API
+
+Lets Meta optimise campaigns on paid deposits. Measurement only: it changes no amount, idempotency key, Checkout Session parameter, terms or rate limit.
+
+- **Pixel id:** one constant, `META_PIXEL_ID` in `public/meta-pixel-id.js`, imported by the browser pixel (`public/meta-pixel.js`) and the server (`lib/meta-capi.js`). While it is `REVIVEX_PIXEL_ID_PLACEHOLDER`, nothing loads from or is sent to Meta.
+- **Browser events:** `PageView` on every page; `ViewContent` on the home page; `InitiateCheckout` only when the create step returns a Stripe redirect (consent ticked), just before leaving, with `eventID` = the operation id inside the signed token; `Purchase` on the receipt only when `/api/reservation` returns `confirmed`, `eventID` = `deposit_<session id>`, at most once per session per browser (localStorage guard; skipped if storage is blocked). All carry `value: 100, currency: USD`. `autoConfig` is off, so Meta collects no automatic button or page metadata.
+- **Server events (CAPI):** `InitiateCheckout` from `POST /api/checkout` on a `redirect` result and `Purchase` from `GET /api/reservation` on `confirmed`, with the same event ids, so Meta deduplicates. User data: client IP, user agent, `_fbp`/`_fbc` cookies (read from the request; nothing is added to Stripe metadata) and a SHA-256 hash of the Stripe customer email when present. Never a raw email, name or payment detail. Sent after the response is written, with a 1.5 s deadline, registered with Vercel `waitUntil` when available; failures log `meta_capi_failed` with a status or kind only. A paid session is reported once per warm instance (repeats are deduplicated by Meta).
+- **Privacy:** a browser with Global Privacy Control (`navigator.globalPrivacyControl`, `Sec-GPC: 1`) gets no pixel and no server events. `privacy.html` describes the pixel and the opt out.
+- **Known limits:** the receipt URL (with the session id) is the page URL the pixel reports, and the `Purchase` event id contains the session id. The session id is a lookup handle with no personal data. If the fbevents request is still pending when the browser leaves for Stripe it can be lost; the server copy covers it.
+- **Domain verification:** DNS based; there is no `facebook-domain-verification` meta tag.
+
 ## Security headers
 
 All static responses, including `/reservation.html`, carry a CSP:
-- `default-src 'self'`; scripts from self only;
+- `default-src 'self'`; scripts from self and `https://connect.facebook.net` (Meta pixel);
 - styles from self and fonts.googleapis.com; fonts from self and fonts.gstatic.com;
-- `connect-src 'self'`, `frame-ancestors 'none'`;
+- images and `connect-src` from self and `https://www.facebook.com` (pixel beacons), `frame-ancestors 'none'`;
 - plus `X-Frame-Options: DENY`.
 
 The API routes are `no-store` and `no-referrer`.
@@ -96,6 +109,7 @@ The API routes are `no-store` and `no-referrer`.
 npm ci
 npm run test:js        # node --test tests/js/  (LOCAL/MOCK; Stripe-faithful synthetic fake)
 npm run test:browser   # builds to .tmp/build, local harness, Chrome, desktop+mobile, SYNTHETIC provider
+npm run test:pixel-browser  # Meta pixel event sequence with a stubbed fbevents.js; GPC and placeholder no-ops
 npm test               # legacy Python preview tests (not evidence for the Vercel routes)
 ```
 

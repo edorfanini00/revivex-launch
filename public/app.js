@@ -222,6 +222,8 @@
 
         if (d.state === 'redirect' && typeof d.url === 'string' && d.url.startsWith('https://checkout.stripe.com/')) {
           leaving = true; // keep the button busy while the browser leaves
+          // Measurement hook (public/meta-pixel.js): checkout is opening for this operation.
+          try { window.dispatchEvent(new CustomEvent('revivex:checkout-opening', { detail: { operation: op.token } })); } catch { /* never block checkout */ }
           window.location.assign(d.url);
           return;
         }

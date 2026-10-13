@@ -47,7 +47,7 @@
         "Cache-Control": "no-store",
         "Referrer-Policy": "no-referrer",
         "X-Robots-Tag": "noindex",
-        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' https://connect.facebook.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://www.facebook.com; connect-src 'self' https://www.facebook.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff"
       }
@@ -56,7 +56,7 @@
       "src": "/(.*)",
       "dest": "/public/$1",
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' https://connect.facebook.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://www.facebook.com; connect-src 'self' https://www.facebook.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff"
       }
