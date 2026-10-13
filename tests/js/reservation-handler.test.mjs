@@ -23,11 +23,11 @@ async function get(h, query = `session_id=${ID}`, method = 'GET') {
 }
 const withSession = s => fakeProvider({ retrieveCheckoutSession: async () => s });
 
-test('paid, verified session returns only state, fixed amount, reference and mode', async () => {
+test('paid, verified session returns only state, fixed amount, reference, mode and the measurement fresh flag', async () => {
   const h = setup({ provider: withSession(paidSession({ id: ID })) });
   const r = await get(h);
   assert.equal(r.statusCode, 200);
-  assert.deepEqual(r.json(), { ok: true, state: 'confirmed', amount: 10000, currency: 'usd', reference: 'pi_TESTPAID000001', mode: 'test' });
+  assert.deepEqual(r.json(), { ok: true, state: 'confirmed', amount: 10000, currency: 'usd', reference: 'pi_TESTPAID000001', mode: 'test', fresh: false });
   assert.equal(r.headers['cache-control'], 'no-store, max-age=0');
   assert.equal(r.headers['referrer-policy'], 'no-referrer');
   for (const leak of ['buyer-pii', 'Pat Example', 'cs_secret', 'owner@example', 'checkout.stripe.com', SECRET]) assert.ok(!r.body.includes(leak), leak);

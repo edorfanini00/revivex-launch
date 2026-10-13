@@ -1,15 +1,18 @@
 /* Meta pixel for the preorder deposit funnel.
-   Sends nothing (and loads nothing from Meta) while the pixel id is the placeholder or
-   the browser sends Global Privacy Control. The page scripts never call Meta directly:
+   Sends nothing (and loads nothing from Meta) while the pixel id is the placeholder, off
+   the canonical origin (previews, aliases, local copies), or when the browser sends
+   Global Privacy Control. The page scripts never call Meta directly:
    app.js announces "revivex:checkout-opening" just before it leaves for Stripe, and
    reservation.js announces "revivex:deposit-status" after the server lookup. Only a
-   server-confirmed paid deposit becomes a Purchase. The same event ids are sent from the
-   server (lib/meta-capi.js) so Meta counts each event once. */
-import { META_PIXEL_ID } from './meta-pixel-id.js';
+   server-confirmed, recently paid, live mode deposit becomes a Purchase. The same event
+   ids are sent from the server (lib/meta-capi.js) so Meta counts each event once. */
+import { META_PIXEL_ID, META_PIXEL_ORIGIN } from './meta-pixel-id.js';
 
 // Mirrors DEPOSIT in lib/deposit-config.js ($100.00 USD).
 export const DEPOSIT_EVENT = Object.freeze({ content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
-export const PURCHASE_KEY_PREFIX = 'revivex.metaPurchase.';
+// IndexedDB store holding the checkout sessions this browser already reported.
+export const PURCHASE_DB = 'revivex-meta';
+export const PURCHASE_STORE = 'purchases';
 const FBEVENTS_URL = 'https://connect.facebook.net/en_US/fbevents.js';
 const SESSION_RE = /^cs_(test|live)_[A-Za-z0-9]{8,250}$/;
 const OPERATION_ID_RE = /^[A-Za-z0-9_-]{22}$/;
@@ -28,6 +31,32 @@ export function operationEventId(token) {
   } catch {
     return null;
   }
+}
+
+// Claims a key once per browser profile, atomically across tabs: readwrite transactions
+// on one store run one at a time for the whole origin, and "add" fails (aborting the
+// transaction) when the key already exists. Resolves true only for the single caller
+// whose add committed; false on every other outcome, including IndexedDB being
+// unavailable or blocked (fail closed: the server copy still reaches Meta).
+export function claimOnce(idb, key) {
+  return new Promise(resolve => {
+    let open;
+    try { open = idb.open(PURCHASE_DB, 1); } catch { return resolve(false); }
+    open.onupgradeneeded = () => { try { open.result.createObjectStore(PURCHASE_STORE); } catch { /* exists */ } };
+    open.onerror = () => resolve(false);
+    open.onsuccess = () => {
+      const db = open.result;
+      const done = won => { try { db.close(); } catch { /* ignore */ } resolve(won); };
+      try {
+        const tx = db.transaction(PURCHASE_STORE, 'readwrite');
+        tx.oncomplete = () => done(true);
+        tx.onabort = () => done(false);
+        tx.objectStore(PURCHASE_STORE).add(Date.now(), key).onerror = () => { /* ConstraintError aborts the transaction */ };
+      } catch {
+        done(false);
+      }
+    };
+  });
 }
 
 export const purchaseEventId = sessionId => (typeof sessionId === 'string' && SESSION_RE.test(sessionId) ? `deposit_${sessionId}` : null);
@@ -49,8 +78,8 @@ export function loadFbq(win) {
   return fbq;
 }
 
-export function createPixel({ win, id = META_PIXEL_ID, load = loadFbq }) {
-  const enabled = validPixelId(id) && !gpcEnabled(win.navigator);
+export function createPixel({ win, id = META_PIXEL_ID, origin = META_PIXEL_ORIGIN, load = loadFbq, claim = key => claimOnce(win.indexedDB, key) }) {
+  const enabled = validPixelId(id) && win.location.origin === origin && !gpcEnabled(win.navigator);
   let fbq = null;
   const track = (...args) => { if (!fbq) return null; fbq('track', ...args); return args; };
   return {
@@ -71,20 +100,16 @@ export function createPixel({ win, id = META_PIXEL_ID, load = loadFbq }) {
       const eventID = operationEventId(token);
       return eventID ? track('InitiateCheckout', { ...DEPOSIT_EVENT }, { eventID }) : null;
     },
-    // Only a server-confirmed paid deposit, at most once per checkout session per browser.
-    // If storage is unavailable nothing is sent (the server copy still reaches Meta).
-    purchase({ state, sessionId } = {}) {
-      if (!fbq || state !== 'confirmed') return null;
+    // Only a server-confirmed paid live deposit that the server reports as recently paid
+    // ("fresh"), at most once per checkout session per browser even across simultaneous
+    // tabs. Resolves to the tracked arguments, or null when nothing was sent.
+    purchase({ state, sessionId, fresh, mode } = {}) {
+      if (!fbq || state !== 'confirmed' || fresh !== true || mode !== 'live') return Promise.resolve(null);
       const eventID = purchaseEventId(sessionId);
-      if (!eventID) return null;
-      const key = PURCHASE_KEY_PREFIX + sessionId;
-      try {
-        if (win.localStorage.getItem(key)) return null;
-        win.localStorage.setItem(key, '1');
-      } catch {
-        return null;
-      }
-      return track('Purchase', { ...DEPOSIT_EVENT }, { eventID });
+      if (!eventID || !sessionId.startsWith('cs_live_')) return Promise.resolve(null);
+      return Promise.resolve()
+        .then(() => claim(sessionId))
+        .then(won => (won === true ? track('Purchase', { ...DEPOSIT_EVENT }, { eventID }) : null), () => null);
     },
   };
 }
