@@ -1072,3 +1072,71 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 }
 .cta .link-btn { justify-self: start; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); text-decoration: underline; cursor: pointer; }
 .reserve-form [hidden], .doc [hidden] { display: none !important; }
+
+/* =====================================================================
+   v21 desktop layout: one container for nav, sections and footer.
+   --edge resolves against each element's own containing block (the page
+   width), so the fixed nav and every section share the same left and
+   right edges with or without a classic scrollbar. Desktop only; the
+   tablet and phone rules above are unchanged.
+   ===================================================================== */
+@media (min-width: 981px) {
+  :root {
+    --pad: clamp(40px, 5vw, 80px);
+    --wrap: 1520px;
+    --edge: max(var(--pad), calc((100% - var(--wrap)) / 2));
+    --sec: clamp(96px, 8vw, 128px);
+    --col-gap: 24px;
+  }
+
+  /* Nav: links, logo and CTA on the container edges, always over the hero image */
+  .nav { padding: 16px var(--edge); }
+
+  /* Hero: the frame fills the window (6px inset); copy starts on the container edge */
+  .hero-frame { max-width: none; }
+  .hero-copy { left: max(calc(var(--pad) - 6px), calc((100% - var(--wrap)) / 2)); max-width: none; }
+  .hero-title { font-size: clamp(40px, 3.3vw, 60px); }
+  .hero-sub { max-width: 400px; }
+  .hero-veil { background:
+    linear-gradient(90deg, rgba(15, 22, 32, .6) 0%, rgba(15, 22, 32, .48) 30%, rgba(15, 22, 32, .3) 44%, rgba(15, 22, 32, .08) 56%, rgba(15, 22, 32, 0) 64%),
+    linear-gradient(0deg, rgba(15, 22, 32, .4) 0%, rgba(15, 22, 32, 0) 30%),
+    linear-gradient(180deg, rgba(15, 22, 32, .35) 0%, rgba(15, 22, 32, 0) 18%); }
+
+  /* Vertical rhythm: one section gap, never doubled */
+  .works-with { padding: 56px var(--edge); }
+  .block, .steps, .details, .cta { padding-top: var(--sec); padding-bottom: 0; }
+  .faq { padding: var(--sec) 0; }
+
+  /* Section heads: heading on the left half, copy on the right half, sharing a baseline */
+  .split-head { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--col-gap); align-items: end; align-items: last baseline; margin-bottom: clamp(40px, 3.6vw, 56px); }
+  .split-head h2 { font-size: clamp(44px, 4.2vw, 64px); max-width: 17ch; }
+  .split-side p { font-size: clamp(18px, 1.05vw, 20px); line-height: 1.5; max-width: 38ch; }
+  .split-side .btn { margin-top: 24px; }
+
+  /* Steps and gallery on the same column gap; the right half of every head lines up with step 3 */
+  .steps-row { gap: var(--col-gap); }
+  .hstep .photo { aspect-ratio: 4 / 5; }
+  .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; gap: var(--col-gap); height: auto; }
+  .g-tall { grid-row: auto; }
+  .g-item { aspect-ratio: 1170 / 1452; }
+
+  /* Preorder: a full width block, copy and form as equal halves */
+  .cta-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(48px, 6vw, 112px); padding: clamp(64px, 6vw, 104px) clamp(48px, 5.5vw, 96px); align-items: center; }
+  .cta-copy h2 { font-size: clamp(48px, 4.8vw, 76px); margin-bottom: 20px; }
+  .cta-copy p { font-size: 19px; max-width: 34ch; }
+  .reserve-form { gap: 18px; max-width: 560px; width: 100%; justify-self: end; }
+  .cta .deposit-panel { padding: 20px 22px; font-size: 16px; }
+  .cta .consent { font-size: 14px; }
+  .cta .reserve-form .btn { height: 56px; font-size: 16px; }
+  .deposit-note { font-size: 13px; }
+
+  /* FAQ: title column one third wide and sticky, list on the gallery's second column */
+  .faq-wrap { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--col-gap); align-items: start; }
+  .faq-head { position: sticky; top: 104px; }
+  .faq-head h2 { font-size: clamp(44px, 4.2vw, 64px); }
+  .faq-list { grid-column: 2 / -1; }
+  .faq details p { max-width: 64ch; }
+
+  /* Footer: logo and links span the full container (the legacy two column grid cut the links short) */
+  .footer-top { grid-column: 1 / -1; }
+}

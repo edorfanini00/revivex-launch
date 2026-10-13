@@ -68,7 +68,11 @@ try {
     check((await page.locator('h1.hero-title').innerText()).replace(/\s+/g, ' ').trim() === HERO_H1, `${tag}: hero headline unchanged`);
     check(await page.locator('#heroCanvas').count() === 1 && await page.locator('img.hero-fallback[src="/assets/v11/hero-poster.jpg"]').count() === 1, `${tag}: hero canvas + approved graphite poster retained`);
     const heroBtn = page.locator('.hero-actions .btn');
-    check((await heroBtn.innerText()).trim() === 'Reserve with a $100 deposit' && (await heroBtn.getAttribute('href')) === '#reserve', `${tag}: hero CTA`);
+    check((await heroBtn.innerText()).trim() === 'Preorder' && (await heroBtn.getAttribute('href')) === '#reserve', `${tag}: hero CTA reads Preorder`);
+    const ctaLabels = await page.$$eval('.nav-cta, .hero-actions .btn, .split-side .btn, #reserveBtn', els => els.map(e => e.textContent.trim()));
+    check(ctaLabels.length === 4 && ctaLabels.every(t => t === 'Preorder'), `${tag}: every order button (nav, hero, mid page, form) reads Preorder`, ctaLabels.join(' | '));
+    check(await page.locator('a[href="#reserve"], button[type="submit"]').evaluateAll(els => els.every(e => e.textContent.trim() === 'Preorder')), `${tag}: no order button keeps the old Reserve label`);
+    check((await page.locator('#reserve-title').innerText()).trim() === 'Preorder yours.', `${tag}: section heading reads Preorder yours.`);
     await page.screenshot({ path: path.join(OUT, `${tag}-01-hero.png`) });
 
     const btn = page.locator('#reserveBtn');
@@ -332,6 +336,43 @@ try {
       check(ov <= 0, `${tag}: ${doc} no horizontal overflow`, ov);
       await page.screenshot({ path: path.join(OUT, `${tag}-${doc}.png`), fullPage: true });
     }
+    await ctx.close();
+  }
+
+  // ---------------- Desktop layout: one container for nav, sections and footer ----------------
+  const MACHINE_LEFT_X = 942; // left edge of the machine body in the 1600x900 hero poster
+  for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
+    const tag = `layout-${w}`;
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+    await ctx.route('https://checkout.stripe.com/**', r => r.abort());
+    const page = await ctx.newPage();
+    await page.goto(`${U}/`, { waitUntil: 'networkidle' });
+    const m = await page.evaluate((mx) => {
+      const R = s => document.querySelector(s).getBoundingClientRect();
+      const vw = document.documentElement.clientWidth;
+      const links = [...document.querySelectorAll('.nav-links a, .nav .logo, .nav-cta')].map(e => e.getBoundingClientRect());
+      const heads = [...document.querySelectorAll('.split-head')].map(e => e.getBoundingClientRect());
+      const frame = R('.hero-frame'), title = R('.hero-title');
+      const s = Math.max(frame.width / 1600, frame.height / 900);
+      const machineLeft = frame.left + (frame.width - 1600 * s) * 0.64 + mx * s;
+      return {
+        vw, overflow: document.documentElement.scrollWidth - vw,
+        linksInside: links.every(r => r.width > 0 && r.left >= 0 && r.right <= vw),
+        linksOnHero: links.every(r => r.left >= frame.left + 8 && r.right <= frame.right - 8),
+        navLeft: R('.nav-links a').left, navRight: R('.nav-cta').right,
+        heads: heads.map(r => [r.left, r.right]),
+        others: ['.steps-row', '.gallery', '.cta-inner', '.faq-wrap', '.footer'].map(q => [q, R(q).left, R(q).right]),
+        titleRight: title.right, machineLeft,
+      };
+    }, MACHINE_LEFT_X);
+    check(m.overflow <= 0, `${tag}: no horizontal overflow`, m.overflow);
+    check(m.linksInside, `${tag}: nav links, logo and CTA fully inside the viewport`);
+    check(m.linksOnHero, `${tag}: nav sits over the hero image at the top of the page (no white on white)`);
+    check(m.heads.every(([l, r]) => Math.abs(l - m.navLeft) <= 2 && Math.abs(r - m.navRight) <= 2), `${tag}: nav left/right edges align with every section head container`, JSON.stringify({ nav: [m.navLeft, m.navRight], heads: m.heads }));
+    check(m.others.every(([, l, r]) => Math.abs(l - m.navLeft) <= 2 && Math.abs(r - m.navRight) <= 2), `${tag}: steps, gallery, preorder, FAQ and footer share the nav container`, JSON.stringify(m.others));
+    check(m.titleRight + 80 <= m.machineLeft, `${tag}: hero headline clears the machine`, JSON.stringify({ titleRight: m.titleRight, machineLeft: m.machineLeft }));
+    if (w === 1920) check(m.navRight - m.navLeft >= 1400, `${tag}: wide screens use a wide container, not a narrow strip`, m.navRight - m.navLeft);
+    await page.screenshot({ path: path.join(OUT, `${tag}-hero.png`) });
     await ctx.close();
   }
 } finally {
