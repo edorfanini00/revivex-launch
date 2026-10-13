@@ -149,9 +149,6 @@ h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.
 .field-row input { flex: 1; min-width: 0; background: transparent; border: 0; color: #fff; font: 15px var(--sans); padding: 0 18px; outline: none; }
 .field-row input::placeholder { color: rgba(255, 255, 255, .5); }
 .field-row:focus-within { border-color: rgba(255, 255, 255, .55); }
-.consent { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; font-size: 13px; color: rgba(255, 255, 255, .68); cursor: pointer; }
-.consent input { margin-top: 3px; width: 16px; height: 16px; accent-color: #fff; flex: none; }
-.consent a { text-decoration: underline; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .form-msg { min-height: 22px; margin-top: 14px; font-size: 14px; }
 .form-msg.ok { color: #fff; }
@@ -371,7 +368,6 @@ button[disabled] { opacity: .6; cursor: wait; }
   .waitlist-card { padding: 48px 22px; }
   .waitlist h2 { font-size: 34px; }
   .waitlist-sub { font-size: 15px; margin-bottom: 24px; }
-  .consent { font-size: 12.5px; }
 
   .faq-wrap { padding: 0 24px; gap: 24px; }
   .faq summary { font-size: 16px; padding: 20px 36px 20px 0; }
@@ -663,9 +659,6 @@ p { text-wrap: pretty; }
 .cta input[type=email]::placeholder { color: var(--ink-3); }
 .cta input[type=email]:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,31,56,.1); }
 .cta .btn { height: 52px; }
-.cta .consent { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
-.cta .consent input { margin-top: 3px; accent-color: var(--navy); }
-.cta .consent a { color: var(--ink); }
 .cta .form-msg { margin-top: 10px; font-size: 14px; color: var(--ink); }
 
 /* FAQ */
@@ -1035,7 +1028,6 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 .reserve-form { display: grid; gap: 16px; }
 .cta .deposit-panel { margin: 0; padding: 18px 20px; border-radius: var(--r-md); background: #fff; border: 1px solid rgba(15,31,56,.12); font-size: 15px; line-height: 1.5; color: var(--ink-2); }
 .cta .deposit-panel b { color: var(--ink); font-weight: 600; }
-.cta .reserve-form .consent { margin-top: 0; }
 .cta .reserve-form .btn { width: 100%; }
 .cta .reserve-form .btn:disabled { background: rgba(10,10,10,.28); cursor: not-allowed; transform: none; }
 .cta .reserve-form .btn[aria-busy="true"] { background: #0A0A0A; cursor: progress; }
@@ -1126,7 +1118,6 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   .cta-copy p { font-size: 19px; max-width: 34ch; }
   .reserve-form { gap: 18px; max-width: 560px; width: 100%; justify-self: end; }
   .cta .deposit-panel { padding: 20px 22px; font-size: 16px; }
-  .cta .consent { font-size: 14px; }
   .cta .reserve-form .btn { height: 56px; font-size: 16px; }
   .deposit-note { font-size: 13px; }
 
@@ -1144,4 +1135,46 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 /* Tall desktop class viewports (e.g. 1024x1366): the cover crop pulls the machine left, so the headline steps down to keep clear of it */
 @media (min-width: 981px) and (max-aspect-ratio: 1/1) {
   .hero-title { font-size: clamp(30px, 3vw, 48px); }
+}
+
+/* =====================================================================
+   Direct checkout: every Preorder button opens Stripe Checkout.
+   Busy state, deposit disclosure line and per-button messages.
+   ===================================================================== */
+.btn[aria-busy="true"] { cursor: progress; }
+.btn-spinner { flex: none; width: 14px; height: 14px; margin-right: 9px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin .75s linear infinite; }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn-spinner { animation-duration: 1.8s; } }
+
+.cta-terms { margin: 12px 0 0; font-size: 13px; line-height: 1.45; color: var(--ink-3); }
+.cta-terms a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 2px; }
+.split-side .cta-terms { margin-top: 12px; font-size: 13px; line-height: 1.45; color: var(--ink-3); max-width: none; }
+.hero-terms { flex-basis: 100%; margin-top: 4px; color: rgba(255, 255, 255, .88); }
+@media (min-width: 641px) {
+  /* Kept to the subhead's measure so the line stays on the dark side of the photo */
+  .hero-actions { display: grid; justify-items: start; }
+  .hero-terms { max-width: 400px; text-wrap: pretty; }
+  .split-side .cta-terms { max-width: 46ch; text-wrap: pretty; }
+}
+.hero-terms a { color: #fff; }
+
+.form-msg.cta-msg { min-height: 0; margin: 10px 0 0; font-size: 13.5px; line-height: 1.45; max-width: 40ch; }
+.form-msg.cta-msg:empty { display: none; }
+.form-msg.cta-msg.err { color: #9A2B12; }
+.cta-msg a { color: inherit; text-decoration: underline; }
+/* Over the hero image and under the fixed nav the message sits on a light chip */
+.hero .form-msg.cta-msg, .nav .form-msg.cta-msg { padding: 10px 14px; border-radius: 12px; background: rgba(255, 255, 255, .96); box-shadow: 0 10px 28px rgba(0, 0, 0, .16); }
+.hero .form-msg.cta-msg { flex-basis: 100%; margin-top: 4px; }
+.nav .form-msg.cta-msg { position: absolute; top: calc(100% - 4px); right: calc(var(--pad) + 8px); width: max-content; max-width: min(360px, calc(100vw - 32px)); }
+@media (min-width: 981px) { .nav .form-msg.cta-msg { right: var(--edge); } }
+@media (max-width: 640px) {
+  /* Beside the button on phones, so the headline keeps its place over the counter */
+  .hero-actions { position: relative; flex-wrap: nowrap; align-items: center; gap: 14px; }
+  .hero-terms { flex: 1 1 auto; max-width: 250px; margin: 0; font-size: 12px; line-height: 1.4; }
+  .hero-actions .form-msg.cta-msg { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); margin: 0; max-width: none; }
+  .hero-actions .btn { flex: none; }
+  /* Phone buttons beside a logo or a disclosure: "Opening…" keeps them from crowding it */
+  .nav-cta .busy-more, .hero-actions .busy-more { display: none; }
+  .split-side .cta-terms { font-size: 12.5px; }
+  .nav .form-msg.cta-msg { right: 16px; }
 }
