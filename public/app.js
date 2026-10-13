@@ -128,7 +128,9 @@
   })();
   const attribution = () => { try { return JSON.parse(store.get(ATTR_KEY) || '{}'); } catch { return {}; } };
 
-  function idle() { inFlight = false; btn.disabled = !available; btn.textContent = LABEL; btn.removeAttribute('aria-busy'); }
+  // Reserve stays disabled (and dimmed by its :disabled style) while the reconcile/restart
+  // control is showing, because only that control may start another attempt.
+  function idle() { inFlight = false; btn.disabled = !available || !restart.hidden; btn.textContent = LABEL; btn.removeAttribute('aria-busy'); }
   const UNAVAILABLE = 'Reservations are temporarily unavailable. This page cannot open a checkout right now.';
   const UNCERTAIN = 'We could not confirm the checkout status. Check your card statement or banking app for a $100 Revivex payment before trying again.';
   const RECONCILE = 'We could not confirm whether your earlier checkout attempt was paid. Before reserving again, check your card statement or banking app for a $100 Revivex payment (a receipt email may not arrive). If you were charged, or are unsure, contact support@revivex.store and we will check it for you.';
@@ -186,6 +188,7 @@
   restart.addEventListener('click', () => {
     dropOp();
     restart.hidden = true;
+    btn.disabled = !available;
     say('', true);
     btn.focus();
   });

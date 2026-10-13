@@ -41,7 +41,7 @@
       }
     },
     {
-      "src": "/reservation.html",
+      "src": "/reservation\\.html",
       "dest": "/public/reservation.html",
       "headers": {
         "Cache-Control": "no-store",

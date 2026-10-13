@@ -194,7 +194,13 @@ try {
     check(/could not confirm whether your earlier checkout attempt was paid/.test(m500) && /card statement/.test(m500) && /support@revivex\.store/.test(m500) && !/No payment/i.test(m500), `${tag}: saved 500 -> bounded reconcile copy`, m500);
     check((await api('/__synthetic/state')).sessionCount === c500, `${tag}: saved 500 created nothing and minted no new operation`);
     await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-06b-saved-500-reconcile.png`) });
+    // correctness r2 N2: while the restart control shows, Reserve is disabled and dimmed.
+    const look = () => page.evaluate(() => { const b = document.getElementById('reserveBtn'), c = getComputedStyle(b); return { disabled: b.disabled, bg: c.backgroundColor, opacity: c.opacity, cursor: c.cursor }; });
+    const blocked = await look();
     await page.locator('#reserveRestart').click();
+    const freed = await look();
+    check(blocked.disabled && blocked.cursor === 'not-allowed' && (blocked.bg !== freed.bg || blocked.opacity !== freed.opacity), `${tag}: reserve disabled and dimmed while restart shows`, JSON.stringify(blocked));
+    check(!freed.disabled && await page.locator('#reserveRestart').isHidden(), `${tag}: reserve re-enabled when restart hides`, JSON.stringify(freed));
 
     // Unknown outcomes (network lost before Stripe) are retried with the same operation,
     // then bounded: after 6 unknowns the visitor gets the reconcile path, not a dead end.
@@ -231,8 +237,8 @@ try {
     const rm = await page.locator('#reserveMsg').innerText();
     check(/earlier checkout attempt/.test(rm) && /support@revivex\.store/.test(rm) && /card statement/.test(rm), `${tag}: aged attempt asks to reconcile`, rm);
     check((await api('/__synthetic/state')).sessionCount === c1, `${tag}: aged attempt created nothing`);
-    await btn.click();
-    check((await api('/__synthetic/state')).sessionCount === c1, `${tag}: reserve blocked until explicit restart`);
+    await btn.click({ force: true, timeout: 2000 }).catch(() => {});
+    check(await btn.isDisabled() && (await api('/__synthetic/state')).sessionCount === c1, `${tag}: reserve blocked (disabled) until explicit restart`);
     await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-07-reconcile.png`) });
     await page.locator('#reserveRestart').click();
     await Promise.all([page.waitForURL(/checkout\.stripe\.com/), btn.click()]);

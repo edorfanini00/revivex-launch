@@ -1,0 +1,10 @@
+# Upload only what the deployment needs: public/**, api/*.js, lib/*, vercel.json and
+# package files. Local residue, tests, generated assets and docs stay out.
+.tmp
+node_modules
+__pycache__
+tests
+gen-*
+dist
+evidence
+*.md

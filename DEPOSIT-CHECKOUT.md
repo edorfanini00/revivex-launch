@@ -65,9 +65,9 @@ The legacy `/api/signup` always returns 503 "Nothing was saved" and logs nothing
 
 ## Rate limiting (limits stated honestly)
 
-- In code: a per-instance, per-IP limit (20/min for checkout, 30/min for lookups) plus a per-instance ceiling across all callers (120/min checkout, 240/min lookups) that bounds Stripe call amplification even when IPs rotate. Throttled entries are never reset early.
-- Limits: the counters live in one warm function instance, so they are **not shared across instances or regions** and reset on cold start. Per-IP keys use `x-vercel-forwarded-for` / `x-real-ip`, which Vercel overwrites at its edge to prevent spoofing (vercel.com/docs/headers/request-headers). That is not verified on a deployment here.
-- **Required before live (not configured by this code):** a Vercel Firewall rate-limit rule on `/api/checkout` and `/api/reservation`.
+- In code: a per-instance, per-IP limit (20/min for checkout, 30/min for lookups) plus a per-instance ceiling across all callers that bounds Stripe call amplification even when IPs rotate. The checkout ceiling (120/min) counts only `create` requests that will call Stripe, after the token, age and binding checks; `start` (no Stripe call) has its own generous ceiling (600/min), so free requests cannot lock visitors out of checkout. The lookup ceiling (240/min) counts only well-formed session ids, each of which calls Stripe. Throttled entries are never reset early. Residual: 120 *valid* creates/min can still use up the checkout ceiling; the Firewall rule below is the control for that.
+- Limits: the counters live in one warm function instance, so they are **not shared across instances or regions** and reset on cold start. Per-IP keys use `x-vercel-forwarded-for` / `x-real-ip` (IPv4: full address; IPv6: the /64 prefix, because one subscriber usually holds a whole /64), which Vercel overwrites at its edge to prevent spoofing (vercel.com/docs/headers/request-headers). That is not verified on a deployment here.
+- **Required before live (not configured by this code):** a Vercel Firewall rate-limit rule on `/api/checkout` and `/api/reservation`, with IPv6 clients keyed equivalently (by /64), or confirm how Firewall keys IPv6.
 
 ## Security headers
 

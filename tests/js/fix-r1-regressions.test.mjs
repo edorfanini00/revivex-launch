@@ -207,8 +207,11 @@ test('limiter never clears all entries: a throttled key stays throttled while ma
 test('per-instance global ceiling bounds Stripe amplification even with rotating IPs', async () => {
   const synth = createSyntheticStripe({ accountId: ENV.STRIPE_EXPECTED_ACCOUNT_ID, priceId: ENV.STRIPE_DEPOSIT_PRICE_ID, productId: ENV.STRIPE_DEPOSIT_PRODUCT_ID });
   const h = createCheckoutHandler({ getEnv: () => ENV, providerFactory: () => synth.provider, log: makeLogger(logSink()), globalLimiter: createInstanceRateLimiter({ limit: 3, windowMs: 60_000 }) });
+  // r2 (security N-1): only creates that will call Stripe count against the ceiling.
+  const ops = [];
+  for (let i = 0; i < 6; i++) ops.push((await call(h, startBody(), { headers: { 'x-real-ip': `198.51.100.${i}` } })).json().operation);
   const codes = [];
-  for (let i = 0; i < 6; i++) codes.push((await call(h, startBody(), { headers: { 'x-real-ip': `198.51.100.${i}` } })).statusCode);
+  for (let i = 0; i < 6; i++) codes.push((await call(h, createBody(ops[i]), { headers: { 'x-real-ip': `198.51.100.${i}` } })).statusCode);
   assert.deepEqual(codes, [200, 200, 200, 429, 429, 429]);
 });
 
@@ -233,7 +236,7 @@ test('obviously weak signing secrets are refused', () => {
 // ---- security F-11: CSP / frame-ancestors ----
 test('HTML responses carry a CSP with frame-ancestors none', () => {
   const v = JSON.parse(read('vercel.json'));
-  for (const src of ['/(.*)', '/reservation.html']) {
+  for (const src of ['/(.*)', '/reservation\\.html']) {
     const route = v.routes.find(r => r.src === src);
     const csp = route?.headers?.['Content-Security-Policy'] || '';
     assert.match(csp, /frame-ancestors 'none'/, src);

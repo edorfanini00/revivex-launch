@@ -151,7 +151,7 @@ test('vercel.json routes new APIs before the static catch-all with no-store head
     assert.ok(i > -1 && i < catchAll, src);
     assert.equal(v.routes[i].dest, dest);
   }
-  for (const src of ['/api/checkout', '/api/reservation', '/reservation.html']) {
+  for (const src of ['/api/checkout', '/api/reservation', '/reservation\\.html']) {
     assert.equal(v.routes[srcs.indexOf(src)].headers['Cache-Control'], 'no-store');
   }
   assert.ok(v.builds.some(b => b.src === 'api/*.js' && b.use === '@vercel/node'));
