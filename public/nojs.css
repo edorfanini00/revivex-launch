@@ -1,3 +1,6 @@
 /* Loaded only without JavaScript (index.html <noscript>): the reveal-on-scroll script
    never runs, so content that waits for it is shown as is. */
 .reveal { opacity: 1; transform: none; }
+/* The launch updates signup posts JSON from app.js; without it there is nothing to send,
+   so the card and the footer form are not shown. */
+.signup, .footer-signup { display: none; }

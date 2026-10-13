@@ -548,6 +548,9 @@ try {
     await page.locator('#reserveBtn').dispatchEvent('click');
     await page.waitForTimeout(600);
     check(posts.length === 0 && stripeHits === 0 && !/\?/.test(page.url()), `${tag}: nothing posts to checkout and the form does not reload the page`, JSON.stringify({ posts: posts.length, stripeHits, url: page.url() }));
+    const su = await page.evaluate(() => [...document.querySelectorAll('.signup, .footer-signup')].map(e => getComputedStyle(e).display));
+    check(su.length === 2 && su.every(d => d === 'none'), `${tag}: launch updates signup (#reserve card and footer) is hidden without JavaScript`, JSON.stringify(su));
+    check(await page.locator('.signup-form[method="post"][action="/api/signup"]').count() === 2, `${tag}: signup forms never submit by GET (an address cannot land in the URL)`);
     await page.screenshot({ path: path.join(OUT, `${tag}-reserve.png`) });
     await ctx.close();
   }
@@ -558,6 +561,8 @@ try {
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     const o = await page.evaluate(() => ({ faq: getComputedStyle(document.querySelector('.faq details')).opacity, sheets: [...document.styleSheets].map(s => s.href || '').filter(h => /nojs/.test(h)).length }));
     check(o.faq === '0' && o.sheets === 0, 'js: reveal-on-scroll unchanged when JavaScript runs (no-JS stylesheet not loaded)', JSON.stringify(o));
+    const su = await page.evaluate(() => [...document.querySelectorAll('.signup, .footer-signup')].map(e => getComputedStyle(e).display));
+    check(su.length === 2 && su.every(d => d !== 'none'), 'js: launch updates signup is shown when JavaScript runs', JSON.stringify(su));
     await ctx.close();
   }
 

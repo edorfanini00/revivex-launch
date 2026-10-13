@@ -191,7 +191,7 @@
         <h3>Get launch updates</h3>
         <p>Not ready to preorder? We&rsquo;ll tell you when the price and ship date are set.</p>
       </div>
-      <form class="signup-form" data-source="reserve" novalidate>
+      <form class="signup-form" data-source="reserve" action="/api/signup" method="post" novalidate>
         <div class="signup-fields">
           <label class="sr-only" for="signupReserveEmail">Email</label>
           <input type="email" id="signupReserveEmail" name="email" placeholder="Email" autocomplete="email" inputmode="email" maxlength="254" required>
@@ -264,7 +264,7 @@
   </div>
   <div class="footer-signup">
     <p class="footer-signup-title">Get launch updates</p>
-    <form class="signup-form" data-source="footer" novalidate>
+    <form class="signup-form" data-source="footer" action="/api/signup" method="post" novalidate>
         <div class="signup-fields">
           <label class="sr-only" for="signupFooterEmail">Email</label>
           <input type="email" id="signupFooterEmail" name="email" placeholder="Email" autocomplete="email" inputmode="email" maxlength="254" required>
