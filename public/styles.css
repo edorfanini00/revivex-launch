@@ -1211,3 +1211,4 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   .signup-fields { grid-template-columns: 1fr; }
   .signup-form .btn { width: 100%; }
 }
+.footer .footer-signup .footer-signup-title { color: var(--ink); }
