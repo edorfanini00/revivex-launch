@@ -129,6 +129,20 @@ try {
     const opId = JSON.parse(Buffer.from(token.split('.')[0], 'base64url').toString()).id;
     check(ic.length === 1 && ic[0].path === '/' && JSON.stringify(ic[0].args) === JSON.stringify(['track', 'InitiateCheckout', DEPOSIT, { eventID: opId }]), 'hero Preorder (double click): InitiateCheckout fired once on the home page before the Stripe redirect, event id = operation id', JSON.stringify(ic));
 
+    // C4: Back from Stripe and Preorder again (another button, then Space on the hero)
+    // replays the same operation and session, and InitiateCheckout is not sent again.
+    const sessions0 = (await api('/__synthetic/state')).sessionCount;
+    for (const [how, sel] of [['click', '.nav-cta'], ['Space', '.hero-actions [data-checkout]']]) {
+      await page.waitForFunction(() => !document.querySelector('.nav-cta').hasAttribute('aria-busy'), null, { timeout: 5000 });
+      const go = page.waitForURL(/checkout\.stripe\.com/, { timeout: 10000 }).then(() => true, () => false);
+      if (how === 'click') await page.locator(sel).click(); else { await page.locator(sel).focus(); await page.keyboard.press('Space'); }
+      const gone = await go;
+      const icNow = calls.filter(c => c.args[1] === 'InitiateCheckout');
+      const st = await api('/__synthetic/state');
+      check(gone && page.url().endsWith(sessionId) && st.sessionCount === sessions0 && icNow.length === 1, `Back + retry (${how} ${sel}): same operation and session, InitiateCheckout still sent once per operation`, JSON.stringify({ redirected: gone, sameSession: page.url().endsWith(sessionId), newSessions: st.sessionCount - sessions0, initiateCheckouts: icNow.length, eventIDs: icNow.map(c => c.args[3] && c.args[3].eventID) }));
+      await page.goBack({ waitUntil: 'networkidle' });
+    }
+
     const before = calls.length;
     check(await receipt(page, S, sessionId) === 'not_completed', 'unpaid receipt is not_completed');
     check(!calls.slice(before).some(c => c.args[1] === 'Purchase'), 'no Purchase for an unpaid receipt');
@@ -150,6 +164,26 @@ try {
     check(errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'no console errors (incl. CSP violations)', errors.join(' | '));
     console.log('sequence:', tracks(calls).join(' -> '));
     fs.writeFileSync(path.join(OUT, 'pixel-on-sequence.json'), JSON.stringify(calls, null, 2));
+    await ctx.close();
+  }
+
+  // ---- A failed start sends no InitiateCheckout; the successful retry sends exactly one ----
+  {
+    const { ctx, page, calls, errors } = await newContext(browser);
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    await settle(page);
+    const ics = () => calls.filter(c => c.args[1] === 'InitiateCheckout');
+    let fail = true;
+    const steps = [];
+    await page.route('**/api/checkout', r => { if (r.request().method() !== 'POST') return r.continue(); const b = r.request().postDataJSON(); steps.push(b.step); return fail && b.step === 'start' ? r.abort() : r.continue(); });
+    await page.locator('.hero-actions [data-checkout]').click();
+    await page.waitForFunction(() => /could not be opened/.test((document.querySelector('.hero-actions .cta-msg') || {}).textContent || ''), null, { timeout: 8000 }).catch(() => {});
+    await settle(page);
+    check(ics().length === 0 && steps.join() === 'start' && /^https?:\/\/127/.test(page.url()), 'failed start: no InitiateCheckout, no create, no redirect', JSON.stringify({ initiateCheckouts: ics().length, steps: steps.join(','), url: page.url() }));
+    fail = false;
+    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('.hero-actions [data-checkout]').click()]);
+    check(ics().length === 1 && steps.join() === 'start,start,create', 'retry after the failed start: one InitiateCheckout', JSON.stringify({ initiateCheckouts: ics().length, steps: steps.join(',') }));
+    check(errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'failed start: no console errors', errors.join(' | '));
     await ctx.close();
   }
 

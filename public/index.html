@@ -25,6 +25,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/assets/v11/hero-poster.jpg">
   <link rel="stylesheet" href="/styles.css">
+  <!-- Without JavaScript nothing reveals on scroll, so show everything (no inline style: CSP) -->
+  <noscript><link rel="stylesheet" href="/nojs.css"></noscript>
 </head>
 <body>
 
@@ -38,7 +40,10 @@
     <img class="logo-light" src="/assets/brand/logo-light.png" alt="Revivex" width="448" height="63">
     <img class="logo-dark" src="/assets/brand/logo-dark.png" alt="" width="448" height="63">
   </a>
-  <a href="#reserve" class="btn nav-cta" data-checkout>Preorder</a>
+  <div class="nav-order">
+    <a href="/deposit-terms.html" class="nav-terms" id="navTerms"><span class="nav-terms-amt">$100 deposit</span><span class="sr-only">, </span><span class="nav-terms-ref">Fully refundable</span></a>
+    <a href="#reserve" class="btn nav-cta" data-checkout aria-describedby="navTerms">Preorder</a>
+  </div>
 </header>
 
 <main id="top">
@@ -56,7 +61,7 @@
           <p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight. One touch in the morning and your blend is ready.</p>
           <div class="hero-actions reveal-now">
             <a href="#reserve" class="btn" data-checkout>Preorder</a>
-            <p class="cta-terms hero-terms">$100 fully refundable deposit. Credited toward your machine. <a href="/deposit-terms.html">Terms</a></p>
+            <p class="cta-terms hero-terms">$100 fully refundable deposit, credited toward your machine. By preordering you accept the <a href="/deposit-terms.html">deposit terms</a>.</p>
           </div>
         </div>
 
@@ -126,7 +131,7 @@
     <div class="split-side">
       <p>The machine is designed to measure each supplement, blend it with water and pour one glass.</p>
       <a href="#reserve" class="btn" data-checkout>Preorder</a>
-      <p class="cta-terms">$100 fully refundable deposit. Credited toward your machine. <a href="/deposit-terms.html">Terms</a></p>
+      <p class="cta-terms">$100 fully refundable deposit, credited toward your machine. By preordering you accept the <a href="/deposit-terms.html">deposit terms</a>.</p>
     </div>
   </header>
   <div class="scene scene-left" aria-labelledby="s3-title">
@@ -176,7 +181,7 @@
       </div>
       <form class="reserve-form" id="reserveForm" novalidate>
         <p class="deposit-panel" id="depositPanel"><b>$100 USD today.</b> Fully refundable. Applied to the final machine price. No automatic balance charge.</p>
-        <button type="submit" class="btn" id="reserveBtn" data-checkout>Preorder</button>
+        <button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder</button>
         <p class="deposit-note">Preordering means you accept the <a href="/deposit-terms.html">deposit terms</a>. Payment is handled on Stripe&rsquo;s secure checkout page. Images show the design in development; the final machine may change. <a href="/privacy.html">Privacy</a></p>
         <p class="form-msg" id="reserveMsg" role="status" aria-live="polite"></p>
         <button type="button" class="link-btn" id="reserveRestart" hidden>I have checked. Start a new reservation</button>

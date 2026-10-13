@@ -156,10 +156,11 @@
   })();
   const attribution = () => { try { return JSON.parse(store.get(ATTR_KEY) || '{}'); } catch { return {}; } };
 
-  // The form button stays disabled (and dimmed by its :disabled style) while checkout is
-  // known to be unavailable or the reconcile/restart control is showing, because only
-  // that control may start another attempt. Before the configuration arrives it stays
-  // enabled; a click then waits for it.
+  // The form button is disabled in the HTML (no-JS) and enabled once this script runs. It
+  // stays disabled (and dimmed by its :disabled style) while checkout is known to be
+  // unavailable or the reconcile/restart control is showing, because only that control
+  // may start another attempt. Before the configuration arrives it is enabled; a click
+  // then waits for it.
   const refresh = () => { btn.disabled = inFlight || (loaded && !available) || !restart.hidden; };
   function busy(t) {
     t.setAttribute('aria-busy', 'true');
@@ -271,7 +272,13 @@
         if (d.state === 'redirect' && typeof d.url === 'string' && d.url.startsWith('https://checkout.stripe.com/')) {
           leaving = true; // keep the button busy while the browser leaves
           // Measurement hook (public/meta-pixel.js): checkout is opening for this operation.
-          try { window.dispatchEvent(new CustomEvent('revivex:checkout-opening', { detail: { operation: op.token } })); } catch { /* never block checkout */ }
+          // Announced once per operation: Back from Stripe and a retry replay the same
+          // session, so the stored operation remembers that it was already announced.
+          if (!op.announced) {
+            op.announced = true;
+            saveOp(op);
+            try { window.dispatchEvent(new CustomEvent('revivex:checkout-opening', { detail: { operation: op.token } })); } catch { /* never block checkout */ }
+          }
           window.location.assign(d.url);
           return;
         }
@@ -320,4 +327,27 @@
   }
   for (const t of triggers) if (t !== btn) t.addEventListener('click', e => onTrigger(e, t));
   form.addEventListener('submit', e => onTrigger(e, btn));
+
+  // With the script running the Preorder links act as buttons: announced as buttons and
+  // activated by Enter (native link behaviour) and Space. Space does not scroll the page;
+  // like a native button it activates on release, once however long it is held, and it
+  // goes through the same click path and in-flight guard as a pointer click.
+  for (const t of triggers) {
+    if (t === btn) continue;
+    t.setAttribute('role', 'button');
+    let spaceDown = false;
+    t.addEventListener('keydown', e => {
+      if (e.key !== ' ' || e.metaKey || e.ctrlKey || e.altKey) return;
+      e.preventDefault();
+      if (!e.repeat) spaceDown = true;
+    });
+    t.addEventListener('keyup', e => {
+      if (e.key !== ' ') return;
+      e.preventDefault();
+      if (spaceDown) { spaceDown = false; t.click(); }
+    });
+    t.addEventListener('blur', () => { spaceDown = false; });
+  }
+  // Without the script the section button stays disabled (nothing could take a deposit).
+  refresh();
 })();

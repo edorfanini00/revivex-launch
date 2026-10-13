@@ -1149,7 +1149,13 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 .cta-terms { margin: 12px 0 0; font-size: 13px; line-height: 1.45; color: var(--ink-3); }
 .cta-terms a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 2px; }
 .split-side .cta-terms { margin-top: 12px; font-size: 13px; line-height: 1.45; color: var(--ink-3); max-width: none; }
-.hero-terms { flex-basis: 100%; margin-top: 4px; color: rgba(255, 255, 255, .78); }
+.hero-terms { flex-basis: 100%; margin-top: 4px; color: rgba(255, 255, 255, .88); }
+@media (min-width: 641px) {
+  /* Kept to the subhead's measure so the line stays on the dark side of the photo */
+  .hero-actions { display: grid; justify-items: start; }
+  .hero-terms { max-width: 400px; text-wrap: pretty; }
+  .split-side .cta-terms { max-width: 46ch; text-wrap: pretty; }
+}
 .hero-terms a { color: #fff; }
 
 .form-msg.cta-msg { min-height: 0; margin: 10px 0 0; font-size: 13.5px; line-height: 1.45; max-width: 40ch; }
@@ -1164,11 +1170,31 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 @media (max-width: 640px) {
   /* Beside the button on phones, so the headline keeps its place over the counter */
   .hero-actions { position: relative; flex-wrap: nowrap; align-items: center; gap: 14px; }
-  .hero-terms { flex: 0 1 auto; max-width: 210px; margin: 0; font-size: 12px; line-height: 1.4; }
+  .hero-terms { flex: 1 1 auto; max-width: 250px; margin: 0; font-size: 12px; line-height: 1.4; }
   .hero-actions .form-msg.cta-msg { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); margin: 0; max-width: none; }
   .hero-actions .btn { flex: none; }
   /* Phone buttons beside a logo or a disclosure: "Opening…" keeps them from crowding it */
   .nav-cta .busy-more, .hero-actions .busy-more { display: none; }
   .split-side .cta-terms { font-size: 12.5px; }
   .nav .form-msg.cta-msg { right: 16px; }
+}
+
+/* The fixed nav Preorder: the deposit is disclosed right beside the button (a quiet two
+   line tag that links to the terms) and is the button's accessible description. */
+.nav-order { justify-self: end; display: flex; align-items: center; gap: 14px; }
+.nav-terms { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: inherit; text-decoration: none; text-align: right; white-space: nowrap; font-size: 12px; line-height: 1.2; letter-spacing: -0.005em; }
+.nav-terms-amt { font-weight: 500; }
+.nav-terms-ref { opacity: .72; }
+.nav-terms:hover .nav-terms-ref, .nav-terms:focus-visible .nav-terms-ref { opacity: 1; text-decoration: underline; text-underline-offset: 2px; }
+.nav-terms:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
+.nav:not(.scrolled) .nav-terms { text-shadow: 0 1px 10px rgba(0, 0, 0, .28); }
+@media (max-width: 640px) {
+  /* Phones: the bright top of the portrait hero sits behind the nav, so the tag and the
+     button share one tinted capsule that keeps the small text readable. (No
+     backdrop-filter: it would become the containing block of the nav error message.) */
+  .nav-order { gap: 10px; padding: 3px 3px 3px 14px; border-radius: 999px; background: rgba(16, 20, 26, .46); transition: background .4s; }
+  .nav.scrolled .nav-order { background: rgba(10, 10, 10, .05); }
+  .nav-terms { font-size: 11px; gap: 1px; }
+  .nav:not(.scrolled) .nav-terms { text-shadow: none; }
+  .nav:not(.scrolled) .nav-terms-ref { opacity: .82; }
 }

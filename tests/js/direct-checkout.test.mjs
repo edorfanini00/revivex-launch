@@ -13,44 +13,43 @@ import { ENV, req, res, logSink } from '../fixtures/deposit-fixtures.mjs';
 const ROOT = new URL('../../', import.meta.url);
 const read = p => fs.readFileSync(new URL(p, ROOT), 'utf8');
 const html = read('public/index.html');
-const app = read('public/app.js');
 
-test('no terms checkbox or checkbox gating in the page or the script', () => {
+// The page script's behaviour (Enter/Space, the in-flight guard, no scroll, request body,
+// once-per-operation InitiateCheckout, failed starts) is tested in a real browser:
+// tests/browser/deposit-browser.mjs and tests/browser/meta-pixel-browser.mjs. These tests
+// cover the static page that ships, which is what a visitor without JavaScript gets.
+
+test('no terms checkbox; the section button starts disabled and only the script enables it', () => {
   assert.doesNotMatch(html, /type="checkbox"|termsInput|class="consent"|I agree/);
-  assert.doesNotMatch(app, /termsInput|terms\.checked|agree to the deposit terms/);
-  assert.doesNotMatch(html, /id="reserveBtn"[^>]*\bdisabled\b/, 'the section button is not disabled before the configuration loads');
+  assert.match(html, /<button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder<\/button>/);
 });
 
-test('all four Preorder buttons open checkout and keep #reserve as the no-JS fallback', () => {
+test('all four Preorder buttons are marked for checkout; the three links keep #reserve as the no-JS fallback', () => {
   const buttons = html.match(/<(a|button)\b[^>]*\bdata-checkout\b[^>]*>Preorder<\/\1>/g) || [];
   assert.equal(buttons.length, 4, buttons.join('\n'));
-  assert.equal(buttons.filter(b => b.includes('href="#reserve"')).length, 3);
-  assert.match(buttons.join(''), /class="btn nav-cta"/);
-  assert.match(buttons.join(''), /id="reserveBtn"/);
-  assert.match(app, /querySelectorAll\('\[data-checkout\]'\)/);
-  assert.match(app, /e\.preventDefault\(\)/);
+  assert.equal(buttons.filter(b => /^<a href="#reserve"/.test(b)).length, 3, buttons.join('\n'));
+  assert.ok(buttons.some(b => /class="btn nav-cta"/.test(b)) && buttons.some(b => /id="reserveBtn"/.test(b)));
 });
 
-test('deposit terms stay disclosed next to the buttons, with terms and privacy links, no dashes', () => {
+test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet, no inline style)', () => {
+  assert.match(html, /<noscript><link rel="stylesheet" href="\/nojs\.css"><\/noscript>/);
+  const css = read('public/nojs.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /\.reveal\s*\{\s*opacity:\s*1;\s*transform:\s*none;\s*\}/);
+  assert.doesNotMatch(html, /<style|style="/, 'the CSP allows no inline style');
+});
+
+test('every Preorder button discloses the deposit next to it, with the terms link; no dashes', () => {
   const lines = html.match(/<p class="cta-terms[^"]*">[^\n]*<\/p>/g) || [];
   assert.equal(lines.length, 2, 'hero and mid page disclosure lines');
-  for (const l of lines) assert.match(l, /\$100 fully refundable deposit\. Credited toward your machine\. <a href="\/deposit-terms\.html">Terms<\/a>/);
+  for (const l of lines) assert.match(l, /\$100 fully refundable deposit, credited toward your machine\. By preordering you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
+  const nav = html.match(/<div class="nav-order">[\s\S]*?<\/div>/)[0];
+  assert.match(nav, /<a href="\/deposit-terms\.html" class="nav-terms" id="navTerms">/);
+  assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout aria-describedby="navTerms">Preorder<\/a>/);
+  assert.equal(nav.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(), '$100 deposit, Fully refundable Preorder');
   const note = html.match(/<p class="deposit-note">[^\n]*<\/p>/)[0];
   assert.match(note, /^<p class="deposit-note">Preordering means you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
   assert.match(note, /href="\/privacy\.html"/);
-  for (const t of [...lines, note]) assert.doesNotMatch(t.replace(/<[^>]+>/g, ''), /[–—]| - /);
-});
-
-test('the page still sends termsAccepted and the current terms version on every request', () => {
-  assert.match(app, /JSON\.stringify\(\{ termsAccepted: true, termsVersion, \.\.\.body \}\)/);
-  assert.match(app, /termsVersion = d\.termsVersion;/);
-});
-
-test('the InitiateCheckout hook still fires once, just before the redirect, with the operation token', () => {
-  const hook = app.match(/dispatchEvent\(new CustomEvent\('revivex:checkout-opening', \{ detail: \{ operation: op\.token \} \}\)\)/g) || [];
-  assert.equal(hook.length, 1);
-  const i = app.indexOf("'revivex:checkout-opening'");
-  assert.ok(i > app.indexOf("d.state === 'redirect'") && i < app.indexOf('window.location.assign(d.url)'));
+  for (const t of [...lines, nav, note]) assert.doesNotMatch(t.replace(/<[^>]+>/g, ''), /[–—]| - /);
 });
 
 test('server still requires termsAccepted and the current terms version (unchanged contract)', async () => {

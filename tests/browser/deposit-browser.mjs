@@ -47,13 +47,20 @@ async function scrollSettled(page) {
 
 // Clicks a Preorder button while holding its first checkout POST, so the busy state and
 // the scroll position can be read before the browser leaves for (intercepted) Stripe.
-async function openFrom(page, sel, shot) {
+// Waits until the scroll reveal around an element (if any) has fully faded in.
+const revealed = (page, sel) => page.waitForFunction(s => { const r = document.querySelector(s).closest('.reveal'); return !r || (r.classList.contains('in') && getComputedStyle(r).opacity === '1'); }, sel, { timeout: 5000 }).catch(() => {});
+
+// how: 'click' (pointer), or a key ('Enter' / 'Space') pressed on the focused button.
+// During the held request `more(page)` may press further keys or click other buttons.
+async function openFrom(page, sel, shot, { how = 'click', more } = {}) {
   const el = page.locator(sel);
   await el.scrollIntoViewIfNeeded();
   // Lazy images above the button load after the jump and scroll anchoring adjusts for them.
   await page.waitForLoadState('networkidle');
+  await revealed(page, sel);
   await page.waitForTimeout(300);
   await scrollSettled(page);
+  if (how !== 'click') { await el.focus(); await scrollSettled(page); }
   const y0 = await page.evaluate(() => { window.__scrolls = 0; addEventListener('scroll', () => { window.__scrolls++; }); return Math.round(scrollY); });
   const bodies = [];
   let release, held = false;
@@ -66,20 +73,42 @@ async function openFrom(page, sel, shot) {
     return route.continue();
   };
   await page.route('**/api/checkout', hold);
-  const left = page.waitForURL(/checkout\.stripe\.com/, { timeout: 10000 });
-  // A plain pointer click at the button (locator.click may itself scroll first).
-  const box = await el.boundingBox();
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  // Settles to true / false (never rejects), so a broken guard is reported with counts.
+  const left = page.waitForURL(/checkout\.stripe\.com/, { timeout: 10000 }).then(() => true, () => false);
+  if (how === 'click') {
+    // A plain pointer click at the button (locator.click may itself scroll first).
+    const box = await el.boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  } else {
+    await page.keyboard.press(how);
+  }
   await page.waitForFunction(s => document.querySelector(s).getAttribute('aria-busy') === 'true', sel, { timeout: 3000 }).catch(() => {});
   const busy = await page.evaluate(s => {
     const b = document.querySelector(s), r = b.getBoundingClientRect(), vw = document.documentElement.clientWidth;
     return { ariaBusy: b.getAttribute('aria-busy'), text: b.textContent.trim(), label: b.innerText.trim(), spinner: !!b.querySelector('.btn-spinner'), y: Math.round(scrollY), scrolls: window.__scrolls, hash: location.hash, overflow: document.documentElement.scrollWidth - vw, inside: r.left >= 0 && r.right <= vw, fits: b.scrollWidth <= b.clientWidth + 1, clearOfLogo: !b.closest('.nav') || r.left >= document.querySelector('.nav .logo').getBoundingClientRect().right + 8 };
   }, sel);
   if (shot) await page.screenshot({ path: shot });
+  if (more) await more(page);
+  const whileHeld = bodies.length;
   release();
-  await left;
+  const gone = await left;
   await page.unroute('**/api/checkout', hold);
-  return { y0, busy, bodies, steps: bodies.map(b => b.step), url: page.url() };
+  return { y0, busy, bodies, whileHeld, gone, steps: bodies.map(b => b.step), url: page.url() };
+}
+// Operation counts for failure details: starts, creates and new sessions.
+const counts = (r, sessions) => JSON.stringify({ steps: r.steps.join(','), starts: r.steps.filter(x => x === 'start').length, creates: r.steps.filter(x => x === 'create').length, postsWhileHeld: r.whileHeld, newSessions: sessions, redirected: r.gone, url: r.url });
+// Held and rapid keys plus pointer clicks on every Preorder button while one request is outstanding.
+async function hammer(page) {
+  for (let i = 0; i < 4; i++) await page.keyboard.down('Space'); // auto-repeat while held
+  await page.keyboard.up('Space');
+  for (let i = 0; i < 4; i++) await page.keyboard.down('Enter');
+  await page.keyboard.up('Enter');
+  for (let i = 0; i < 3; i++) { await page.keyboard.press('Space'); await page.keyboard.press('Enter'); }
+  for (const [, sel] of PREORDER_BUTTONS) {
+    const t = page.locator(sel);
+    if (await t.isVisible()) { await t.focus(); await page.keyboard.press('Space'); await page.keyboard.press('Enter'); await t.dispatchEvent('click'); }
+  }
+  await page.waitForTimeout(300);
 }
 
 const HERO_H1 = 'Your supplements, blended every morning';
@@ -135,8 +164,22 @@ try {
     check(!/convert/i.test(bodyText) && !/before[^.]{0,40}final order/i.test(bodyText), `${tag}: no refund cutoff in rendered page`);
     check(await page.locator('input[type="checkbox"], label.consent, #termsInput').count() === 0, `${tag}: no terms checkbox anywhere on the page`);
     const disclosures = await page.$$eval('.hero-terms, .split-side .cta-terms', els => els.map(e => [e.textContent.replace(/\s+/g, ' ').trim(), e.querySelector('a') && e.querySelector('a').getAttribute('href')]));
-    check(disclosures.length === 2 && disclosures.every(([t, h]) => t === '$100 fully refundable deposit. Credited toward your machine. Terms' && h === '/deposit-terms.html'), `${tag}: hero and mid page disclose the deposit with a terms link`, JSON.stringify(disclosures));
+    check(disclosures.length === 2 && disclosures.every(([t, h]) => t === '$100 fully refundable deposit, credited toward your machine. By preordering you accept the deposit terms.' && h === '/deposit-terms.html'), `${tag}: hero and mid page disclose the deposit and that preordering accepts the linked terms`, JSON.stringify(disclosures));
     check(await page.locator('.hero-terms').isVisible(), `${tag}: hero disclosure visible under the hero button`);
+    // The fixed nav Preorder discloses the deposit right beside it, at the top and once
+    // scrolled, and the disclosure is the button's accessible description.
+    for (const where of ['top', 'scrolled']) {
+      if (where === 'top') { await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await page.waitForTimeout(600); }
+      if (where === 'scrolled') { await page.evaluate(() => window.scrollTo({ top: document.getElementById('details').offsetTop, behavior: 'instant' })); await page.waitForTimeout(600); }
+      const nd = await page.evaluate(() => {
+        const b = document.querySelector('.nav-cta'), d = document.getElementById(b.getAttribute('aria-describedby') || '-'), logo = document.querySelector('.nav .logo').getBoundingClientRect();
+        if (!d) return { missing: true };
+        const r = d.getBoundingClientRect(), br = b.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+        return { text: d.textContent.replace(/\s+/g, ' ').trim(), href: d.getAttribute('href'), visible: r.width > 0 && getComputedStyle(d).visibility === 'visible' && getComputedStyle(d).display !== 'none', inside: r.left >= 0 && r.right <= vw, besideButton: r.right <= br.left && Math.abs((r.top + r.bottom) / 2 - (br.top + br.bottom) / 2) <= 6, clearOfLogo: r.left >= logo.right + 8, scrolled: document.getElementById('nav').classList.contains('scrolled') };
+      });
+      check(nd.text === '$100 deposit, Fully refundable' && nd.href === '/deposit-terms.html' && nd.visible && nd.inside && nd.besideButton && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has the deposit disclosure beside it (${where}), linked to the terms and as its description`, JSON.stringify(nd));
+    }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     const note = page.locator('#reserveForm .deposit-note');
     check(/^Preordering means you accept the deposit terms\./.test((await note.innerText()).trim()) && await note.locator('a[href="/deposit-terms.html"]').count() === 1 && await note.locator('a[href="/privacy.html"]').count() === 1, `${tag}: Preorder section discloses terms acceptance and links terms + privacy`);
     check(!/[\u2013\u2014]| - /.test(disclosures.map(d => d[0]).join(' ') + await note.innerText()), `${tag}: disclosure copy has no dashes`);
@@ -162,6 +205,69 @@ try {
       check(r.busy.overflow <= 0 && r.busy.inside && r.busy.fits && r.busy.clearOfLogo, `${tag}: ${name} busy label fits its button, inside the viewport and clear of the logo`, JSON.stringify(r.busy));
       check(r.steps.join() === 'start,create' && r.bodies.every(b => b.termsAccepted === true && b.termsVersion === 'deposit-terms-v2'), `${tag}: ${name} sends start then create with the current terms version`, JSON.stringify(r.bodies));
       check(st0.sessionCount === c + 1 && r.url === `https://checkout.stripe.com/c/pay/${st0.sessions[st0.sessions.length - 1].id}`, `${tag}: ${name} redirects to the Stripe-hosted session URL`, r.url);
+    }
+
+    // Keyboard: Enter and Space on each of the four buttons open checkout directly (Space
+    // does not scroll), and held / rapid keys and clicks on any button while the first
+    // request is outstanding still make one operation: one start, one create, one session.
+    check(await page.locator('.nav-cta, .hero-actions [data-checkout], .split-side [data-checkout]').evaluateAll(els => els.every(e => e.getAttribute('role') === 'button')), `${tag}: enhanced Preorder links are exposed as buttons`);
+    for (const [name, sel] of PREORDER_BUTTONS) {
+      for (const key of ['Enter', 'Space']) {
+        const c = (await api('/__synthetic/state')).sessionCount;
+        let r;
+        try {
+          await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+          await page.evaluate(() => sessionStorage.removeItem('revivex.depositOperation'));
+          r = await openFrom(page, sel, null, { how: key, more: hammer });
+        } catch (e) {
+          await page.waitForTimeout(1500);
+          const n = (await api('/__synthetic/state')).sessionCount - c;
+          check(false, `${tag}: ${key} on ${name} = one operation`, `${String(e).split('\n')[0]} :: newSessions=${n}`);
+          continue;
+        }
+        const st0 = await api('/__synthetic/state');
+        const n = st0.sessionCount - c;
+        check(r.busy.ariaBusy === 'true' && r.busy.spinner, `${tag}: ${key} on the ${name} button starts checkout (busy + spinner)`, JSON.stringify(r.busy));
+        check(r.busy.y === r.y0 && r.busy.scrolls === 0 && r.busy.hash === '', `${tag}: ${key} on the ${name} button does not scroll or change the hash`, JSON.stringify({ y0: r.y0, y: r.busy.y, scrolls: r.busy.scrolls, hash: r.busy.hash }));
+        check(r.whileHeld === 1 && r.steps.join() === 'start,create' && n === 1 && r.gone && r.url === `https://checkout.stripe.com/c/pay/${st0.sessions[st0.sessions.length - 1].id}`, `${tag}: ${key} on ${name} plus held/rapid keys and clicks during the request = one operation, one session, one redirect`, counts(r, n));
+      }
+    }
+
+    // Configuration still loading: the first click (nav or section) waits for it; rapid
+    // clicks and keys on every button in the meantime start nothing more.
+    for (const first of ['.nav-cta', '#reserveBtn']) {
+      let releaseGet, held = 0;
+      const gate = new Promise(r => { releaseGet = r; });
+      const posts = [];
+      const holdGet = async route => {
+        if (route.request().method() === 'GET') { held++; await gate; } else posts.push(route.request().postDataJSON().step);
+        return route.continue();
+      };
+      try {
+        await page.route('**/api/checkout', holdGet);
+        await page.goto(`${S}/`, { waitUntil: 'domcontentloaded' });
+        await page.evaluate(() => sessionStorage.removeItem('revivex.depositOperation'));
+        await page.waitForFunction(() => document.readyState === 'complete' || document.querySelector('.nav-cta').getAttribute('role') === 'button', null, { timeout: 5000 }).catch(() => {});
+        const c = (await api('/__synthetic/state')).sessionCount;
+        const left = page.waitForURL(/checkout\.stripe\.com/, { timeout: 10000 }).then(() => true, () => false);
+        await page.locator(first).click();
+        await page.locator('#reserveBtn').dispatchEvent('click');
+        for (let i = 0; i < 8; i++) await page.locator(i % 2 ? '.nav-cta' : '.hero-actions [data-checkout]').dispatchEvent('click');
+        await page.locator('.hero-actions [data-checkout]').focus();
+        await page.keyboard.press('Space'); await page.keyboard.press('Enter');
+        await page.waitForTimeout(300);
+        const before = posts.length;
+        const navBusy = await page.locator(first).getAttribute('aria-busy');
+        releaseGet();
+        const gone = await left;
+        await page.unroute('**/api/checkout', holdGet);
+        const n = (await api('/__synthetic/state')).sessionCount - c;
+        check(held >= 1 && before === 0 && navBusy === 'true' && posts.join() === 'start,create' && n === 1 && gone, `${tag}: ${first} first, then clicks and keys on every button while the configuration loads = one operation`, JSON.stringify({ heldGets: held, postsBeforeConfig: before, navBusy, steps: posts.join(','), newSessions: n, redirected: gone }));
+      } catch (e) {
+        releaseGet();
+        await page.unroute('**/api/checkout', holdGet).catch(() => {});
+        check(false, `${tag}: ${first} first while the configuration loads = one operation`, `${String(e).split('\n')[0]} :: ${JSON.stringify({ heldGets: held, steps: posts.join(',') })}`);
+      }
     }
 
     // Double-click race on the hero link -> one session, redirect to (intercepted) Stripe-hosted URL
@@ -359,8 +465,11 @@ try {
       const b = await page.evaluate(s => { const e = document.querySelector(s); return { text: e.textContent.trim(), busy: e.hasAttribute('aria-busy'), minWidth: e.style.minWidth }; }, sel);
       check(await note.isVisible() && /Check your card statement/.test(await note.innerText()), `${vp.name}: ${name} failure shows the friendly message next to that button`, await note.innerText().catch(() => ''));
       check(b.text === 'Preorder' && !b.busy && b.minWidth === '', `${vp.name}: ${name} button restored after the failure`, JSON.stringify(b));
-      const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      check(ov <= 0, `${vp.name}: ${name} failure message causes no horizontal overflow`, ov);
+      const ov = await page.evaluate(s => { const r = document.querySelector(s).nextElementSibling.getBoundingClientRect(), vw = document.documentElement.clientWidth; return { overflow: document.documentElement.scrollWidth - vw, left: Math.round(r.left), right: Math.round(r.right), vw }; }, sel);
+      check(ov.overflow <= 0 && ov.left >= 8 && ov.right <= ov.vw - 8, `${vp.name}: ${name} failure message fully inside the viewport, no horizontal overflow`, JSON.stringify(ov));
+      await revealed(page, sel);
+      if (name === 'mid') await page.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center', behavior: 'instant' }), sel);
+      await page.waitForTimeout(200);
       await page.screenshot({ path: path.join(OUT, `${vp.name}-06c-error-${name}.png`) });
       await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator(sel).click()]);
       check((await api('/__synthetic/state')).sessionCount === c + 1, `${vp.name}: ${name} retry after the failure opens one checkout`);
@@ -400,6 +509,57 @@ try {
     await page.goto(`${S}/deposit-terms.html`, { waitUntil: 'networkidle' });
     check(/deposit-terms-v2/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v2');
     await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v2.png'), fullPage: true });
+    await ctx.close();
+  }
+
+  // ---------------- JavaScript disabled ----------------
+  // The links still lead to #reserve; the reserve card, its disclosure and the "needs
+  // JavaScript" notice are visible (nothing waits for the reveal script); the section
+  // button is disabled, and nothing posts to the checkout API.
+  for (const vp of VIEWPORTS) {
+    const tag = `${vp.name}-nojs`;
+    const ctx = await browser.newContext({ viewport: vp.viewport, deviceScaleFactor: vp.deviceScaleFactor, isMobile: vp.isMobile, hasTouch: vp.hasTouch, javaScriptEnabled: false });
+    const posts = [];
+    await ctx.route('**/api/checkout', r => { if (r.request().method() === 'POST') posts.push(r.request().url()); return r.continue(); });
+    let stripeHits = 0;
+    await ctx.route('https://checkout.stripe.com/**', r => { stripeHits++; return r.abort(); });
+    const page = await ctx.newPage();
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    check(await page.locator('.nav-cta').getAttribute('role') === null, `${tag}: Preorder links stay plain links (no enhancement ran)`);
+    const navTerms = page.locator('#navTerms');
+    check(await navTerms.isVisible(), `${tag}: nav deposit disclosure visible`);
+    // A real pointer click at the link (Playwright's actionability wait for stable
+    // animation frames does not settle with page JavaScript disabled).
+    await page.waitForTimeout(1300); // hero copy rise animation
+    const hb = await page.locator('.hero-actions [data-checkout]').boundingBox();
+    await page.mouse.click(hb.x + hb.width / 2, hb.y + hb.height / 2);
+    await page.waitForFunction(() => location.hash === '#reserve', null, { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    const v = await page.evaluate(() => {
+      const op = el => { let o = 1; for (let e = el; e; e = e.parentElement) o *= Number(getComputedStyle(e).opacity); return o; };
+      const ns = [...document.querySelectorAll('#reserveForm p.form-msg')].find(p => /needs JavaScript/.test(p.textContent));
+      const card = document.querySelector('.cta-inner'), r = card.getBoundingClientRect();
+      return { hash: location.hash, cardOpacity: op(card), noteOpacity: op(document.querySelector('#reserveForm .deposit-note')), noscript: ns ? { text: ns.textContent.trim(), opacity: op(ns), shown: ns.getBoundingClientRect().height > 0 } : null, inView: r.top < innerHeight && r.bottom > 0, btnDisabled: document.getElementById('reserveBtn').disabled, faqOpacity: op(document.querySelector('.faq details')) };
+    });
+    check(v.hash === '#reserve' && v.inView, `${tag}: hero Preorder link leads to #reserve`, JSON.stringify(v));
+    check(v.cardOpacity === 1 && v.noteOpacity === 1 && v.faqOpacity === 1, `${tag}: reserve card, its terms note and the rest of the page are visible without the reveal script`, JSON.stringify(v));
+    check(v.noscript && v.noscript.opacity === 1 && v.noscript.shown, `${tag}: "Reserving needs JavaScript" notice is visible`, JSON.stringify(v.noscript));
+    check(v.btnDisabled && await page.locator('#reserveBtn').isDisabled(), `${tag}: section Preorder button is disabled without JavaScript`);
+    const rb = await page.locator('#reserveBtn').boundingBox();
+    await page.mouse.click(rb.x + rb.width / 2, rb.y + rb.height / 2);
+    await page.locator('#reserveBtn').dispatchEvent('click');
+    await page.waitForTimeout(600);
+    check(posts.length === 0 && stripeHits === 0 && !/\?/.test(page.url()), `${tag}: nothing posts to checkout and the form does not reload the page`, JSON.stringify({ posts: posts.length, stripeHits, url: page.url() }));
+    await page.screenshot({ path: path.join(OUT, `${tag}-reserve.png`) });
+    await ctx.close();
+  }
+  // With JavaScript the reveal still starts hidden (the no-JS stylesheet is not applied).
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    const o = await page.evaluate(() => ({ faq: getComputedStyle(document.querySelector('.faq details')).opacity, sheets: [...document.styleSheets].map(s => s.href || '').filter(h => /nojs/.test(h)).length }));
+    check(o.faq === '0' && o.sheets === 0, 'js: reveal-on-scroll unchanged when JavaScript runs (no-JS stylesheet not loaded)', JSON.stringify(o));
     await ctx.close();
   }
 
