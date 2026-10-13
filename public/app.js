@@ -84,7 +84,11 @@
     par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
   }
 
-  /* Reserve: refundable $100 deposit through Stripe-hosted Checkout.
+  /* Preorder: refundable $100 deposit through Stripe-hosted Checkout.
+     Every Preorder button (nav, hero, mid page and the #reserve form) opens checkout
+     directly; without JavaScript the links still lead to #reserve. Selecting Preorder
+     accepts the deposit terms disclosed next to the buttons, so each request carries
+     termsAccepted and the current terms version.
      The server fixes amount, price and redirect URLs. Each checkout attempt uses one
      signed operation token issued by the server (no Stripe call) and kept in
      sessionStorage with an "attempted" flag. Retries re-send the same token so Stripe
@@ -93,19 +97,43 @@
      a bounded number of tries, the visitor is asked to check their card statement or
      contact support first, and only an explicit click starts a new reservation. */
   const form = document.getElementById('reserveForm');
-  const terms = document.getElementById('termsInput');
   const btn = document.getElementById('reserveBtn');
   const restart = document.getElementById('reserveRestart');
   const msg = document.getElementById('reserveMsg');
   const testNote = document.getElementById('testModeNote');
+  const triggers = [...document.querySelectorAll('[data-checkout]')];
+  const labels = new Map(triggers.map(t => [t, t.innerHTML]));
+  const notes = new Map();
   const OP_KEY = 'revivex.depositOperation';
   const ATTR_KEY = 'revivex.attribution';
-  const LABEL = btn.textContent;
   const AUTO_RETRIES = 2;
   const UNCERTAIN_LIMIT = 6; // unknown outcomes per attempt before the reconcile path
-  let available = false, termsVersion = null, inFlight = false;
+  let available = false, loaded = false, termsVersion = null, inFlight = false, elsewhere = null;
 
-  const say = (t, ok) => { msg.textContent = t || ''; msg.className = 'form-msg ' + (ok ? 'ok' : 'err'); };
+  // Messages show next to the button that was used: #reserveMsg for the form button,
+  // a small status line created on first use for the others.
+  const msgFor = t => {
+    if (!t || t === btn) return msg;
+    if (!notes.has(t)) {
+      const p = document.createElement('p');
+      p.className = 'form-msg cta-msg';
+      p.setAttribute('role', 'status');
+      p.setAttribute('aria-live', 'polite');
+      t.insertAdjacentElement('afterend', p);
+      notes.set(t, p);
+    }
+    return notes.get(t);
+  };
+  const say = (t, ok, el = msg) => { el.textContent = t || ''; el.className = (el === msg ? 'form-msg ' : 'form-msg cta-msg ') + (ok ? 'ok' : 'err'); };
+  const clearAll = () => { say('', true); notes.forEach(p => say('', true, p)); };
+  // Off the canonical host the visitor gets a link to it instead of a checkout.
+  const sayElsewhere = el => {
+    say('Reservations are taken on ', false, el);
+    const a = document.createElement('a');
+    a.href = elsewhere + '/#reserve';
+    a.textContent = elsewhere.replace(/^https?:\/\//, '');
+    el.append(a, '.');
+  };
   const memory = {};
   const store = {
     get(k) { try { return sessionStorage.getItem(k); } catch { return memory[k] || null; } },
@@ -128,14 +156,31 @@
   })();
   const attribution = () => { try { return JSON.parse(store.get(ATTR_KEY) || '{}'); } catch { return {}; } };
 
-  // Reserve stays disabled (and dimmed by its :disabled style) while the reconcile/restart
-  // control is showing, because only that control may start another attempt.
-  function idle() { inFlight = false; btn.disabled = !available || !restart.hidden; btn.textContent = LABEL; btn.removeAttribute('aria-busy'); }
+  // The form button stays disabled (and dimmed by its :disabled style) while checkout is
+  // known to be unavailable or the reconcile/restart control is showing, because only
+  // that control may start another attempt. Before the configuration arrives it stays
+  // enabled; a click then waits for it.
+  const refresh = () => { btn.disabled = inFlight || (loaded && !available) || !restart.hidden; };
+  function busy(t) {
+    t.setAttribute('aria-busy', 'true');
+    t.setAttribute('aria-disabled', 'true');
+    t.style.minWidth = `${t.offsetWidth}px`; // never narrower than the label it replaces
+    t.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span><span>Opening<span class="busy-more"> checkout</span>…</span>';
+  }
+  function idle() {
+    inFlight = false;
+    for (const t of triggers) {
+      if (t.hasAttribute('aria-busy')) { t.innerHTML = labels.get(t); t.style.minWidth = ''; }
+      t.removeAttribute('aria-busy');
+      t.removeAttribute('aria-disabled');
+    }
+    refresh();
+  }
   const UNAVAILABLE = 'Reservations are temporarily unavailable. This page cannot open a checkout right now.';
   const UNCERTAIN = 'We could not confirm the checkout status. Check your card statement or banking app for a $100 Revivex payment before trying again.';
   const RECONCILE = 'We could not confirm whether your earlier checkout attempt was paid. Before reserving again, check your card statement or banking app for a $100 Revivex payment (a receipt email may not arrive). If you were charged, or are unsure, contact support@revivex.store and we will check it for you.';
 
-  fetch('/api/checkout', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+  const config = fetch('/api/checkout', { headers: { Accept: 'application/json' }, cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(d => {
       // `configured` only means the server has a complete configuration; Stripe can
@@ -146,18 +191,15 @@
       if (d.mode === 'test') testNote.hidden = false;
       if (configured && d.siteOrigin && d.siteOrigin !== location.origin) {
         available = false;
-        say('Reservations are taken on ', false);
-        const a = document.createElement('a');
-        a.href = d.siteOrigin + '/#reserve';
-        a.textContent = d.siteOrigin.replace(/^https?:\/\//, '');
-        msg.append(a, '.');
+        elsewhere = d.siteOrigin;
+        sayElsewhere(msg);
       } else {
         available = configured;
         if (!available) say(UNAVAILABLE, false);
       }
-      idle();
     })
-    .catch(() => { available = false; say(UNAVAILABLE, false); idle(); });
+    .catch(() => { available = false; say(UNAVAILABLE, false); })
+    .finally(() => { loaded = true; refresh(); });
 
   // Coming back from Stripe with the Back button can restore a frozen "busy" page.
   window.addEventListener('pageshow', e => { if (e.persisted) idle(); });
@@ -188,29 +230,35 @@
   restart.addEventListener('click', () => {
     dropOp();
     restart.hidden = true;
-    btn.disabled = !available;
-    say('', true);
+    clearAll();
+    refresh();
     btn.focus();
   });
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    if (inFlight || !available || !restart.hidden) return;
-    if (!terms.checked) { say('Please agree to the deposit terms first.', false); terms.focus(); return; }
-
+  async function open(trigger) {
     inFlight = true;
     let leaving = false;
-    btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = 'Opening secure checkout\u2026';
-    say('', true);
+    busy(trigger);
+    refresh();
+    clearAll();
+    const out = msgFor(trigger);
+    // Reconcile copy also goes to the #reserve section, where the restart control is.
+    const fail = (t, both) => { say(t, false, out); if (both && out !== msg) say(t, false, msg); };
     try {
+      await config;
+      if (!available) {
+        if (!elsewhere) fail(UNAVAILABLE, true);
+        else { sayElsewhere(out); if (out !== msg) sayElsewhere(msg); }
+        return;
+      }
       let op = readOp(), fresh = 0;
       for (let n = 0; ; ) {
         if (!op) {
           const b = await begin();
           if (b.error) {
             // No checkout was created by this request; uncertain only if the network failed.
-            say(b.error.message || (b.error.state === 'uncertain' ? 'Checkout could not be opened. Please try again.' : UNAVAILABLE), false);
             if (b.error.state === 'unavailable') available = false;
+            fail(b.error.message || (b.error.state === 'uncertain' ? 'Checkout could not be opened. Please try again.' : UNAVAILABLE), !available);
             break;
           }
           op = b.op;
@@ -235,10 +283,10 @@
         if (d.state === 'uncertain') {
           op.uncertain = (op.uncertain || 0) + 1;
           saveOp(op);
-          if (op.uncertain >= UNCERTAIN_LIMIT) { say(RECONCILE, false); restart.hidden = false; break; }
+          if (op.uncertain >= UNCERTAIN_LIMIT) { fail(RECONCILE, true); restart.hidden = false; break; }
           if (n < AUTO_RETRIES) { n++; await sleep(1200 * n); continue; }
         } else if (op.uncertain) { op.uncertain = 0; saveOp(op); }
-        if (d.state === 'expired') { dropOp(); say(d.message, false); break; }
+        if (d.state === 'expired') { dropOp(); fail(d.message); break; }
         if ((d.state === 'reconcile' || d.state === 'invalid_operation') && d.preWrite === true && !wasAttempted && fresh === 0) {
           // Neither this request nor any earlier one sent this token to Stripe, so
           // replacing it cannot duplicate anything.
@@ -247,16 +295,29 @@
         }
         if (d.state === 'reconcile' || d.state === 'invalid_operation') {
           // Ask before ever starting another attempt that could take a second deposit.
-          say(d.message || RECONCILE, false);
+          fail(d.message || RECONCILE, true);
           restart.hidden = false;
           break;
         }
         if (d.state === 'unavailable') available = false;
-        say(d.message || UNCERTAIN, false);
+        fail(d.message || UNCERTAIN, !available);
         break;
       }
     } finally {
       if (!leaving) idle();
     }
-  });
+  }
+
+  function onTrigger(e, trigger) {
+    // Modified clicks (new tab or window) keep the plain link behaviour.
+    if (e.defaultPrevented || e.button > 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    // While the reconcile/restart control is showing, no button may start another
+    // attempt; the links fall back to scrolling to #reserve, where it is shown.
+    if (!restart.hidden && trigger !== btn) return;
+    e.preventDefault();
+    if (inFlight || !restart.hidden) return;
+    open(trigger);
+  }
+  for (const t of triggers) if (t !== btn) t.addEventListener('click', e => onTrigger(e, t));
+  form.addEventListener('submit', e => onTrigger(e, btn));
 })();

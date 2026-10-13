@@ -90,7 +90,6 @@ const DEPOSIT = { content_name: 'Revivex machine preorder deposit', value: 100, 
 async function reserveToStripe(page, base) {
   await page.goto(`${base}/#reserve`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled, null, { timeout: 5000 });
-  if (!(await page.locator('#termsInput').isChecked())) await page.locator('#termsInput').check();
   await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('#reserveBtn').click()]);
   return page.url().split('/').pop();
 }
@@ -118,21 +117,17 @@ try {
     await settle(page);
     check(JSON.stringify(calls.map(c => c.args)) === JSON.stringify([['set', 'autoConfig', false, TEST_PIXEL], ['init', TEST_PIXEL], ['track', 'PageView'], ['track', 'ViewContent', DEPOSIT]]), 'home: autoConfig off, init, PageView, ViewContent (value 100 USD)', JSON.stringify(calls));
 
-    // Submit without consent: no checkout, no InitiateCheckout.
-    await page.locator('#reserve').scrollIntoViewIfNeeded();
-    await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled, null, { timeout: 5000 });
-    await page.locator('#reserveBtn').click();
-    await settle(page);
-    check(!tracks(calls).some(t => t.endsWith('InitiateCheckout')), 'no InitiateCheckout when consent is not ticked');
-
-    await page.locator('#termsInput').check();
-    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('#reserveBtn').click()]);
+    // No terms checkbox: the hero Preorder button opens checkout directly; a double
+    // click still makes one checkout and one InitiateCheckout.
+    check(await page.locator('input[type="checkbox"]').count() === 0, 'no terms checkbox on the page');
+    check(!tracks(calls).some(t => t.endsWith('InitiateCheckout')), 'no InitiateCheckout before any Preorder click');
+    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('.hero-actions [data-checkout]').dblclick()]);
     const sessionId = page.url().split('/').pop();
     const ic = calls.filter(c => c.args[1] === 'InitiateCheckout');
     await page.goBack({ waitUntil: 'networkidle' });
     const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('revivex.depositOperation')).token);
     const opId = JSON.parse(Buffer.from(token.split('.')[0], 'base64url').toString()).id;
-    check(ic.length === 1 && ic[0].path === '/' && JSON.stringify(ic[0].args) === JSON.stringify(['track', 'InitiateCheckout', DEPOSIT, { eventID: opId }]), 'InitiateCheckout fired once on the home page before the Stripe redirect, event id = operation id', JSON.stringify(ic));
+    check(ic.length === 1 && ic[0].path === '/' && JSON.stringify(ic[0].args) === JSON.stringify(['track', 'InitiateCheckout', DEPOSIT, { eventID: opId }]), 'hero Preorder (double click): InitiateCheckout fired once on the home page before the Stripe redirect, event id = operation id', JSON.stringify(ic));
 
     const before = calls.length;
     check(await receipt(page, S, sessionId) === 'not_completed', 'unpaid receipt is not_completed');
