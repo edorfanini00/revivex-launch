@@ -1095,7 +1095,7 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   /* Hero: the frame fills the window (6px inset); copy starts on the container edge */
   .hero-frame { max-width: none; }
   .hero-copy { left: max(calc(var(--pad) - 6px), calc((100% - var(--wrap)) / 2)); max-width: none; }
-  .hero-title { font-size: clamp(40px, 3.3vw, 60px); }
+  .hero-title { font-size: clamp(34px, 3.3vw, 60px); }
   .hero-sub { max-width: 400px; }
   .hero-veil { background:
     linear-gradient(90deg, rgba(15, 22, 32, .6) 0%, rgba(15, 22, 32, .48) 30%, rgba(15, 22, 32, .3) 44%, rgba(15, 22, 32, .08) 56%, rgba(15, 22, 32, 0) 64%),
@@ -1139,4 +1139,9 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 
   /* Footer: logo and links span the full container (the legacy two column grid cut the links short) */
   .footer-top { grid-column: 1 / -1; }
+}
+
+/* Tall desktop class viewports (e.g. 1024x1366): the cover crop pulls the machine left, so the headline steps down to keep clear of it */
+@media (min-width: 981px) and (max-aspect-ratio: 1/1) {
+  .hero-title { font-size: clamp(30px, 3vw, 48px); }
 }
