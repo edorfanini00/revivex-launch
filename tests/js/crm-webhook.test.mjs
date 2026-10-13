@@ -144,17 +144,20 @@ test('idempotency: the same event twice, and completed + async_payment_succeeded
   } finally { await s.close(); }
 });
 
-test('concurrent deliveries for the same session send one email', async () => {
-  let release;
+test('concurrent deliveries for the same session send one email and busy work retries', async () => {
+  let release, entered;
+  const started = new Promise(r => { entered = r; });
   const gate = new Promise(r => { release = r; });
-  const s = await setup({ sendImpl: () => gate });
+  const s = await setup({ sendImpl: () => { entered(); return gate; } });
+  const a = s.deliver(event('checkout.session.completed', checkoutObj('cs_test_RACE0000001')));
+  let rb;
   try {
-    const a = s.deliver(event('checkout.session.completed', checkoutObj('cs_test_RACE0000001')));
-    const b = s.deliver(event('checkout.session.async_payment_succeeded', checkoutObj('cs_test_RACE0000001')));
-    setTimeout(release, 50);
-    const [ra, rb] = await Promise.all([a, b]);
-    assert.deepEqual([ra.statusCode, rb.statusCode], [200, 200]);
-    assert.deepEqual([ra.json().outcome, rb.json().outcome].sort(), ['email_already_handled', 'email_sent']);
+    await started;
+    rb = await s.deliver(event('checkout.session.async_payment_succeeded', checkoutObj('cs_test_RACE0000001')));
+  } finally { release(); }
+  try {
+    assert.equal((await a).statusCode, 200);
+    assert.equal(rb.statusCode, 500, 'the competing event remains retryable');
     assert.equal(s.sent.length, 1);
   } finally { await s.close(); }
 });

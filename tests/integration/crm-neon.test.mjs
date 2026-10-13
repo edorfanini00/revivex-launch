@@ -22,7 +22,7 @@ test('Neon: preorder upsert, single claim, refund transition, subscriber merge a
     assert.equal(row.inserted, true);
     const [a, b] = await Promise.all([store.claimConfirmation(row.id), store.claimConfirmation(row.id)]);
     assert.equal([a, b].filter(Boolean).length, 1, 'exactly one concurrent claim wins');
-    await store.completeConfirmation(row.id, 're_integration');
+    assert.equal(await store.completeConfirmation(row.id, 're_integration', (a || b).claim_token), true);
     assert.equal(await store.claimConfirmation(row.id), null);
     const again = await store.upsertPreorder({ sessionId, livemode: false, amountCents: 10000, currency: 'usd', status: 'refunded' });
     assert.equal(again.inserted, false);
