@@ -51,7 +51,7 @@ test('repeated CTA disclaimers are absent; offer, footer links and functional me
   assert.match(html, /id="reserveMsg" role="status" aria-live="polite"/);
   assert.match(html, /id="testModeNote" hidden>Test mode\. No real payment is taken\./);
   const faq = html.match(/<section class="faq"[\s\S]*?<\/section>/)[0];
-  assert.match(faq, /fully refundable \$50 deposit\. The \$50 deposit includes 20% off the final machine price, then the \$50 is credited toward the rest\./);
+  assert.match(faq, /fully refundable \$50 deposit\. It includes 20% off the final machine price, then your \$50 is credited toward the rest\./);
   assert.doesNotMatch(html, /\$100/, 'the page no longer offers the $100 deposit');
 });
 

@@ -11,7 +11,8 @@
 // HISTORIC_SESSION_IDS: real paid-then-refunded $100 deposit-terms-v2 test sessions.
 // Output masks every Stripe id and never prints the hosted checkout URL.
 import crypto from 'node:crypto';
-import { createCheckoutHandler, createReservationHandler } from '../../lib/deposit-handlers.js';
+import { execFileSync } from 'node:child_process';
+import { checkoutSessionParams, createCheckoutHandler, createReservationHandler } from '../../lib/deposit-handlers.js';
 import { DEPOSIT, PREVIOUS_OFFER, STRIPE_API_VERSION, readCheckoutConfig } from '../../lib/deposit-config.js';
 import { bindingDigest } from '../../lib/operation-token.js';
 import { createInstanceRateLimiter, makeLogger } from '../../lib/http.js';
@@ -57,8 +58,11 @@ function signedToken(binding) {
 }
 
 // 1. Probe
+let head = 'unknown';
+try { head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* not a checkout */ }
+console.log(`code head ${head}, ${new Date().toISOString()}`);
 const probe = (await call(checkout, { method: 'GET' })).json();
-check(probe.configured && probe.mode === 'test' && probe.amount === 5000 && probe.termsVersion === 'deposit-terms-v3' && probe.machineDiscountPercent === 20, 'probe: configured test, 5000, deposit-terms-v3, 20%', JSON.stringify({ amount: probe.amount, termsVersion: probe.termsVersion }));
+check(probe.configured && probe.mode === 'test' && probe.amount === 5000 && probe.termsVersion === 'deposit-terms-v3' && probe.machineDiscountPercent === 20 && probe.legacyPinned === true, 'probe: configured test, 5000, deposit-terms-v3, 20%, legacy pinned', JSON.stringify({ amount: probe.amount, termsVersion: probe.termsVersion }));
 
 // 2. Real create through the handler
 const start = (await call(checkout, { body: { step: 'start', termsAccepted: true, termsVersion: DEPOSIT.termsVersion, displayedAmount: DEPOSIT.amount, attribution: { utm_source: 'price50_qa' } } })).json();
@@ -84,7 +88,8 @@ check(s.amount_total === 5000 && s.amount_subtotal === 5000 && s.currency === 'u
 check(li.length === 1 && li[0].price?.id === ENV.STRIPE_DEPOSIT_PRICE_ID && li[0].price?.unit_amount === 5000 && li[0].quantity === 1 && li[0].amount_discount === 0, 'one line: the $50 price, quantity 1, no discount', mask(li[0]?.price?.id));
 check(Array.isArray(s.discounts) && s.discounts.length === 0 && s.allow_promotion_codes === false && (s.total_details?.amount_discount ?? 0) === 0, 'no discounts or promotion codes on the deposit');
 check(s.metadata?.terms_version === 'deposit-terms-v3' && s.metadata?.machine_discount_percent === '20' && s.metadata?.purpose === 'revivex_preorder_deposit', 'metadata: v3, 20% machine discount, purpose');
-check(/^\$50 USD fully refundable/.test(s.custom_text?.submit?.message || '') && !/\$100/.test(s.custom_text?.submit?.message || ''), 'hosted text says $50, never $100');
+const expectedText = checkoutSessionParams(cfgCheck.config, { id: 'x'.repeat(22), binding: 'b', attribution: {} }).custom_text.submit.message;
+check(s.custom_text?.submit?.message === expectedText && /^\$50 USD fully refundable/.test(expectedText) && !/\$100/.test(expectedText), 'hosted text on Stripe is exactly the shipped $50 wording', s.custom_text?.submit?.message);
 check(s.branding_settings?.display_name === 'Revivex', 'hosted header display name Revivex');
 
 // 4. Receipt for the unpaid session shows no benefit

@@ -34,7 +34,7 @@
     if (discount) {
       return {
         title: 'Thank you for preordering.',
-        text: 'Stripe confirmed your ' + dollars(d.amount) + ' fully refundable deposit for Revivex.',
+        text: 'Stripe confirms your ' + dollars(d.amount) + ' fully refundable deposit for Revivex.',
         discount: discount + '% off the final price',
         next: 'Revivex is in development. When the final price is announced, you choose whether to order. The ' + discount + '% comes off first, then your ' + dollars(d.amount) + ' is credited. This deposit is not a final order, a shipping commitment or a place in a queue, and nothing more is charged unless you order.',
         terms: '/deposit-terms.html',
@@ -44,7 +44,7 @@
       title: 'Thank you for preordering.',
       text: 'Stripe confirms your ' + dollars(d.amount) + ' fully refundable deposit. It is applied to the final machine price.',
       discount: null,
-      next: 'This confirms the deposit only. It is not a final order, a shipping commitment or a place in a queue. Revivex is in development, and the final price and shipping date have not been announced. We will not charge a balance automatically.',
+      next: 'Revivex is in development, and the final price and shipping date have not been announced. When they are, you choose whether to order. This deposit is not a final order, a shipping commitment or a place in a queue, and we will not charge a balance automatically.',
       terms: d.termsVersion === 'deposit-terms-v3' ? '/deposit-terms.html' : '/deposit-terms-v2.html',
     };
   }
