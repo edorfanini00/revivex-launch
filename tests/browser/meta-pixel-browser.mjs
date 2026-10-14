@@ -85,7 +85,7 @@ async function newContext(browser, { gpc = false, gpcHeader = false } = {}) {
 }
 const tracks = calls => calls.filter(c => c.args[0] === 'track').map(c => `${c.path} ${c.args[1]}`);
 const settle = page => page.waitForTimeout(300);
-const DEPOSIT = { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' };
+const DEPOSIT = { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' };
 
 async function reserveToStripe(page, base) {
   await page.goto(`${base}/#reserve`, { waitUntil: 'networkidle' });
@@ -115,7 +115,7 @@ try {
     const { ctx, page, calls, metaHits, errors } = await newContext(browser);
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     await settle(page);
-    check(JSON.stringify(calls.map(c => c.args)) === JSON.stringify([['set', 'autoConfig', false, TEST_PIXEL], ['init', TEST_PIXEL], ['track', 'PageView'], ['track', 'ViewContent', DEPOSIT]]), 'home: autoConfig off, init, PageView, ViewContent (value 100 USD)', JSON.stringify(calls));
+    check(JSON.stringify(calls.map(c => c.args)) === JSON.stringify([['set', 'autoConfig', false, TEST_PIXEL], ['init', TEST_PIXEL], ['track', 'PageView'], ['track', 'ViewContent', DEPOSIT]]), 'home: autoConfig off, init, PageView, ViewContent (value 50 USD)', JSON.stringify(calls));
 
     // No terms checkbox: the hero Preorder button opens checkout directly; a double
     // click still makes one checkout and one InitiateCheckout.
@@ -194,7 +194,7 @@ try {
     const t0 = Math.floor(Date.now() / 1000);
     check(await receipt(page, L, id) === 'confirmed', 'live: fresh paid receipt confirmed');
     const t = calls.filter(c => c.args[0] === 'track').map(c => c.args);
-    check(JSON.stringify(t) === JSON.stringify([['track', 'PageView'], ['track', 'Purchase', DEPOSIT, { eventID: `deposit_${id}` }]]), 'live receipt: PageView then Purchase (100 USD, event id deposit_<session id>)', JSON.stringify(t));
+    check(JSON.stringify(t) === JSON.stringify([['track', 'PageView'], ['track', 'Purchase', DEPOSIT, { eventID: `deposit_${id}` }]]), 'live receipt: PageView then Purchase (50 USD, event id deposit_<session id>)', JSON.stringify(t));
     const ev = await serverEvents(L, id);
     check(ev.length === 1 && ev[0].event_name === 'Purchase' && Math.abs(ev[0].event_time - t0) < 120 && ev[0].has_em, 'live: one server Purchase with the same event id, event_time = payment time, hashed email', JSON.stringify(ev));
     await page.reload({ waitUntil: 'networkidle' });

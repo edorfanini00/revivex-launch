@@ -17,7 +17,7 @@ const SID = 'cs_live_a1B2c3D4e5F6g7H8';
 const TEST_SID = 'cs_test_a1B2c3D4e5F6g7H8';
 const SITE = 'https://reserve.example.test';
 // What the receipt announces for a server-confirmed, recently paid live deposit.
-const PAID = Object.freeze({ state: 'confirmed', sessionId: SID, fresh: true, mode: 'live' });
+const PAID = Object.freeze({ state: 'confirmed', sessionId: SID, fresh: true, mode: 'live', amount: 5000 });
 
 // One browser tab. Tabs of one browser share IndexedDB (idb); each tab keeps its own
 // localStorage view (Chrome caches it per renderer and syncs other tabs asynchronously).
@@ -85,10 +85,10 @@ test('home page: autoConfig off, init, PageView, ViewContent with the deposit pa
       ['set', 'autoConfig', false, ID],
       ['init', ID],
       ['track', 'PageView'],
-      ['track', 'ViewContent', { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' }],
+      ['track', 'ViewContent', { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' }],
     ]);
   }
-  assert.deepEqual({ ...DEPOSIT_EVENT }, { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
+  assert.deepEqual({ ...DEPOSIT_EVENT }, { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' });
 });
 
 test('other pages: PageView only', () => {
@@ -268,5 +268,23 @@ test('page hooks: checkout opening announced only on the Stripe redirect path; r
   const redirect = app.indexOf("d.state === 'redirect'");
   const assign = app.indexOf('window.location.assign(d.url)');
   assert.ok(redirect < hook && hook < assign, 'inside the redirect branch, before leaving');
-  assert.match(read('public/reservation.js'), /'revivex:deposit-status', \{ detail: \{ state, sessionId, fresh: !!d && d\.fresh === true, mode: d && d\.mode \} \}/);
+  assert.match(read('public/reservation.js'), /'revivex:deposit-status', \{ detail: \{ state, sessionId, fresh: !!d && d\.fresh === true, mode: d && d\.mode, amount: d && d\.amount \} \}/);
+});
+
+// ---- $50 deposit: Purchase value is the amount that deposit actually paid ----
+test('price50: Purchase value is the paid amount (50 now, 100 for a historical v2 deposit); unknown amounts send nothing', async () => {
+  for (const [amount, value] of [[5000, 50], [10000, 100]]) {
+    const win = fakeWin({ path: '/reservation.html' });
+    const load = recorder();
+    const px = createPixel({ win, id: ID, load });
+    px.start();
+    assert.deepEqual(await px.purchase({ ...PAID, amount }), ['Purchase', { ...DEPOSIT_EVENT, value }, { eventID: `deposit_${SID}` }]);
+  }
+  for (const amount of [undefined, null, 4000, 50, '5000', 5000.5]) {
+    const win = fakeWin({ path: '/reservation.html' });
+    const px = createPixel({ win, id: ID, load: recorder() });
+    px.start();
+    assert.equal(await px.purchase({ ...PAID, amount }), null, String(amount));
+    assert.deepEqual(claims(win.idb), [], 'no guard written for an unreportable amount');
+  }
 });

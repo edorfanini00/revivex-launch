@@ -16,6 +16,7 @@ export const ENV = Object.freeze({
   STRIPE_EXPECTED_ACCOUNT_ID: 'acct_TESTREVIVEX01',
   STRIPE_DEPOSIT_PRICE_ID: 'price_TESTDEPOSIT01',
   STRIPE_DEPOSIT_PRODUCT_ID: 'prod_TESTDEPOSIT01',
+  STRIPE_LEGACY_DEPOSIT_PRICE_IDS: 'price_TESTLEGACY100',
   REVIVEX_SITE_ORIGIN: ORIGIN,
   REVIVEX_OPERATION_SIGNING_SECRET: SIGNING,
 });
@@ -24,7 +25,7 @@ export const account = (o = {}) => ({ id: 'acct_TESTREVIVEX01', object: 'account
 export const product = (o = {}) => ({ id: 'prod_TESTDEPOSIT01', object: 'product', active: true, name: 'Revivex preorder deposit', ...o });
 export const price = (o = {}) => ({
   id: 'price_TESTDEPOSIT01', object: 'price', active: true, livemode: false, type: 'one_time', recurring: null,
-  billing_scheme: 'per_unit', custom_unit_amount: null, transform_quantity: null, currency: 'usd', unit_amount: 10000,
+  billing_scheme: 'per_unit', custom_unit_amount: null, transform_quantity: null, currency: 'usd', unit_amount: DEPOSIT.amount,
   product: product(), ...o,
 });
 
@@ -34,9 +35,9 @@ export function session(o = {}) {
   const id = o.id || `cs_test_SYNTH${String(seq).padStart(6, '0')}abcdef`;
   return {
     id, object: 'checkout.session', livemode: false, mode: 'payment', status: 'open', payment_status: 'unpaid',
-    currency: 'usd', amount_total: 10000, url: `https://checkout.stripe.com/c/pay/${id}`,
+    currency: 'usd', amount_total: DEPOSIT.amount, url: `https://checkout.stripe.com/c/pay/${id}`,
     allowed_payment_method_types: ['card'], payment_method_types: ['card'], branding_settings: { display_name: 'Revivex' },
-    metadata: { purpose: 'revivex_preorder_deposit', terms_version: 'deposit-terms-v1', operation: 'x' },
+    metadata: { purpose: 'revivex_preorder_deposit', terms_version: DEPOSIT.termsVersion, machine_discount_percent: '20', operation: 'x' },
     customer_details: { email: 'buyer-pii@example.test', name: 'Pat Example' },
     client_secret: 'cs_secret_SHOULD_NEVER_LEAK',
     subscription: null, setup_intent: null, ...o,
@@ -46,9 +47,9 @@ export function session(o = {}) {
 export function paidSession(o = {}, piOverrides = {}, chargeOverrides = {}) {
   return session({
     status: 'complete', payment_status: 'paid', url: null,
-    line_items: { object: 'list', data: [{ price: { id: 'price_TESTDEPOSIT01' }, quantity: 1, amount_total: 10000 }] },
+    line_items: { object: 'list', data: [{ price: { id: 'price_TESTDEPOSIT01', unit_amount: DEPOSIT.amount, product: 'prod_TESTDEPOSIT01' }, quantity: 1, amount_total: DEPOSIT.amount }] },
     payment_intent: {
-      id: 'pi_TESTPAID000001', object: 'payment_intent', status: 'succeeded', amount_received: 10000, currency: 'usd', livemode: false,
+      id: 'pi_TESTPAID000001', object: 'payment_intent', status: 'succeeded', amount_received: DEPOSIT.amount, currency: 'usd', livemode: false,
       latest_charge: { id: 'ch_TEST1', object: 'charge', paid: true, status: 'succeeded', refunded: false, amount_refunded: 0, billing_details: { email: 'buyer-pii@example.test' }, ...chargeOverrides },
       ...piOverrides,
     },
@@ -106,8 +107,19 @@ export function res() {
 }
 
 export const TV = DEPOSIT.termsVersion;
-export const startBody = (o = {}) => ({ step: 'start', termsAccepted: true, termsVersion: TV, ...o });
-export const createBody = (operation, o = {}) => ({ step: 'create', operation, termsAccepted: true, termsVersion: TV, ...o });
+export const startBody = (o = {}) => ({ step: 'start', termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount, ...o });
+export const createBody = (operation, o = {}) => ({ step: 'create', operation, termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount, ...o });
+
+// A $100 deposit paid under deposit-terms-v2 with the pinned legacy price.
+export const LEGACY_PRICE = 'price_TESTLEGACY100';
+export function legacyPaidSession(o = {}, piOverrides = {}, chargeOverrides = {}) {
+  return paidSession({
+    amount_total: 10000,
+    metadata: { purpose: 'revivex_preorder_deposit', terms_version: 'deposit-terms-v2', operation: 'x' },
+    line_items: { object: 'list', data: [{ price: { id: LEGACY_PRICE, unit_amount: 10000, product: 'prod_TESTDEPOSIT01' }, quantity: 1, amount_total: 10000 }] },
+    ...o,
+  }, { amount_received: 10000, ...piOverrides }, chargeOverrides);
+}
 
 export function logSink() {
   const lines = [];

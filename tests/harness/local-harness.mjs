@@ -40,10 +40,11 @@ if (mode === 'synthetic') {
   const env = {
     REVIVEX_CHECKOUT_ENABLED: 'true', STRIPE_MODE: stripeMode, STRIPE_SECRET_KEY: ['sk', stripeMode, 'SYNTHETICHARNESSONLY0000'].join('_'),
     REVIVEX_LIVE_APPROVED_TERMS_VERSION: DEPOSIT.termsVersion, META_CAPI_ACCESS_TOKEN: 'SYNTHETIC_HARNESS_CAPI_TOKEN',
-    STRIPE_EXPECTED_ACCOUNT_ID: 'acct_SYNTHETIC0001', STRIPE_DEPOSIT_PRICE_ID: 'price_SYNTHETIC0001', STRIPE_DEPOSIT_PRODUCT_ID: 'prod_SYNTHETIC0001',
+    STRIPE_EXPECTED_ACCOUNT_ID: 'acct_SYNTHETIC0001', STRIPE_DEPOSIT_PRICE_ID: 'price_SYNTHETIC0050', STRIPE_DEPOSIT_PRODUCT_ID: 'prod_SYNTHETIC0001',
+    STRIPE_LEGACY_DEPOSIT_PRICE_IDS: 'price_SYNTHETIC0001',
     REVIVEX_SITE_ORIGIN: origin, REVIVEX_OPERATION_SIGNING_SECRET: 'synthetic-harness-signing-secret-0123456789',
   };
-  const synth = createSyntheticStripe({ accountId: env.STRIPE_EXPECTED_ACCOUNT_ID, priceId: env.STRIPE_DEPOSIT_PRICE_ID, productId: env.STRIPE_DEPOSIT_PRODUCT_ID, live: stripeMode === 'live' });
+  const synth = createSyntheticStripe({ accountId: env.STRIPE_EXPECTED_ACCOUNT_ID, priceId: env.STRIPE_DEPOSIT_PRICE_ID, productId: env.STRIPE_DEPOSIT_PRODUCT_ID, legacyPriceId: env.STRIPE_LEGACY_DEPOSIT_PRICE_IDS, live: stripeMode === 'live' });
   control = synth.control;
   const { createInstanceRateLimiter } = await import(pathToFileURL(path.join(ROOT, 'lib/http.js')));
   // Browser QA drives many attempts from one loopback IP; per-IP limiting has its own unit tests.
@@ -77,7 +78,7 @@ function synthControl(req, res, url) {
   if (req.method !== 'POST') return json(res, 405, {});
   if (op === 'fail-next') { control.failNext(url.searchParams.get('kind'), Number(url.searchParams.get('n') || 1)); return json(res, 200, { ok: true }); }
   if (op === 'advance-clock') { clockOffsetMs += Number(url.searchParams.get('hours')) * 3600_000; return json(res, 200, { ok: true }); }
-  if (op === 'seed-paid') return json(res, 200, { session_id: control.seedPaid(Number(url.searchParams.get('hours') || 0)) });
+  if (op === 'seed-paid') return json(res, 200, { session_id: control.seedPaid(Number(url.searchParams.get('hours') || 0), { legacy: url.searchParams.get('legacy') === '1' }) });
   if (op === 'pay') return json(res, control.pay(id, Number(url.searchParams.get('hours') || 0)) ? 200 : 404, { ok: true });
   if (['expire', 'dispute', 'refund'].includes(op)) return json(res, control[op](id) ? 200 : 404, { ok: true });
   return json(res, 404, {});

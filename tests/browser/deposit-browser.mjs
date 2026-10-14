@@ -9,6 +9,9 @@ import { spawn, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
+import { PREVIOUS_OFFER, readCheckoutConfig } from '../../lib/deposit-config.js';
+import { bindingDigest } from '../../lib/operation-token.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const outIdx = process.argv.indexOf('--out');
@@ -36,7 +39,7 @@ const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false },
   { name: 'mobile', viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
 ];
-const PANEL = '$100 USD today. Fully refundable. Applied to the final machine price. No automatic balance charge.';
+const PANEL = '$50 USD today, fully refundable. You get 20% off the final machine price, then your $50 is credited toward the rest. No automatic balance charge.';
 // The four Preorder buttons. Each must open checkout directly (no scroll to #reserve).
 const PREORDER_BUTTONS = [['nav', '.nav-cta'], ['hero', '.hero-actions [data-checkout]'], ['mid', '.split-side [data-checkout]'], ['section', '#reserveBtn']];
 
@@ -122,6 +125,19 @@ try {
   harnesses.push(await startHarness('synthetic', SP));
   const S = `http://127.0.0.1:${SP}`;
   const api = async (p, method = 'GET') => (await fetch(S + p, { method })).json();
+  // An operation token exactly as the $100 release issued it on this harness (same
+  // signing secret and configuration as tests/harness/local-harness.mjs, previous offer).
+  const OLD_OFFER_TOKEN = (() => {
+    const SIGNING = 'synthetic-harness-signing-secret-0123456789';
+    const cfg = readCheckoutConfig({
+      REVIVEX_CHECKOUT_ENABLED: 'true', STRIPE_MODE: 'test', STRIPE_SECRET_KEY: ['sk', 'test', 'SYNTHETICHARNESSONLY0000'].join('_'),
+      STRIPE_EXPECTED_ACCOUNT_ID: 'acct_SYNTHETIC0001', STRIPE_DEPOSIT_PRICE_ID: 'price_SYNTHETIC0050', STRIPE_DEPOSIT_PRODUCT_ID: 'prod_SYNTHETIC0001',
+      STRIPE_LEGACY_DEPOSIT_PRICE_IDS: 'price_SYNTHETIC0001', REVIVEX_SITE_ORIGIN: S, REVIVEX_OPERATION_SIGNING_SECRET: SIGNING,
+    }).config;
+    const b = bindingDigest(cfg, { priceId: 'price_SYNTHETIC0001', termsVersion: PREVIOUS_OFFER.termsVersion, paramsVersion: PREVIOUS_OFFER.paramsVersion });
+    const payload = Buffer.from(JSON.stringify({ v: 1, id: crypto.randomBytes(16).toString('base64url'), iat: Math.floor(Date.now() / 1000) - 600, b, a: {} })).toString('base64url');
+    return `${payload}.${crypto.createHmac('sha256', SIGNING).update(`rvx-op-v1.${payload}`).digest('base64url')}`;
+  })();
 
   for (const vp of VIEWPORTS) {
     const tag = vp.name;
@@ -149,7 +165,7 @@ try {
     check(await page.locator('a[href="#reserve"], button[type="submit"]').evaluateAll(els => els.every(e => e.textContent.trim() === 'Preorder')), `${tag}: no order button keeps the old Reserve label`);
     check((await page.locator('#reserve-title').innerText()).trim() === 'Preorder yours.', `${tag}: section heading reads Preorder yours.`);
     const preorderCopy = await page.evaluate(() => [document.querySelector('meta[name="description"]').content, document.querySelector('meta[property="og:description"]').content, ...[...document.querySelectorAll('.faq details p')].map(p => p.textContent)]);
-    check(preorderCopy[0].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy[1].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy.every(t => !/\breserv/i.test(t)), `${tag}: meta, og and FAQ copy say Preorder, not reserve`, preorderCopy.filter(t => /\breserv/i.test(t)).join(' | '));
+    check(preorderCopy[0].includes('Preorder with a fully refundable $50 deposit.') && preorderCopy[1].includes('Preorder with a fully refundable $50 deposit.') && !preorderCopy.some(t => /\$100/.test(t)) && preorderCopy.every(t => !/\breserv/i.test(t)), `${tag}: meta, og and FAQ copy say Preorder, not reserve`, preorderCopy.filter(t => /\breserv/i.test(t)).join(' | '));
     await page.screenshot({ path: path.join(OUT, `${tag}-01-hero.png`) });
 
     const btn = page.locator('#reserveBtn');
@@ -175,7 +191,7 @@ try {
       if (where === 'scrolled') { await page.evaluate(() => window.scrollTo({ top: document.getElementById('details').offsetTop, behavior: 'instant' })); await page.waitForTimeout(600); }
       const nd = await page.evaluate(() => {
         const nav = document.getElementById('nav'), b = nav.querySelector('.nav-cta'), br = b.getBoundingClientRect(), logo = nav.querySelector('.logo').getBoundingClientRect(), vw = document.documentElement.clientWidth;
-        return { tag: !!nav.querySelector('.nav-order, .nav-terms, #navTerms, a[href="/deposit-terms.html"]'), describedBy: b.getAttribute('aria-describedby'), parentIsNav: b.parentElement === nav, depositText: /\$100|refundable/i.test(nav.textContent), inside: br.left >= 0 && br.right <= vw, centred: Math.abs((br.top + br.bottom) / 2 - (logo.top + logo.bottom) / 2) <= 3, clearOfLogo: br.left >= logo.right + 8, scrolled: nav.classList.contains('scrolled') };
+        return { tag: !!nav.querySelector('.nav-order, .nav-terms, #navTerms, a[href="/deposit-terms.html"]'), describedBy: b.getAttribute('aria-describedby'), parentIsNav: b.parentElement === nav, depositText: /\$\d|20%|refundable/i.test(nav.textContent), inside: br.left >= 0 && br.right <= vw, centred: Math.abs((br.top + br.bottom) / 2 - (logo.top + logo.bottom) / 2) <= 3, clearOfLogo: br.left >= logo.right + 8, scrolled: nav.classList.contains('scrolled') };
       });
       check(!nd.tag && nd.describedBy === null && nd.parentIsNav && !nd.depositText && nd.inside && nd.centred && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has no deposit tag beside it (${where}), centred on the logo and inside the viewport`, JSON.stringify(nd));
     }
@@ -200,7 +216,7 @@ try {
       check(r.busy.ariaBusy === 'true' && r.busy.text === 'Opening checkout\u2026' && ((name === 'nav' || name === 'hero') && vp.name === 'mobile' ? r.busy.label === 'Opening\u2026' : r.busy.label === 'Opening checkout\u2026') && r.busy.spinner, `${tag}: ${name} button shows Opening checkout with a spinner`, JSON.stringify(r.busy));
       check(r.busy.y === r.y0 && r.busy.scrolls === 0 && r.busy.hash === '', `${tag}: ${name} click does not scroll to #reserve`, JSON.stringify({ y0: r.y0, ...r.busy }));
       check(r.busy.overflow <= 0 && r.busy.inside && r.busy.fits && r.busy.clearOfLogo, `${tag}: ${name} busy label fits its button, inside the viewport and clear of the logo`, JSON.stringify(r.busy));
-      check(r.steps.join() === 'start,create' && r.bodies.every(b => b.termsAccepted === true && b.termsVersion === 'deposit-terms-v2'), `${tag}: ${name} sends start then create with the current terms version`, JSON.stringify(r.bodies));
+      check(r.steps.join() === 'start,create' && r.bodies.every(b => b.termsAccepted === true && b.termsVersion === 'deposit-terms-v3' && b.displayedAmount === 5000), `${tag}: ${name} sends start then create with the current terms version and the displayed $50`, JSON.stringify(r.bodies));
       check(st0.sessionCount === c + 1 && r.url === `https://checkout.stripe.com/c/pay/${st0.sessions[st0.sessions.length - 1].id}`, `${tag}: ${name} redirects to the Stripe-hosted session URL`, r.url);
     }
 
@@ -303,9 +319,9 @@ try {
     await page.waitForFunction(() => document.getElementById('receipt').dataset.state !== 'loading');
     check(await page.locator('#receipt').getAttribute('data-state') === 'confirmed', `${tag}: receipt confirmed from server lookup`);
     const receiptText = await page.locator('#receipt').innerText();
-    check(/\$100\.00 USD/.test(receiptText) && /pi_SYNTH/.test(receiptText), `${tag}: receipt shows amount + reference`);
+    check(/\$50\.00 USD/.test(receiptText) && /20% off the final price/.test(receiptText) && /pi_SYNTH/.test(receiptText) && !/\$100/.test(receiptText), `${tag}: receipt shows $50, the 20% machine discount and the reference`, receiptText);
     check(!/synthetic-buyer|Synthetic Buyer/.test(receiptText), `${tag}: receipt shows no customer email/name`);
-    check(/support@revivex\.store/.test(receiptText) && /not a final order/.test(receiptText), `${tag}: receipt refund contact + deposit-only scope`);
+    check(/support@revivex\.store/.test(receiptText) && /not a final order, a shipping commitment or a place in a queue/.test(receiptText), `${tag}: receipt refund contact + deposit-only scope`);
     check(await page.evaluate(() => sessionStorage.getItem('revivex.depositOperation')) === null, `${tag}: operation cleared after confirmed deposit`);
     check(await page.locator('#receiptRetry').isHidden(), `${tag}: no 'Check again' on a confirmed receipt`);
     await page.screenshot({ path: path.join(OUT, `${tag}-04-receipt-confirmed.png`), fullPage: true });
@@ -445,6 +461,73 @@ try {
     await ctx.close();
   }
 
+  // $50 offer: historical $100 receipts, a cached old page and an old $100 operation.
+  for (const vp of VIEWPORTS) {
+    const tag = `${vp.name} price50`;
+    const ctx = await browser.newContext({ viewport: vp.viewport, deviceScaleFactor: vp.deviceScaleFactor, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
+    let stripeHits = 0;
+    await ctx.route('https://checkout.stripe.com/**', r => { stripeHits++; return r.fulfill({ status: 200, contentType: 'text/html', body: '<h1>SYNTHETIC</h1>' }); });
+    const page = await ctx.newPage();
+    const receipt = async id => {
+      await page.goto(`${S}/reservation.html?session_id=${id}`, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => document.getElementById('receipt').dataset.state !== 'loading');
+      return {
+        state: await page.locator('#receipt').getAttribute('data-state'),
+        text: await page.locator('#receipt').innerText(),
+        discountShown: await page.locator('#receiptDiscountRow').isVisible(),
+        refundedShown: await page.locator('#receiptRefundedRow').isVisible(),
+        photoShown: await page.locator('#receiptPhoto').isVisible(),
+        termsHref: await page.locator('#receiptTermsLink').getAttribute('href'),
+      };
+    };
+    const legacy = (await api('/__synthetic/seed-paid?legacy=1', 'POST')).session_id;
+    let r = await receipt(legacy);
+    check(r.state === 'confirmed' && /\$100\.00 USD/.test(r.text) && !/\$50|20%/.test(r.text) && !r.discountShown, `${tag}: historical $100 receipt shows $100 and no machine discount`, r.text);
+    check(r.termsHref === '/deposit-terms-v2.html' && /applied to the final machine price/.test(r.text), `${tag}: historical receipt keeps its v2 terms`, r.termsHref);
+    await page.screenshot({ path: path.join(OUT, `${tag}-receipt-legacy-confirmed.png`), fullPage: true });
+    await api(`/__synthetic/refund?session_id=${legacy}`, 'POST');
+    r = await receipt(legacy);
+    check(r.state === 'refunded' && r.refundedShown && (r.text.match(/\$100\.00 USD/g) || []).length === 2 && !r.discountShown && !r.photoShown, `${tag}: refunded $100 receipt shows paid and refunded $100, no benefit`, r.text);
+    const v3 = (await api('/__synthetic/seed-paid', 'POST')).session_id;
+    await api(`/__synthetic/refund?session_id=${v3}`, 'POST');
+    r = await receipt(v3);
+    check(r.state === 'refunded' && (r.text.match(/\$50\.00 USD/g) || []).length === 2 && !r.discountShown && !/20%|What happens next/.test(r.text), `${tag}: refunded $50 receipt shows no 20% and no active reservation`, r.text);
+
+    // Cached old page HTML ($100 panel, v2 attributes) against the new server.
+    const posts = [];
+    await page.route(`${S}/`, async route => {
+      const resp = await route.fetch();
+      const html = (await resp.text()).replace(/<p class="deposit-panel" id="depositPanel"[^>]*>[\s\S]*?<\/p>/, '<p class="deposit-panel" id="depositPanel" data-terms-version="deposit-terms-v2" data-deposit-amount="10000"><b>$100 USD today.</b> Fully refundable.</p>');
+      return route.fulfill({ response: resp, body: html });
+    });
+    page.on('request', q => { if (q.url().endsWith('/api/checkout') && q.method() === 'POST') posts.push(q.postDataJSON()); });
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    await page.locator('#reserveBtn').scrollIntoViewIfNeeded();
+    await page.locator('.hero-actions [data-checkout]').click();
+    await page.waitForTimeout(400);
+    const stale = await page.evaluate(() => ({ msg: document.getElementById('reserveMsg').textContent, disabled: document.getElementById('reserveBtn').disabled }));
+    check(/deposit terms have been updated\. Please reload/.test(stale.msg) && stale.disabled && posts.length === 0 && stripeHits === 0, `${tag}: cached old $100 page asks for a reload and sends nothing`, JSON.stringify({ ...stale, posts: posts.length }));
+    await page.unroute(`${S}/`);
+
+    // A tab still holding an operation issued for the $100 offer (attempted before the cutover).
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    await page.evaluate(t => sessionStorage.setItem('revivex.depositOperation', JSON.stringify({ token: t, attempted: true })), OLD_OFFER_TOKEN);
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled);
+    const c0 = (await api('/__synthetic/state')).sessionCount;
+    await page.locator('#reserveBtn').scrollIntoViewIfNeeded();
+    await page.locator('#reserveBtn').click();
+    await page.waitForFunction(() => !document.getElementById('reserveRestart').hidden, null, { timeout: 8000 }).catch(() => {});
+    const oc = await page.evaluate(() => ({ msg: document.getElementById('reserveMsg').textContent, restart: !document.getElementById('reserveRestart').hidden }));
+    check(/^The deposit is now \$50\. If you paid an earlier \$100 deposit, it stays valid/.test(oc.msg) && oc.restart && stripeHits === 0 && (await api('/__synthetic/state')).sessionCount === c0, `${tag}: old $100 operation shows offer_changed, asks first, opens no session`, JSON.stringify(oc));
+    await page.screenshot({ path: path.join(OUT, `${tag}-offer-changed.png`) });
+    // The explicit restart opens a $50 checkout with a fresh operation.
+    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('#reserveRestart').click().then(() => page.locator('#reserveBtn').click())]);
+    const state = await api('/__synthetic/state');
+    check(state.sessionCount === c0 + 1 && stripeHits === 1, `${tag}: after the explicit restart, one new checkout opens`, JSON.stringify({ c0, n: state.sessionCount }));
+    await ctx.close();
+  }
+
   // A failed attempt restores the clicked button and shows the message next to it.
   for (const vp of VIEWPORTS) {
     const ctx = await browser.newContext({ viewport: vp.viewport, deviceScaleFactor: vp.deviceScaleFactor, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
@@ -504,8 +587,8 @@ try {
       check(!/convert/i.test(t) && !/before[^.]{0,40}final order/i.test(t), `rendered ${p.split('?')[0]}: no refund cutoff`);
     }
     await page.goto(`${S}/deposit-terms.html`, { waitUntil: 'networkidle' });
-    check(/deposit-terms-v2/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v2');
-    await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v2.png'), fullPage: true });
+    check(/deposit-terms-v3/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v3');
+    await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v3.png'), fullPage: true });
     await ctx.close();
   }
 
@@ -589,7 +672,7 @@ try {
       check(/temporarily unavailable/.test(u.msg) && u.text === 'Preorder' && !u.busy && u.y === y0, `${tag}: ${name} Preorder fails closed with the message next to it, no scroll`, JSON.stringify({ y0, ...u }));
     }
     const r = await page.evaluate(async () => {
-      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v2' }) });
+      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v3', displayedAmount: 5000 }) });
       const b = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'browser-qa@example.test', consent: true }) });
       return { a: a.status, aj: await a.json(), b: b.status, bj: await b.json() };
     });

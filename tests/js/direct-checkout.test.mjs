@@ -41,17 +41,18 @@ test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet
 test('repeated CTA disclaimers are absent; offer, footer links and functional messages remain', () => {
   assert.doesNotMatch(html, /class="[^"]*\b(?:cta-terms|hero-terms|deposit-note)\b/);
   assert.doesNotMatch(html, /By preordering you accept|Preordering means you accept/);
-  assert.match(html, /id="depositPanel"><b>\$100 USD today\.<\/b> Fully refundable\. Applied to the final machine price\. No automatic balance charge\./);
+  assert.match(html, /id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
   const nav = html.match(/<header class="nav"[\s\S]*?<\/header>/)[0];
   assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout>Preorder<\/a>/, 'the nav Preorder stands alone');
-  assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|refundable/i, 'no deposit tag in the nav (owner request)');
+  assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|\$50|20%|refundable/i, 'no deposit tag in the nav (owner request)');
   const footer = html.match(/<footer[\s\S]*?<\/footer>/)[0];
   assert.match(footer, /href="\/deposit-terms\.html">Deposit terms<\/a>/);
   assert.match(footer, /href="\/privacy\.html">Privacy<\/a>/);
   assert.match(html, /id="reserveMsg" role="status" aria-live="polite"/);
   assert.match(html, /id="testModeNote" hidden>Test mode\. No real payment is taken\./);
   const faq = html.match(/<section class="faq"[\s\S]*?<\/section>/)[0];
-  assert.match(faq, /\$100 deposit\. It is fully refundable, applied to the final machine price/);
+  assert.match(faq, /fully refundable \$50 deposit\. It includes 20% off the final machine price, then your \$50 is credited toward the rest\./);
+  assert.doesNotMatch(html, /\$100/, 'the page no longer offers the $100 deposit');
 });
 
 test('server still requires termsAccepted and the current terms version (unchanged contract)', async () => {
@@ -60,14 +61,14 @@ test('server still requires termsAccepted and the current terms version (unchang
   const call = async body => { const r = res(); await checkout(req({ body }), r); return r; };
   assert.equal((await call({ step: 'start', termsVersion: DEPOSIT.termsVersion, attribution: {} })).statusCode, 400);
   assert.equal((await call({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v1', attribution: {} })).statusCode, 409);
-  const ok = await call({ step: 'start', termsAccepted: true, termsVersion: DEPOSIT.termsVersion, attribution: {} });
+  const ok = await call({ step: 'start', termsAccepted: true, termsVersion: DEPOSIT.termsVersion, displayedAmount: DEPOSIT.amount, attribution: {} });
   assert.equal(ok.json().state, 'started', ok.body);
   assert.equal(synth.control.calls().length, 0, 'start makes no Stripe call');
 });
 
-test('Stripe Checkout itself is unchanged: no consent collection, same submit text and terms version metadata', () => {
+test('Stripe Checkout: no consent collection, $50 submit text with the machine discount, v3 terms metadata', () => {
   const p = checkoutSessionParams(readCheckoutConfig(ENV).config, { id: 'x'.repeat(22), binding: 'b', attribution: {} });
   assert.equal(p.consent_collection, undefined);
-  assert.equal(p.metadata.terms_version, 'deposit-terms-v2');
-  assert.equal(p.custom_text.submit.message, '$100 USD fully refundable preorder deposit for the Revivex machine, which is in development. Applied to the final machine price. No automatic balance charge. The final price and shipping date have not been announced.');
+  assert.equal(p.metadata.terms_version, 'deposit-terms-v3');
+  assert.equal(p.custom_text.submit.message, '$50 USD fully refundable preorder deposit for the Revivex machine, which is in development. Includes 20% off the final machine price, then your $50 is credited toward the rest. No automatic balance charge. The final price and shipping date have not been announced.');
 });

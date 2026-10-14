@@ -84,11 +84,13 @@
     par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
   }
 
-  /* Preorder: refundable $100 deposit through Stripe-hosted Checkout.
+  /* Preorder: refundable deposit through Stripe-hosted Checkout.
      Every Preorder button (nav, hero, mid page and the #reserve form) opens checkout
      directly; without JavaScript the links still lead to #reserve. Selecting Preorder
-     accepts the deposit terms disclosed next to the buttons, so each request carries
-     termsAccepted and the current terms version.
+     accepts the deposit terms disclosed on the page, so each request carries
+     termsAccepted plus the terms version and amount this page shows (data attributes
+     on #depositPanel). A page showing anything other than the server's current offer,
+     such as an old cached copy, asks for a reload instead of opening checkout.
      The server fixes amount, price and redirect URLs. Each checkout attempt uses one
      signed operation token issued by the server (no Stripe call) and kept in
      sessionStorage with an "attempted" flag. Retries re-send the same token so Stripe
@@ -101,6 +103,9 @@
   const restart = document.getElementById('reserveRestart');
   const msg = document.getElementById('reserveMsg');
   const testNote = document.getElementById('testModeNote');
+  const panel = document.getElementById('depositPanel');
+  const pageTerms = (panel && panel.dataset.termsVersion) || null;
+  const pageAmount = panel ? Number(panel.dataset.depositAmount) : NaN;
   const triggers = [...document.querySelectorAll('[data-checkout]')];
   const labels = new Map(triggers.map(t => [t, t.innerHTML]));
   const notes = new Map();
@@ -108,7 +113,7 @@
   const ATTR_KEY = 'revivex.attribution';
   const AUTO_RETRIES = 2;
   const UNCERTAIN_LIMIT = 6; // unknown outcomes per attempt before the reconcile path
-  let available = false, loaded = false, termsVersion = null, inFlight = false, elsewhere = null;
+  let available = false, loaded = false, inFlight = false, elsewhere = null, stale = false;
 
   // Messages show next to the button that was used: #reserveMsg for the form button,
   // a small status line created on first use for the others.
@@ -178,8 +183,9 @@
     refresh();
   }
   const UNAVAILABLE = 'Reservations are temporarily unavailable. This page cannot open a checkout right now.';
-  const UNCERTAIN = 'We could not confirm the checkout status. Check your card statement or banking app for a $100 Revivex payment before trying again.';
-  const RECONCILE = 'We could not confirm whether your earlier checkout attempt was paid. Before reserving again, check your card statement or banking app for a $100 Revivex payment (a receipt email may not arrive). If you were charged, or are unsure, contact support@revivex.store and we will check it for you.';
+  const UNCERTAIN = 'We could not confirm the checkout status. Check your card statement or banking app for a Revivex payment before trying again.';
+  const RECONCILE = 'We could not confirm whether your earlier checkout attempt was paid. Before reserving again, check your card statement or banking app for a Revivex payment (a receipt email may not arrive). If you were charged, or are unsure, contact support@revivex.store and we will check it for you.';
+  const TERMS_CHANGED = 'The deposit terms have been updated. Please reload the page and review them.';
 
   const config = fetch('/api/checkout', { headers: { Accept: 'application/json' }, cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
@@ -188,9 +194,12 @@
       // still refuse, which the create step reports. Checkout is only offered on the
       // canonical origin, because the server refuses POSTs from any other host.
       const configured = d.configured === true && typeof d.termsVersion === 'string';
-      termsVersion = d.termsVersion;
       if (d.mode === 'test') testNote.hidden = false;
-      if (configured && d.siteOrigin && d.siteOrigin !== location.origin) {
+      if (configured && (d.termsVersion !== pageTerms || d.amount !== pageAmount)) {
+        available = false;
+        stale = true;
+        say(TERMS_CHANGED, false);
+      } else if (configured && d.siteOrigin && d.siteOrigin !== location.origin) {
         available = false;
         elsewhere = d.siteOrigin;
         sayElsewhere(msg);
@@ -213,7 +222,7 @@
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'same-origin',
         cache: 'no-store',
-        body: JSON.stringify({ termsAccepted: true, termsVersion, ...body }),
+        body: JSON.stringify({ termsAccepted: true, termsVersion: pageTerms, displayedAmount: pageAmount, ...body }),
       });
       return await res.json().catch(() => ({ state: 'uncertain' }));
     } catch {
@@ -248,7 +257,8 @@
     try {
       await config;
       if (!available) {
-        if (!elsewhere) fail(UNAVAILABLE, true);
+        if (stale) fail(TERMS_CHANGED, true);
+        else if (!elsewhere) fail(UNAVAILABLE, true);
         else { sayElsewhere(out); if (out !== msg) sayElsewhere(msg); }
         return;
       }
@@ -294,13 +304,15 @@
           if (n < AUTO_RETRIES) { n++; await sleep(1200 * n); continue; }
         } else if (op.uncertain) { op.uncertain = 0; saveOp(op); }
         if (d.state === 'expired') { dropOp(); fail(d.message); break; }
-        if ((d.state === 'reconcile' || d.state === 'invalid_operation') && d.preWrite === true && !wasAttempted && fresh === 0) {
+        // offer_changed: the token was issued for the previous deposit amount.
+        const stopped = d.state === 'reconcile' || d.state === 'invalid_operation' || d.state === 'offer_changed';
+        if (stopped && d.preWrite === true && !wasAttempted && fresh === 0) {
           // Neither this request nor any earlier one sent this token to Stripe, so
           // replacing it cannot duplicate anything.
           dropOp(); op = null; fresh++;
           continue;
         }
-        if (d.state === 'reconcile' || d.state === 'invalid_operation') {
+        if (stopped) {
           // Ask before ever starting another attempt that could take a second deposit.
           fail(d.message || RECONCILE, true);
           restart.hidden = false;

@@ -1,8 +1,18 @@
-# Refundable $100 preorder deposit
+# Refundable $50 preorder deposit
 
-Stripe-hosted Checkout in `payment` mode for a one-time $100 USD deposit. The deposit is fully refundable and is credited toward the final machine price. There is no automatic balance charge. Revivex is in development; the final price and shipping date have not been announced. The terms page is versioned `deposit-terms-v2`. v1 carried an unapproved refund cutoff, was never used for a real payment, and stays recognised only for lookups.
+Stripe-hosted Checkout in `payment` mode for a one-time $50 USD deposit. The deposit is fully refundable and is credited toward the final machine price. A paid deposit also gets 20% off the final machine price: the 20% comes off the final price first, then the full $50 is credited. The discount is never applied to the deposit itself, and there is no automatic balance charge. Revivex is in development; the final price and shipping date have not been announced. The terms page is versioned `deposit-terms-v3`.
 
-**On the page:** every Preorder button (nav, hero, mid page and the one in `#reserve`) starts checkout directly, by pointer, Enter or Space; there is no terms checkbox. With the script running the three links are exposed as buttons (Space activates on release and does not scroll), and every activation goes through one in-flight guard, so held or repeated keys and clicks make one operation. The clicked button shows "Opening checkout…" with a spinner, and a failure restores it with the message next to it. The deposit is disclosed beside the hero and mid page buttons, which say "$100 fully refundable deposit, credited toward your machine. By preordering you accept the deposit terms."; `#reserve` says "Preordering means you accept the deposit terms". Selecting Preorder is the acceptance, so the page sends `termsAccepted: true` with the current `termsVersion` exactly as before. Without JavaScript the links lead to `#reserve`, the section is fully visible (`nojs.css`, loaded from `<noscript>`, turns off the reveal-on-scroll fade), and its button stays disabled with the "Reserving needs JavaScript" notice. While the reconcile/restart prompt is showing, the links scroll to `#reserve` instead of starting another attempt.
+**Offers by terms version** (`OFFERS` in `lib/deposit-config.js`; only the current one can be created):
+
+| Terms | Deposit | Machine discount | Status |
+| --- | --- | --- | --- |
+| `deposit-terms-v1` | $100 | none | lookups only; carried an unapproved refund cutoff and was never used for a real payment |
+| `deposit-terms-v2` | $100 | none | lookups only; archived at `/deposit-terms-v2.html` |
+| `deposit-terms-v3` | $50 | 20% | current |
+
+A historical deposit is always shown with the amount it actually paid and the terms it was paid under. A v1/v2 deposit is never shown the 20% discount: whether earlier $100 depositors get it is an owner decision that is not made here.
+
+**On the page:** every Preorder button (nav, hero, mid page and the one in `#reserve`) starts checkout directly, by pointer, Enter or Space; there is no terms checkbox. With the script running the three links are exposed as buttons (Space activates on release and does not scroll), and every activation goes through one in-flight guard, so held or repeated keys and clicks make one operation. The clicked button shows "Opening checkout…" with a spinner, and a failure restores it with the message next to it. The deposit is disclosed in the `#reserve` panel: "$50 USD today, fully refundable. You get 20% off the final machine price, then your $50 is credited toward the rest. No automatic balance charge." Selecting Preorder is the acceptance, so the page sends `termsAccepted: true` with the `termsVersion` and the deposit amount (`displayedAmount`, in cents) that the page shows. The panel carries both as `data-terms-version` and `data-deposit-amount`; if the probe reports different values (a cached old page), the buttons are disabled with "The deposit terms have been updated. Please reload the page and review them." Without JavaScript the links lead to `#reserve`, the section is fully visible (`nojs.css`, loaded from `<noscript>`, turns off the reveal-on-scroll fade), and its button stays disabled with the "Reserving needs JavaScript" notice. While the reconcile/restart prompt is showing, the links scroll to `#reserve` instead of starting another attempt.
 
 **Default state: off.** With no configuration, the reserve button is disabled, `POST /api/checkout` returns 503 `unavailable` and no Stripe request is made.
 
@@ -17,7 +27,7 @@ Stripe-hosted Checkout in `payment` mode for a one-time $100 USD deposit. The de
 3. **`POST /api/checkout {step:"create", operation}`:**
    1. Verifies the token.
    2. Checks the merchant: pinned account, `charges_enabled`.
-   3. Checks the price: exactly $100 USD, one-time, active, no other currencies, the expected product.
+   3. Checks the price: exactly $50 USD (`DEPOSIT.amount`), one-time, active, no other currencies, the expected product. The Checkout Session has one line of that price, quantity 1, and no coupon, discount or promotion code (`allow_promotion_codes: false`).
    4. Creates the Checkout Session with an idempotency key derived only from the token, so a retry sends byte-identical parameters.
    5. **Retrieves the session's current state.** Stripe replays the *saved first response* for a key, which is the session as created, so the create reply alone can't be used for routing. The visitor is sent:
       - `open` → to Stripe;
@@ -29,14 +39,16 @@ Stripe-hosted Checkout in `payment` mode for a one-time $100 USD deposit. The de
    - **Unknown outcome** (timeout, network, unreadable 2xx body, 409 in flight, 429): `uncertain`. The browser retries the same token twice. After six unknowns for one attempt, it switches to the reconcile path.
    - **Stripe 5xx:** Stripe saves the 500 under the key and replays it, so this goes straight to `reconcile`.
    - **400 `idempotency_error`**, a token older than 23h (inside Stripe's 24h retention), or a changed binding: `reconcile`. The token is never re-keyed or re-parameterised.
-   - **Reconcile message:** "check your card statement or banking app for a $100 Revivex payment (a receipt email may not arrive)… contact support@revivex.store". Only an explicit click starts a new reservation.
+   - **Token from the previous $100 offer** (its binding matches a pinned legacy price with `deposit-terms-v2` and `params-v2`): 409 `offer_changed`, with no Stripe call, so an old $100 session is never re-created or reopened. Message: "The deposit is now $50. If you paid an earlier $100 deposit, it stays valid and fully refundable. Check your card statement or banking app before reserving again…". The page treats it like reconcile.
+   - **Request without the displayed $50 and v3 terms** (an old cached page): 409 `terms_changed`, no Stripe call.
+   - **Reconcile message:** "check your card statement or banking app for a Revivex payment (a receipt email may not arrive)… contact support@revivex.store". It names no amount, because an earlier attempt may have been for $100. Only an explicit click starts a new reservation.
    - **Definite Stripe 4xx:** `unavailable` ("This request did not open a checkout page").
-4. **`GET /api/reservation?session_id=`** retrieves the session from Stripe and checks the account, mode, amount, currency, metadata, known terms version, line item, PaymentIntent and charge. Malformed provider structures return `not_recognized`; they never throw. It returns only the state, the amount and the PaymentIntent reference.
+4. **`GET /api/reservation?session_id=`** retrieves the session from Stripe and checks the account, mode, currency, metadata and known terms version, then that the amount, line item price (and its `unit_amount`), PaymentIntent `amount_received` and charge refunds all match **that terms version's offer**. A v3 session must use the current price and carry `machine_discount_percent=20`; a v1/v2 session must use a price in `STRIPE_LEGACY_DEPOSIT_PRICE_IDS`. Any cross pairing is `not_recognized`. Malformed provider structures return `not_recognized`; they never throw. It returns only the state, the paid amount, the refunded amount (refund states), the terms version, the machine discount (only for a `confirmed` v3 deposit) and the PaymentIntent reference.
    - States: `confirmed`, `processing`, `not_completed`, `expired`, `refunded`, `partially_refunded`, `disputed`, `not_recognized`, `not_found`.
    - Query parameters are never evidence of payment.
    - Any paid state clears the stored attempt in that tab.
 
-There is **no webhook and no fulfillment**. Stripe is the deposit ledger. Session and PaymentIntent metadata carry `purpose=revivex_preorder_deposit`, `terms_version`, `operation` and any `utm_*` labels. A paid deposit is not an order, a shipment, a queue position or an email signup. Refunds are manual, from the Stripe Dashboard, after an email to support@revivex.store.
+There is **no webhook and no fulfillment**. Stripe is the deposit ledger. Session and PaymentIntent metadata carry `purpose=revivex_preorder_deposit`, `terms_version`, `machine_discount_percent` (v3), `operation` and any `utm_*` labels. A paid deposit is not an order, a shipment, a queue position or an email signup. Refunds are manual, from the Stripe Dashboard, after an email to support@revivex.store.
 
 The legacy `/api/signup` always returns 503 "Nothing was saved" and logs nothing. **The free waitlist remains unconfigured.**
 
@@ -53,11 +65,12 @@ The legacy `/api/signup` always returns 503 "Nothing was saved" and logs nothing
 | `STRIPE_MODE` | `test` or `live`; must match the key prefix |
 | `STRIPE_SECRET_KEY` | Restricted key (`rk_…`) preferred. Needs write on Checkout Sessions; read on Prices, Products, PaymentIntents and Charges; plus whatever lets `GET /v1/account` succeed. Confirm all of these in the sandbox. |
 | `STRIPE_EXPECTED_ACCOUNT_ID` | `acct_…` of the verified Revivex merchant |
-| `STRIPE_DEPOSIT_PRICE_ID` | `price_…`: one-time, 10000 USD, only the `usd` currency option |
+| `STRIPE_DEPOSIT_PRICE_ID` | `price_…`: one-time, 5000 USD, only the `usd` currency option (create with `scripts/create-deposit-price.mjs`) |
+| `STRIPE_LEGACY_DEPOSIT_PRICE_IDS` | optional, comma separated `price_…` ids of earlier $100 deposit prices. Needed so v1/v2 receipts keep reading as their real $100, and so old $100 operations get `offer_changed`. Never the current price. |
 | `STRIPE_DEPOSIT_PRODUCT_ID` | `prod_…` the price belongs to |
 | `REVIVEX_SITE_ORIGIN` | the single canonical origin, e.g. `https://revivex-launch.vercel.app` (https, no path) |
 | `REVIVEX_OPERATION_SIGNING_SECRET` | **must** be generated with `openssl rand -base64 48` and stored only in Vercel env. The code rejects anything under 32 characters or with fewer than 10 distinct characters; that is a sanity check, not an entropy guarantee. Rotating it sends in-flight attempts to the reconcile path. |
-| `REVIVEX_LIVE_APPROVED_TERMS_VERSION` | live only: `deposit-terms-v2`, after sign-off on terms, merchant identity, refund handling and tax/jurisdiction |
+| `REVIVEX_LIVE_APPROVED_TERMS_VERSION` | live only: `deposit-terms-v3`, after sign-off on terms, merchant identity, refund handling and tax/jurisdiction. The earlier `deposit-terms-v2` value no longer opens checkout. |
 | `META_CAPI_ACCESS_TOKEN` | optional: Meta Conversions API token (Events Manager → dataset → Settings). Unset = server events off. Never logged. |
 | `META_TEST_EVENT_CODE` | optional, temporary: `TEST…` code from Events Manager → Test events, to watch server events arrive. Remove after checking. |
 
@@ -91,7 +104,7 @@ Lets Meta optimise campaigns on paid deposits. Measurement only: it changes no a
 - **Pixel id:** one constant, `META_PIXEL_ID` in `public/meta-pixel-id.js`, imported by the browser pixel (`public/meta-pixel.js`) and the server (`lib/meta-capi.js`). While it is `REVIVEX_PIXEL_ID_PLACEHOLDER`, nothing loads from or is sent to Meta.
 - **Canonical origin:** `META_PIXEL_ORIGIN` in the same file (`https://reserve.healthrevivex.com`, the production `REVIVEX_SITE_ORIGIN`). The browser pixel starts only there, so previews, deployment aliases and local copies never send to the live dataset. Change it together with `REVIVEX_SITE_ORIGIN`.
 - **Live mode only:** test mode deposits are never reported. The server skips every event when `STRIPE_MODE` is not `live`, and the browser sends `Purchase` only when `/api/reservation` reports `mode: "live"` for a `cs_live_` session.
-- **Browser events:** `PageView` on every page; `ViewContent` on the home page; `InitiateCheckout` only when the create step returns a Stripe redirect, just before leaving, once per operation (the stored operation remembers it was announced, so Back from Stripe and Preorder again, which replays the same session, sends nothing new; a failed start sends nothing), with `eventID` = the operation id inside the signed token; `Purchase` on the receipt only when `/api/reservation` returns `confirmed` with `fresh: true` in live mode, `eventID` = `deposit_<session id>`, at most once per session per browser even across simultaneous tabs (an atomic IndexedDB claim; nothing is sent if IndexedDB is unavailable). All carry `value: 100, currency: USD`. `autoConfig` is off, so Meta collects no automatic button or page metadata.
+- **Browser events:** `PageView` on every page; `ViewContent` on the home page; `InitiateCheckout` only when the create step returns a Stripe redirect, just before leaving, once per operation (the stored operation remembers it was announced, so Back from Stripe and Preorder again, which replays the same session, sends nothing new; a failed start sends nothing), with `eventID` = the operation id inside the signed token; `Purchase` on the receipt only when `/api/reservation` returns `confirmed` with `fresh: true` in live mode, `eventID` = `deposit_<session id>`, at most once per session per browser even across simultaneous tabs (an atomic IndexedDB claim; nothing is sent if IndexedDB is unavailable). `ViewContent` and `InitiateCheckout` carry `value: 50, currency: USD`; `Purchase` carries the amount that deposit actually paid (50, or 100 for a historical v2 deposit), and nothing is sent for any other amount. `autoConfig` is off, so Meta collects no automatic button or page metadata.
 - **Recent payments only:** Meta deduplicates the browser and server copies only within 48 hours, and a receipt link can be reopened at any time. So `/api/reservation` returns `fresh: true` only for a confirmed deposit whose charge (else PaymentIntent) `created` is within 48 hours, and only then do the server and browser report `Purchase`, with `event_time` = the payment time. `fresh` is measurement only; the receipt page shows the same thing either way.
 - **Server events (CAPI):** `InitiateCheckout` from `POST /api/checkout` on a `redirect` result and `Purchase` from `GET /api/reservation` on a fresh `confirmed`, with the same event ids, so Meta deduplicates. User data: client IP, user agent, `_fbp`/`_fbc` cookies (read from the request; nothing is added to Stripe metadata) and a SHA-256 hash of the Stripe customer email when present. Never a raw email, name or payment detail. Sent after the response is written, with a 1.5 s deadline, registered with Vercel `waitUntil` when available; failures log `meta_capi_failed` with a status or kind only. Each operation (`InitiateCheckout`) and each paid session (`Purchase`) is reported at most once per warm instance; the entry is kept only after Meta accepts the event, so a skipped (GPC, no token, ceiling) or failed send does not block a later eligible one. Each function instance makes at most 60 Conversions API sends per minute.
 - **Privacy:** a browser with Global Privacy Control (`navigator.globalPrivacyControl`, `Sec-GPC: 1`) gets no pixel and no server events. `privacy.html` describes the pixel and the opt out.
@@ -132,28 +145,37 @@ The synthetic fake mirrors these behaviours of Stripe and the TEST sandbox:
 `configured: true` is not readiness. Accept a deployment only after, on that exact deployment:
 1. A real `start` → `create` through the handler returns `redirect` to a `checkout.stripe.com` session.
 2. A read-back of that session shows:
-   - amount 10000 usd;
+   - amount 5000 usd, no discounts;
    - one line of the configured price;
    - `allowed_payment_method_types == ['card']` and `payment_method_types == ['card']`;
    - `branding_settings.display_name == 'Revivex'`;
-   - metadata with purpose, terms_version and any utm_* labels.
+   - metadata with purpose, terms_version `deposit-terms-v3`, machine_discount_percent `20` and any utm_* labels.
 3. The hosted page header reads Revivex, and only card and card-wallet options are offered.
 4. In TEST: one test payment shows `confirmed` on the receipt; a Dashboard refund shows `refunded`; cancel and Back return to `#reserve`.
 5. Function logs contain no email, name, key or token.
 
 ## Deploy (owner-run, after merchant verification and two reviews)
 
-1. In the **verified Revivex** Stripe account, test mode: create a one-time $100 USD product and price and a restricted test key. Set the public business name to Revivex.
+1. In the **verified Revivex** Stripe account, test mode: create the product, the one-time $50 USD price (`scripts/create-deposit-price.mjs`) and a restricted test key. Set the public business name to Revivex.
 2. Set the variables above for **Preview only** (`STRIPE_MODE=test`; origin = the preview URL, which is then the canonical origin for that preview). Deploy a preview with `vercel` (not `--prod`).
 3. Run the provider acceptance above on the preview.
-4. Live: create the live product, price and restricted key. Add the Vercel Firewall rate-limit rule, and the Firewall challenge / bot protection rule on `POST /api/checkout` (the live control; the owner accepted the token-pool residual on 2026-10-13, see Rate limiting). Set **Production** variables, including `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v2`. Merge, then run `vercel --prod`.
+4. Live: create the live product, price and restricted key. Add the Vercel Firewall rate-limit rule, and the Firewall challenge / bot protection rule on `POST /api/checkout` (the live control; the owner accepted the token-pool residual on 2026-10-13, see Rate limiting). Set **Production** variables, including `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. Merge; the Git integration deploys the merge commit. A manual `vercel --prod` must run only from a clean checkout of the merge commit.
 5. Read back production:
-   - `GET /api/checkout` shows `configured:true, mode:"live", siteOrigin` equal to the public origin;
+   - `GET /api/checkout` shows `configured:true, mode:"live", siteOrigin` equal to the public origin, `amount:5000`, `termsVersion:"deposit-terms-v3"` and `legacyPinned:true`;
    - served file hashes equal the merged commit;
    - provider acceptance steps 1–3 (an unpaid live session, expired afterwards) or an authorised controlled live deposit + refund, if separately approved.
+
+## Changing the offer ($100 v2 to $50 v3)
+
+Vercel snapshots variables per deployment, so the cutover is:
+1. Create the $50 price in test and live with `scripts/create-deposit-price.mjs` (it reuses the price with lookup key `revivex_deposit_usd_5000_v3`, so a retry never creates a second price) and read it back.
+2. Set Production `STRIPE_DEPOSIT_PRICE_ID` to the $50 price, `STRIPE_LEGACY_DEPOSIT_PRICE_IDS` to the old $100 price and `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. The running deployment keeps its old snapshot, so there is no amount mismatch window. **Do not redeploy or promote anything to Production between this step and the merge:** the old code with the new variables fails checkout closed and stops recognising every $100 receipt.
+3. Merge; the Git integration deploys the merge commit with the new variables. Read back the probe (`amount: 5000`, `termsVersion: "deposit-terms-v3"`, `legacyPinned: true`).
+
+Limits: $100 Checkout Sessions that were already open stay payable on Stripe until they expire (24 h); this code does not expire sessions it did not create. A visitor who pays one gets a valid $100 v2 receipt. Old $100 operation tokens are refused with `offer_changed`. Earlier immutable deployment URLs keep their $100 code and variables; the page refuses checkout off the canonical origin and the server refuses cross-origin POSTs, so only a forged request could open a $100 session there, which still shows $100 on Stripe.
 
 ## Rollback
 
 - **Pause new deposits (preferred):** set `REVIVEX_CHECKOUT_ENABLED=false` and redeploy. The button disables and receipts still load for existing depositors.
-- **Full code rollback:** promote the previous production deployment in Vercel. This restores the old log-only signup that falsely reported "saved", so prefer pausing.
+- **Full code rollback:** promote the previous production deployment in Vercel. This restores the old log-only signup that falsely reported "saved", so prefer pausing. After the $50 cutover, a rollback to the $100 code also makes every $50 receipt read `not_recognized` and reopens $100 checkout; once $50 deposits exist, pausing is the only safe rollback.
 - Existing deposits remain in Stripe. Refund from the Dashboard on request.

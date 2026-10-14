@@ -25,8 +25,8 @@ function setup({ now = () => Date.now(), ...deps } = {}) {
 }
 const from = ip => ({ headers: { 'x-vercel-forwarded-for': ip } });
 async function call(h, body, opts = {}) { const r = res(); await h(req({ body, ...opts }), r); return r; }
-const startBody = () => ({ step: 'start', termsAccepted: true, termsVersion: TV, attribution: {} });
-const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV });
+const startBody = () => ({ step: 'start', termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount, attribution: {} });
+const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount });
 const stripeCalls = s => s.synth.control.calls().length;
 
 // ---- security N-1: the global ceiling must only count Stripe-calling creates ----
@@ -141,8 +141,8 @@ const text = html => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
 
 test('hosted Stripe custom text says "fully refundable" like the site', () => {
   const msg = checkoutSessionParams(CFG, { id: 'x'.repeat(22), binding: 'b', attribution: {} }).custom_text.submit.message;
-  assert.match(msg, /^\$100 USD fully refundable preorder deposit/);
-  assert.match(msg, /Applied to the final machine price\. No automatic balance charge\./);
+  assert.match(msg, /^\$50 USD fully refundable preorder deposit/);
+  assert.match(msg, /Includes 20% off the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
   assert.ok(msg.length <= 1200, 'Stripe custom_text limit');
 });
 

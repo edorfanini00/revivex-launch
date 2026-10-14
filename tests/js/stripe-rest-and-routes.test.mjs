@@ -42,11 +42,15 @@ test('create sends form-encoded exact params, pinned API version and Idempotency
   assert.equal(form.get('branding_settings[display_name]'), 'Revivex');
   assert.equal(form.get('adaptive_pricing[enabled]'), 'false');
   assert.equal(form.get('success_url'), 'https://revivex-launch.vercel.app/reservation.html?session_id={CHECKOUT_SESSION_ID}');
-  assert.equal(form.get('metadata[terms_version]'), 'deposit-terms-v2');
+  assert.equal(form.get('metadata[terms_version]'), 'deposit-terms-v3');
   assert.equal(form.get('payment_intent_data[metadata][purpose]'), 'revivex_preorder_deposit');
   assert.equal(form.get('metadata[utm_campaign]'), 'morning_simplified_preorder');
   assert.equal(form.get('payment_intent_data[metadata][utm_source]'), 'x');
-  assert.ok(![...form.keys()].some(k => /amount|price_data|setup_future_usage|automatic_tax|shipping|discount|subscription|gclid|fbclid|referrer|email/.test(k)), [...form.keys()].join());
+  // Metadata records the future machine discount; no parameter may discount this deposit.
+  const params = [...form.keys()].filter(k => k !== 'metadata[machine_discount_percent]' && k !== 'payment_intent_data[metadata][machine_discount_percent]');
+  assert.ok(!params.some(k => /amount|price_data|setup_future_usage|automatic_tax|shipping|discount|coupon|promotion_code\]|subscription|gclid|fbclid|referrer|email/.test(k)), params.join());
+  assert.equal(form.get('allow_promotion_codes'), 'false');
+  assert.equal(form.get('metadata[machine_discount_percent]'), '20');
 });
 
 test('GET calls expand the objects needed for verification and send no idempotency key', async () => {
@@ -198,7 +202,7 @@ test('Stripe error bodies (messages, PII) never reach the browser response or lo
   const fetchImpl = async url => (String(url).includes('/v1/account')
     ? new Response(JSON.stringify({ id: 'acct_TESTREVIVEX01', object: 'account', charges_enabled: true }), { status: 200 })
     : String(url).includes('/v1/prices/')
-      ? new Response(JSON.stringify({ id: 'price_TESTDEPOSIT01', object: 'price', active: true, livemode: false, type: 'one_time', billing_scheme: 'per_unit', currency: 'usd', unit_amount: 10000, product: { id: 'prod_TESTDEPOSIT01', active: true } }), { status: 200 })
+      ? new Response(JSON.stringify({ id: 'price_TESTDEPOSIT01', object: 'price', active: true, livemode: false, type: 'one_time', billing_scheme: 'per_unit', currency: 'usd', unit_amount: 5000, product: { id: 'prod_TESTDEPOSIT01', active: true } }), { status: 200 })
       : new Response(leaky, { status: 402, headers: { 'request-id': 'req_leak' } }));
   const h = createCheckoutHandler({ getEnv: () => ENV, providerFactory: cfg => createStripeRestProvider({ secretKey: cfg.secretKey, fetchImpl }), log: makeLogger({ log: l => lines.push(l) }) });
   let r = res();

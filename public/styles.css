@@ -1056,11 +1056,19 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
 .receipt-facts { margin: 28px 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
 .receipt-facts div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .receipt-facts dt { color: var(--ink-2); }
-.receipt-facts dd { margin: 0; font-weight: 600; color: var(--ink); word-break: break-all; text-align: right; }
+.receipt-facts dd { margin: 0; font-weight: 600; color: var(--ink); text-align: right; }
+#receiptRef { word-break: break-all; }
+.receipt-photo { margin: 0 0 40px; aspect-ratio: 16 / 9; border-radius: var(--r-lg); overflow: hidden; background: var(--fog); }
+.receipt-photo img { width: 100%; height: 100%; object-fit: cover; }
+.receipt .receipt-lede { font-size: 18px; line-height: 1.5; }
+.receipt .doc-kicker { color: var(--ink-2); }
 @media (max-width: 640px) {
   .doc-head { padding: 20px; }
   .doc { padding: 12px 20px 72px; }
   .cta .deposit-panel { padding: 16px; font-size: 14.5px; }
+  .receipt-photo { margin-bottom: 24px; aspect-ratio: 3 / 2; border-radius: var(--r-md); }
+  .receipt-photo img { object-position: 50% 66%; }
+  .receipt .receipt-lede { font-size: 17px; }
 }
 .cta .link-btn { justify-self: start; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); text-decoration: underline; cursor: pointer; }
 .reserve-form [hidden], .doc [hidden] { display: none !important; }
