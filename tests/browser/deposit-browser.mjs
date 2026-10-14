@@ -163,9 +163,10 @@ try {
     check(!/safe dosing|Join the waitlist|nothing is for sale/i.test(bodyText), `${tag}: removed safe-dosing / waitlist / not-for-sale copy`);
     check(!/convert/i.test(bodyText) && !/before[^.]{0,40}final order/i.test(bodyText), `${tag}: no refund cutoff in rendered page`);
     check(await page.locator('input[type="checkbox"], label.consent, #termsInput').count() === 0, `${tag}: no terms checkbox anywhere on the page`);
-    const disclosures = await page.$$eval('.hero-terms, .split-side .cta-terms', els => els.map(e => [e.textContent.replace(/\s+/g, ' ').trim(), e.querySelector('a') && e.querySelector('a').getAttribute('href')]));
-    check(disclosures.length === 2 && disclosures.every(([t, h]) => t === '$100 fully refundable deposit, credited toward your machine. By preordering you accept the deposit terms.' && h === '/deposit-terms.html'), `${tag}: hero and mid page disclose the deposit and that preordering accepts the linked terms`, JSON.stringify(disclosures));
-    check(await page.locator('.hero-terms').isVisible(), `${tag}: hero disclosure visible under the hero button`);
+    check(await page.locator('.cta-terms, .hero-terms, .deposit-note').count() === 0, `${tag}: repeated CTA disclaimer elements removed`);
+    check(!/By preordering you accept|Preordering means you accept/.test(bodyText), `${tag}: repeated disclaimer copy removed`);
+    check(await page.locator('footer a[href="/deposit-terms.html"]').count() === 1 && await page.locator('footer a[href="/privacy.html"]').count() === 1, `${tag}: footer terms and privacy links retained`);
+    check(await page.locator('#reserveMsg[role="status"][aria-live="polite"], #testModeNote').count() === 2, `${tag}: functional status and test-mode messages retained`);
     // The fixed nav Preorder stands alone (owner request): no deposit tag, capsule or
     // description beside it, at the top and once scrolled; the button sits at the right
     // edge, centred on the logo and inside the viewport.
@@ -179,9 +180,6 @@ try {
       check(!nd.tag && nd.describedBy === null && nd.parentIsNav && !nd.depositText && nd.inside && nd.centred && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has no deposit tag beside it (${where}), centred on the logo and inside the viewport`, JSON.stringify(nd));
     }
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-    const note = page.locator('#reserveForm .deposit-note');
-    check(/^Preordering means you accept the deposit terms\./.test((await note.innerText()).trim()) && await note.locator('a[href="/deposit-terms.html"]').count() === 1 && await note.locator('a[href="/privacy.html"]').count() === 1, `${tag}: Preorder section discloses terms acceptance and links terms + privacy`);
-    check(!/[\u2013\u2014]| - /.test(disclosures.map(d => d[0]).join(' ') + await note.innerText()), `${tag}: disclosure copy has no dashes`);
     const csp = await page.evaluate(async () => (await fetch('/', { cache: 'no-store' })).headers.get('content-security-policy'));
     check(/frame-ancestors 'none'/.test(csp || ''), `${tag}: CSP with frame-ancestors none served`);
     if (vp.name === 'desktop') await page.waitForFunction(() => document.getElementById('heroCanvas').classList.contains('ready'), null, { timeout: 10000 }).catch(() => {});
@@ -512,7 +510,7 @@ try {
   }
 
   // ---------------- JavaScript disabled ----------------
-  // The links still lead to #reserve; the reserve card, its disclosure and the "needs
+  // The links still lead to #reserve; the reserve card, its price and the "needs
   // JavaScript" notice are visible (nothing waits for the reveal script); the section
   // button is disabled, and nothing posts to the checkout API.
   for (const vp of VIEWPORTS) {
@@ -537,10 +535,10 @@ try {
       const op = el => { let o = 1; for (let e = el; e; e = e.parentElement) o *= Number(getComputedStyle(e).opacity); return o; };
       const ns = [...document.querySelectorAll('#reserveForm p.form-msg')].find(p => /needs JavaScript/.test(p.textContent));
       const card = document.querySelector('.cta-inner'), r = card.getBoundingClientRect();
-      return { hash: location.hash, cardOpacity: op(card), noteOpacity: op(document.querySelector('#reserveForm .deposit-note')), noscript: ns ? { text: ns.textContent.trim(), opacity: op(ns), shown: ns.getBoundingClientRect().height > 0 } : null, inView: r.top < innerHeight && r.bottom > 0, btnDisabled: document.getElementById('reserveBtn').disabled, faqOpacity: op(document.querySelector('.faq details')) };
+      return { hash: location.hash, cardOpacity: op(card), priceOpacity: op(document.querySelector('#depositPanel')), noscript: ns ? { text: ns.textContent.trim(), opacity: op(ns), shown: ns.getBoundingClientRect().height > 0 } : null, inView: r.top < innerHeight && r.bottom > 0, btnDisabled: document.getElementById('reserveBtn').disabled, faqOpacity: op(document.querySelector('.faq details')) };
     });
     check(v.hash === '#reserve' && v.inView, `${tag}: hero Preorder link leads to #reserve`, JSON.stringify(v));
-    check(v.cardOpacity === 1 && v.noteOpacity === 1 && v.faqOpacity === 1, `${tag}: reserve card, its terms note and the rest of the page are visible without the reveal script`, JSON.stringify(v));
+    check(v.cardOpacity === 1 && v.priceOpacity === 1 && v.faqOpacity === 1, `${tag}: reserve card, its price and the rest of the page are visible without the reveal script`, JSON.stringify(v));
     check(v.noscript && v.noscript.opacity === 1 && v.noscript.shown, `${tag}: "Reserving needs JavaScript" notice is visible`, JSON.stringify(v.noscript));
     check(v.btnDisabled && await page.locator('#reserveBtn').isDisabled(), `${tag}: section Preorder button is disabled without JavaScript`);
     const rb = await page.locator('#reserveBtn').boundingBox();
