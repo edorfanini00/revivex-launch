@@ -24,13 +24,13 @@ function setup({ env = ENV, now } = {}) {
   return { synth, sink, checkout: createCheckoutHandler(deps), reservation: createReservationHandler(deps) };
 }
 async function call(h, body, opts = {}) { const r = res(); await h(req({ body, ...opts }), r); return r; }
-const startBody = o => ({ step: 'start', termsAccepted: true, termsVersion: TV, ...o });
-const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV });
+const startBody = o => ({ step: 'start', termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount, ...o });
+const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount });
 async function start(s) { const r = await call(s.checkout, startBody()); assert.equal(r.json().state, 'started', r.body); return r.json().operation; }
 
 // ---- security F-1 / correctness F1: unapproved refund cutoff ----
 test('no refund cutoff or conversion condition anywhere in served copy or Stripe custom text', () => {
-  const files = ['public/index.html', 'public/deposit-terms.html', 'public/privacy.html', 'public/reservation.html', 'public/reservation.js', 'public/app.js', 'lib/deposit-handlers.js', 'DEPOSIT-CHECKOUT.md'];
+  const files = ['public/index.html', 'public/deposit-terms.html', 'public/deposit-terms-v2.html', 'public/privacy.html', 'public/reservation.html', 'public/reservation.js', 'public/app.js', 'lib/deposit-handlers.js', 'DEPOSIT-CHECKOUT.md'];
   const cutoff = /\b(before|until|prior to)\b[^.]{0,40}\b(convert|conversion|final order|order is placed|ships?)\b|\bconvert(ing|ed)?\b[^.]{0,30}\bfinal order\b/i;
   for (const f of files) assert.doesNotMatch(read(f), cutoff, f);
   const msg = checkoutSessionParams(readCheckoutConfig(ENV).config, { id: 'x'.repeat(22), binding: 'b', attribution: {} }).custom_text.submit.message;
@@ -39,15 +39,20 @@ test('no refund cutoff or conversion condition anywhere in served copy or Stripe
     const s = read(f);
     assert.match(s, /fully refundable/i, f);
     assert.match(s, /No automatic balance charge/, f);
-    assert.match(s, /applied to the final machine price/i, f);
+    assert.match(s, /\$50/, f);
+    assert.match(s, /credited toward/i, f);
+    assert.match(s, /20% off<?\/?b?>? the final machine price/i, f);
   }
-  assert.match(read('public/index.html'), /\$100 USD today\.<\/b> Fully refundable\. Applied to the final machine price\. No automatic balance charge\./);
+  assert.match(read('public/index.html'), /\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, and your \$50 is credited toward it\. No automatic balance charge\./);
+  // The archived v2 terms keep their original wording for $100 deposits.
+  assert.match(read('public/deposit-terms-v2.html'), /The full \$100 is applied to the final machine price/);
 });
 
-test('terms version bumped for the corrected terms; prior version stays recognised for lookups', () => {
-  assert.equal(TV, 'deposit-terms-v2');
-  assert.deepEqual([...KNOWN_TERMS_VERSIONS].sort(), ['deposit-terms-v1', 'deposit-terms-v2']);
-  assert.match(read('public/deposit-terms.html'), /deposit-terms-v2/);
+test('terms version bumped for the $50 offer; prior versions stay recognised for lookups', () => {
+  assert.equal(TV, 'deposit-terms-v3');
+  assert.deepEqual([...KNOWN_TERMS_VERSIONS].sort(), ['deposit-terms-v1', 'deposit-terms-v2', 'deposit-terms-v3']);
+  assert.match(read('public/deposit-terms.html'), /data-terms-version="deposit-terms-v3"/);
+  assert.match(read('public/deposit-terms-v2.html'), /data-terms-version="deposit-terms-v2"/);
   assert.match(read('public/app.js') + read('public/index.html'), /termsVersion|deposit-terms/);
 });
 

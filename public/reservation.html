@@ -7,6 +7,9 @@
   <meta name="referrer" content="no-referrer">
   <title>Your reservation | Revivex</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="doc-page">
@@ -15,17 +18,29 @@
   <a href="/" class="doc-back">Back to Revivex</a>
 </header>
 <main class="doc receipt" id="receipt" data-state="loading" aria-live="polite">
-  <p class="doc-kicker">Reservation status</p>
+  <figure class="receipt-photo" id="receiptPhoto" hidden>
+    <picture>
+      <source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg">
+      <img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a kitchen counter" width="2400" height="1339">
+    </picture>
+  </figure>
+  <p class="doc-kicker" id="receiptKicker">Reservation status</p>
   <h1 id="receiptTitle">Checking your deposit with Stripe&hellip;</h1>
-  <p id="receiptText">This page asks Stripe directly. It does not rely on the link you arrived from.</p>
+  <p class="receipt-lede" id="receiptText">This page asks Stripe directly. It does not rely on the link you arrived from.</p>
   <dl class="receipt-facts" id="receiptFacts" hidden>
-    <div><dt>Amount</dt><dd id="receiptAmount"></dd></div>
+    <div><dt>Deposit paid</dt><dd id="receiptAmount"></dd></div>
+    <div id="receiptRefundedRow" hidden><dt>Refunded</dt><dd id="receiptRefunded"></dd></div>
+    <div id="receiptDiscountRow" hidden><dt>Machine discount</dt><dd id="receiptDiscount"></dd></div>
     <div><dt>Payment reference</dt><dd id="receiptRef"></dd></div>
   </dl>
   <p class="doc-alert" data-when="test" hidden>Test mode. No real payment was taken.</p>
+  <div id="receiptNext" hidden>
+    <h2>What happens next</h2>
+    <p id="receiptNextText"></p>
+  </div>
   <div id="receiptRefund" hidden>
     <h2>Refunds</h2>
-    <p>Your deposit is fully refundable. To request a refund, email <a href="mailto:support@revivex.store">support@revivex.store</a>, ideally from the email address you used at checkout, or tell us which email address you used. Include the payment reference above. See the <a href="/deposit-terms.html">deposit terms</a>.</p>
+    <p>Your deposit is fully refundable. To request a refund, email <a href="mailto:support@revivex.store">support@revivex.store</a>, ideally from the email address you used at checkout, or tell us which email address you used. Include the payment reference above. See the <a href="/deposit-terms.html" id="receiptTermsLink">deposit terms</a>.</p>
   </div>
   <p><button type="button" class="btn" id="receiptRetry" hidden>Check again</button></p>
   <noscript><p class="doc-alert">This page needs JavaScript to check your deposit with Stripe.</p></noscript>

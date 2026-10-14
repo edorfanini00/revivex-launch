@@ -70,7 +70,8 @@ test('create uses exact server-controlled amount, price, quantity and redirects'
   assert.equal(params.success_url, `${ORIGIN}/reservation.html?session_id={CHECKOUT_SESSION_ID}`);
   assert.equal(params.cancel_url, `${ORIGIN}/#reserve`);
   assert.equal(params.metadata.purpose, 'revivex_preorder_deposit');
-  assert.equal(params.metadata.terms_version, 'deposit-terms-v2');
+  assert.equal(params.metadata.terms_version, 'deposit-terms-v3');
+  assert.equal(params.metadata.machine_discount_percent, '20');
   assert.deepEqual(params.payment_intent_data.metadata, params.metadata);
   for (const k of ['automatic_tax', 'shipping_address_collection', 'shipping_options', 'discounts', 'subscription_data', 'setup_intent_data', 'customer_email', 'consent_collection', 'invoice_creation', 'saved_payment_method_options']) assert.equal(params[k], undefined, k);
   assert.equal(params.payment_intent_data.setup_future_usage, undefined);
@@ -406,7 +407,7 @@ test('attribution: malicious, oversize, unknown and non-allowlisted values are d
   } });
   await call(h, createBody(token));
   const [[, params]] = creates(h.provider);
-  assert.deepEqual(Object.keys(params.metadata).sort(), ['operation', 'purpose', 'terms_version']);
+  assert.deepEqual(Object.keys(params.metadata).sort(), ['machine_discount_percent', 'operation', 'purpose', 'terms_version']);
   assert.equal(params.metadata.purpose, 'revivex_preorder_deposit');
   for (const bad of ['UPPER', 'has space', 'semi;colon', '<script>', '../x', 'a@b.co', 'ünicode', '']) {
     const h2 = setup();
@@ -450,7 +451,7 @@ test('GET status exposes availability and the official contact only; method gate
   let h = setup();
   let r = res();
   await h.handler(req({ method: 'GET' }), r);
-  assert.deepEqual(r.json(), { ok: true, configured: true, siteOrigin: ORIGIN, mode: 'test', amount: 10000, currency: 'usd', termsVersion: DEPOSIT.termsVersion, supportEmail: 'support@revivex.store' });
+  assert.deepEqual(r.json(), { ok: true, configured: true, siteOrigin: ORIGIN, mode: 'test', amount: 5000, currency: 'usd', termsVersion: DEPOSIT.termsVersion, machineDiscountPercent: 20, supportEmail: 'support@revivex.store' });
   assert.ok(!r.body.includes(SECRET) && !r.body.includes('acct_') && !r.body.includes('price_') && !r.body.includes('signing'));
   assert.equal(h.provider.calls.length, 0);
 

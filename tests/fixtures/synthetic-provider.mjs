@@ -11,13 +11,14 @@
 //     overrides it.
 // It is NOT Stripe and results from it are not sandbox evidence.
 import { StripeCallError } from '../../lib/stripe-rest.js';
-import { ALLOWED_PAYMENT_METHODS, CHECKOUT_DISPLAY_NAME, DEPOSIT } from '../../lib/deposit-config.js';
+import { ALLOWED_PAYMENT_METHODS, CHECKOUT_DISPLAY_NAME, DEPOSIT, OFFERS } from '../../lib/deposit-config.js';
 
 const DYNAMIC_METHODS = ['card', 'link', 'klarna', 'cashapp', 'amazon_pay'];
 const clone = o => JSON.parse(JSON.stringify(o));
 
 // live: true imitates a live mode account (cs_live_ ids, livemode objects).
-export function createSyntheticStripe({ accountId, priceId, productId, accountDisplayName = 'Individual', live = false }) {
+// legacyPriceId: the earlier $100 price, for seeded historical deposits.
+export function createSyntheticStripe({ accountId, priceId, productId, legacyPriceId = null, accountDisplayName = 'Individual', live = false }) {
   const sessions = new Map();
   const saved = new Map(); // idempotency key -> { body, response | error }
   const inFlight = new Set();
@@ -27,26 +28,29 @@ export function createSyntheticStripe({ accountId, priceId, productId, accountDi
 
   const priceObj = () => ({
     id: priceId, object: 'price', active: true, livemode: live, type: 'one_time', recurring: null, billing_scheme: 'per_unit',
-    custom_unit_amount: null, transform_quantity: null, currency: 'usd', unit_amount: 10000, currency_options: { usd: { unit_amount: 10000 } },
+    custom_unit_amount: null, transform_quantity: null, currency: 'usd', unit_amount: DEPOSIT.amount, currency_options: { usd: { unit_amount: DEPOSIT.amount } },
     product: { id: productId, object: 'product', active: true, name: 'SYNTHETIC deposit product' },
   });
 
+  // Each session charges its own price: the legacy price is $100, the current one DEPOSIT.amount.
+  const amountOf = s => (s.params.line_items[0].price === legacyPriceId ? OFFERS['deposit-terms-v2'].amount : DEPOSIT.amount);
   function view(s) {
     const paid = s.status === 'complete';
+    const amount = amountOf(s);
     const allowed = s.params.allowed_payment_method_types || null;
     return {
       id: s.id, object: 'checkout.session', livemode: live, mode: s.params.mode, status: s.status,
-      payment_status: paid ? 'paid' : 'unpaid', currency: 'usd', amount_total: 10000,
+      payment_status: paid ? 'paid' : 'unpaid', currency: 'usd', amount_total: amount,
       url: s.status === 'open' ? `https://checkout.stripe.com/c/pay/${s.id}` : null,
       allowed_payment_method_types: allowed,
       payment_method_types: allowed ? DYNAMIC_METHODS.filter(m => allowed.includes(m)) : [...DYNAMIC_METHODS],
       branding_settings: { display_name: s.params.branding_settings?.display_name || accountDisplayName },
       metadata: { ...s.params.metadata }, subscription: null, setup_intent: null,
       customer_details: paid ? { email: 'synthetic-buyer@example.test', name: 'Synthetic Buyer' } : null,
-      line_items: { object: 'list', data: s.params.line_items.map(li => ({ price: { id: li.price }, quantity: li.quantity })) },
+      line_items: { object: 'list', data: s.params.line_items.map(li => ({ price: { id: li.price, unit_amount: amount, product: productId }, quantity: li.quantity })) },
       payment_intent: paid ? {
-        id: `pi_SYNTH${s.id.slice(-10)}`, object: 'payment_intent', status: 'succeeded', amount_received: 10000, currency: 'usd', livemode: live, created: s.paidAt,
-        latest_charge: { id: `ch_SYNTH${s.id.slice(-10)}`, object: 'charge', created: s.paidAt, paid: true, status: 'succeeded', refunded: s.refunded, amount_refunded: s.refunded ? 10000 : 0, disputed: s.disputed, payment_method_details: { type: 'card' } },
+        id: `pi_SYNTH${s.id.slice(-10)}`, object: 'payment_intent', status: 'succeeded', amount_received: amount, currency: 'usd', livemode: live, created: s.paidAt,
+        latest_charge: { id: `ch_SYNTH${s.id.slice(-10)}`, object: 'charge', created: s.paidAt, paid: true, status: 'succeeded', refunded: s.refunded, amount_refunded: s.refunded ? amount : 0, disputed: s.disputed, payment_method_details: { type: 'card' } },
       } : null,
     };
   }
@@ -106,10 +110,13 @@ export function createSyntheticStripe({ accountId, priceId, productId, accountDi
     // hoursAgo backdates the payment (charge/PaymentIntent "created").
     pay(id, hoursAgo = 0) { const s = sessions.get(id); if (!s) return false; s.status = 'complete'; s.paidAt = paidAt(hoursAgo); return true; },
     // A paid deposit session that did not come through this site's checkout (receipt tests).
-    seedPaid(hoursAgo = 0) {
+    // legacy: a $100 deposit paid under deposit-terms-v2 with the legacy price.
+    seedPaid(hoursAgo = 0, { legacy = false } = {}) {
       const id = nextId();
-      const metadata = { purpose: DEPOSIT.purpose, terms_version: DEPOSIT.termsVersion };
-      const params = { mode: 'payment', line_items: [{ price: priceId, quantity: DEPOSIT.quantity }], allowed_payment_method_types: [...ALLOWED_PAYMENT_METHODS], branding_settings: { display_name: CHECKOUT_DISPLAY_NAME }, metadata, payment_intent_data: { metadata } };
+      const metadata = legacy
+        ? { purpose: DEPOSIT.purpose, terms_version: 'deposit-terms-v2' }
+        : { purpose: DEPOSIT.purpose, terms_version: DEPOSIT.termsVersion, machine_discount_percent: String(DEPOSIT.machineDiscountPercent) };
+      const params = { mode: 'payment', line_items: [{ price: legacy ? legacyPriceId : priceId, quantity: DEPOSIT.quantity }], allowed_payment_method_types: [...ALLOWED_PAYMENT_METHODS], branding_settings: { display_name: CHECKOUT_DISPLAY_NAME }, metadata, payment_intent_data: { metadata } };
       sessions.set(id, { id, params, key: null, status: 'complete', paidAt: paidAt(hoursAgo), refunded: false, disputed: false });
       return id;
     },

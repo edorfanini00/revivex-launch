@@ -9,7 +9,7 @@ import { DEPOSIT, readCheckoutConfig } from '../../lib/deposit-config.js';
 import { readOperation } from '../../lib/operation-token.js';
 import { createInstanceRateLimiter, makeLogger } from '../../lib/http.js';
 import { META_PIXEL_ID } from '../../public/meta-pixel-id.js';
-import { ENV, ORIGIN, SIGNING, createBody, fakeKey, fakeProvider, logSink, paidSession, price, req, res, session, startBody } from '../fixtures/deposit-fixtures.mjs';
+import { ENV, ORIGIN, SIGNING, createBody, fakeKey, fakeProvider, legacyPaidSession, logSink, paidSession, price, req, res, session, startBody } from '../fixtures/deposit-fixtures.mjs';
 
 const PIXEL = '123456789012345';
 const TOKEN = 'EAAG' + 'FAKECAPITOKEN'.repeat(4);
@@ -82,7 +82,7 @@ test('payload: dedup event id, deposit value, fbp/fbc/IP/UA, SHA-256 email; no r
     action_source: 'website',
     event_source_url: `${ORIGIN}/reservation.html`,
     user_data: { client_ip_address: '203.0.113.7', client_user_agent: UA, fbp: FBP, fbc: FBC, em: [sha('buyer-pii@example.test')] },
-    custom_data: { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' },
+    custom_data: { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' },
   }]);
   assert.ok(!init.body.toLowerCase().includes('buyer-pii'), 'raw email never sent');
   assert.match(body.data[0].user_data.em[0], /^[0-9a-f]{64}$/);
@@ -195,7 +195,7 @@ async function openCheckout(s, headers = browserHeaders()) {
   return { token, r, opId: readOperation(token, SIGNING, Date.now()).op.id };
 }
 
-test('checkout: InitiateCheckout sent once checkout opens, event id = operation id, value 100 USD', async () => {
+test('checkout: InitiateCheckout sent once checkout opens, event id = operation id, value 50 USD', async () => {
   const s = checkoutSetup();
   const start = await call(s.handler, req({ body: startBody(), headers: browserHeaders() }));
   assert.equal(s.meta.calls.length, 0, 'issuing a token is not InitiateCheckout');
@@ -209,7 +209,7 @@ test('checkout: InitiateCheckout sent once checkout opens, event id = operation 
   assert.equal(ev.event_name, 'InitiateCheckout');
   assert.equal(ev.event_id, opId);
   assert.equal(ev.event_source_url, `${ORIGIN}/`);
-  assert.deepEqual(ev.custom_data, { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
+  assert.deepEqual(ev.custom_data, { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' });
   assert.deepEqual(ev.user_data, { client_ip_address: '203.0.113.7', client_user_agent: UA, fbp: FBP, fbc: FBC });
 });
 
@@ -336,7 +336,7 @@ test('receipt: confirmed paid deposit sends Purchase deposit_<session id> with h
   assert.equal(ev.event_id, `deposit_${SID}`);
   assert.equal(ev.event_time, PAID_AT, 'event_time is the payment time');
   assert.equal(ev.event_source_url, `${ORIGIN}/reservation.html`, 'no session id in the source URL');
-  assert.deepEqual(ev.custom_data, { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
+  assert.deepEqual(ev.custom_data, { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' });
   assert.deepEqual(ev.user_data.em, [sha('buyer-pii@example.test')]);
   assert.equal(ev.user_data.fbp, FBP);
   assert.ok(!JSON.stringify(s.meta.calls[0].body).includes('buyer-pii'), 'raw email never sent');
@@ -358,7 +358,7 @@ test('receipt: no Purchase unless the server confirms paid', async () => {
   const states = {
     processing: id => live(paidSession({ id, payment_status: 'unpaid' })),
     not_completed: id => live(session({ id, line_items: paidSession().line_items })),
-    refunded: id => livePaid(id, PAID_AT, { refunded: true, amount_refunded: 10000 }),
+    refunded: id => livePaid(id, PAID_AT, { refunded: true, amount_refunded: 5000 }),
     partially_refunded: id => livePaid(id, PAID_AT, { amount_refunded: 100 }),
     disputed: id => livePaid(id, PAID_AT, { disputed: true }),
     not_recognized: id => live(paidSession({ id, amount_total: 1 })),
@@ -524,4 +524,20 @@ test('default handlers (real exports) stay silent without META_CAPI_ACCESS_TOKEN
     await settle();
     assert.deepEqual(seen.filter(u => u.includes('facebook')), []);
   } finally { globalThis.fetch = realFetch; }
+});
+
+// ---- $50 deposit: Purchase value is what that deposit actually paid ----
+test('price50: a fresh $50 receipt reports value 50; a fresh historical $100 (v2) receipt reports value 100', async () => {
+  const s50 = reservationSetup();
+  assert.equal((await s50.view()).json().amount, 5000);
+  await Promise.all(s50.scheduled);
+  assert.equal(s50.meta.calls[0].body.data[0].custom_data.value, 50);
+
+  const s100 = reservationSetup({ sessionFor: id => live(legacyPaidSession({ id })) });
+  const r = await s100.view();
+  assert.equal(r.json().state, 'confirmed');
+  assert.equal(r.json().amount, 10000, 'historical amount, not the current deposit');
+  assert.equal(r.json().machineDiscountPercent, null, 'a $100 deposit is not given the new benefit');
+  await Promise.all(s100.scheduled);
+  assert.deepEqual(s100.meta.calls[0].body.data[0].custom_data, { content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
 });

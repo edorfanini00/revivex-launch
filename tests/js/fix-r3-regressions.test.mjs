@@ -24,8 +24,8 @@ function setup(deps = {}) {
 }
 const from = ip => ({ headers: { 'x-vercel-forwarded-for': ip } });
 async function call(h, body, opts = {}) { const r = res(); await h(req({ body, ...opts }), r); return r; }
-const startBody = () => ({ step: 'start', termsAccepted: true, termsVersion: TV, attribution: {} });
-const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV });
+const startBody = () => ({ step: 'start', termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount, attribution: {} });
+const createBody = op => ({ step: 'create', operation: op, termsAccepted: true, termsVersion: TV, displayedAmount: DEPOSIT.amount });
 const count = (s, kind) => s.synth.control.calls().filter(c => c === kind).length;
 const wide = () => createInstanceRateLimiter({ limit: 100_000, windowMs: 60_000 });
 
@@ -164,7 +164,9 @@ test('R3-3: expanded IPv4-mapped dotted-tail forms key as the IPv4 client', () =
 test('R3-4: receipt copy and payment description say "fully refundable"', () => {
   const params = checkoutSessionParams(CFG, { id: 'x'.repeat(22), binding: 'b', attribution: {} });
   assert.equal(params.payment_intent_data.description, `Revivex fully refundable preorder deposit (${TV})`);
-  assert.match(read('public/reservation.js'), /Stripe confirms your \$100 fully refundable deposit\./);
+  // The $100 receipt keeps its wording with the actual amount; the $50 one carries the refund section.
+  assert.match(read('public/reservation.js'), /'Stripe confirms your ' \+ dollars\(d\.amount\) \+ ' fully refundable deposit\./);
+  assert.match(read('public/reservation.html'), /Your deposit is fully refundable\./);
   for (const f of ['public/reservation.js', 'lib/deposit-handlers.js']) {
     const strings = read(f).split('\n').filter(l => !/^\s*(\/\/|\/?\*)/.test(l)).join('\n');
     assert.doesNotMatch(strings, /(?<!fully )refundable (deposit|preorder)/i, f);

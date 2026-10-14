@@ -36,7 +36,7 @@ const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false },
   { name: 'mobile', viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
 ];
-const PANEL = '$100 USD today. Fully refundable. Applied to the final machine price. No automatic balance charge.';
+const PANEL = '$50 USD today, fully refundable. You get 20% off the final machine price, and your $50 is credited toward it. No automatic balance charge.';
 // The four Preorder buttons. Each must open checkout directly (no scroll to #reserve).
 const PREORDER_BUTTONS = [['nav', '.nav-cta'], ['hero', '.hero-actions [data-checkout]'], ['mid', '.split-side [data-checkout]'], ['section', '#reserveBtn']];
 
@@ -149,7 +149,7 @@ try {
     check(await page.locator('a[href="#reserve"], button[type="submit"]').evaluateAll(els => els.every(e => e.textContent.trim() === 'Preorder')), `${tag}: no order button keeps the old Reserve label`);
     check((await page.locator('#reserve-title').innerText()).trim() === 'Preorder yours.', `${tag}: section heading reads Preorder yours.`);
     const preorderCopy = await page.evaluate(() => [document.querySelector('meta[name="description"]').content, document.querySelector('meta[property="og:description"]').content, ...[...document.querySelectorAll('.faq details p')].map(p => p.textContent)]);
-    check(preorderCopy[0].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy[1].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy.every(t => !/\breserv/i.test(t)), `${tag}: meta, og and FAQ copy say Preorder, not reserve`, preorderCopy.filter(t => /\breserv/i.test(t)).join(' | '));
+    check(preorderCopy[0].includes('Preorder with a fully refundable $50 deposit.') && preorderCopy[1].includes('Preorder with a fully refundable $50 deposit.') && !preorderCopy.some(t => /\$100/.test(t)) && preorderCopy.every(t => !/\breserv/i.test(t)), `${tag}: meta, og and FAQ copy say Preorder, not reserve`, preorderCopy.filter(t => /\breserv/i.test(t)).join(' | '));
     await page.screenshot({ path: path.join(OUT, `${tag}-01-hero.png`) });
 
     const btn = page.locator('#reserveBtn');
@@ -175,7 +175,7 @@ try {
       if (where === 'scrolled') { await page.evaluate(() => window.scrollTo({ top: document.getElementById('details').offsetTop, behavior: 'instant' })); await page.waitForTimeout(600); }
       const nd = await page.evaluate(() => {
         const nav = document.getElementById('nav'), b = nav.querySelector('.nav-cta'), br = b.getBoundingClientRect(), logo = nav.querySelector('.logo').getBoundingClientRect(), vw = document.documentElement.clientWidth;
-        return { tag: !!nav.querySelector('.nav-order, .nav-terms, #navTerms, a[href="/deposit-terms.html"]'), describedBy: b.getAttribute('aria-describedby'), parentIsNav: b.parentElement === nav, depositText: /\$100|refundable/i.test(nav.textContent), inside: br.left >= 0 && br.right <= vw, centred: Math.abs((br.top + br.bottom) / 2 - (logo.top + logo.bottom) / 2) <= 3, clearOfLogo: br.left >= logo.right + 8, scrolled: nav.classList.contains('scrolled') };
+        return { tag: !!nav.querySelector('.nav-order, .nav-terms, #navTerms, a[href="/deposit-terms.html"]'), describedBy: b.getAttribute('aria-describedby'), parentIsNav: b.parentElement === nav, depositText: /\$\d|20%|refundable/i.test(nav.textContent), inside: br.left >= 0 && br.right <= vw, centred: Math.abs((br.top + br.bottom) / 2 - (logo.top + logo.bottom) / 2) <= 3, clearOfLogo: br.left >= logo.right + 8, scrolled: nav.classList.contains('scrolled') };
       });
       check(!nd.tag && nd.describedBy === null && nd.parentIsNav && !nd.depositText && nd.inside && nd.centred && nd.clearOfLogo && nd.scrolled === (where === 'scrolled'), `${tag}: nav Preorder has no deposit tag beside it (${where}), centred on the logo and inside the viewport`, JSON.stringify(nd));
     }
@@ -200,7 +200,7 @@ try {
       check(r.busy.ariaBusy === 'true' && r.busy.text === 'Opening checkout\u2026' && ((name === 'nav' || name === 'hero') && vp.name === 'mobile' ? r.busy.label === 'Opening\u2026' : r.busy.label === 'Opening checkout\u2026') && r.busy.spinner, `${tag}: ${name} button shows Opening checkout with a spinner`, JSON.stringify(r.busy));
       check(r.busy.y === r.y0 && r.busy.scrolls === 0 && r.busy.hash === '', `${tag}: ${name} click does not scroll to #reserve`, JSON.stringify({ y0: r.y0, ...r.busy }));
       check(r.busy.overflow <= 0 && r.busy.inside && r.busy.fits && r.busy.clearOfLogo, `${tag}: ${name} busy label fits its button, inside the viewport and clear of the logo`, JSON.stringify(r.busy));
-      check(r.steps.join() === 'start,create' && r.bodies.every(b => b.termsAccepted === true && b.termsVersion === 'deposit-terms-v2'), `${tag}: ${name} sends start then create with the current terms version`, JSON.stringify(r.bodies));
+      check(r.steps.join() === 'start,create' && r.bodies.every(b => b.termsAccepted === true && b.termsVersion === 'deposit-terms-v3' && b.displayedAmount === 5000), `${tag}: ${name} sends start then create with the current terms version and the displayed $50`, JSON.stringify(r.bodies));
       check(st0.sessionCount === c + 1 && r.url === `https://checkout.stripe.com/c/pay/${st0.sessions[st0.sessions.length - 1].id}`, `${tag}: ${name} redirects to the Stripe-hosted session URL`, r.url);
     }
 
@@ -303,9 +303,9 @@ try {
     await page.waitForFunction(() => document.getElementById('receipt').dataset.state !== 'loading');
     check(await page.locator('#receipt').getAttribute('data-state') === 'confirmed', `${tag}: receipt confirmed from server lookup`);
     const receiptText = await page.locator('#receipt').innerText();
-    check(/\$100\.00 USD/.test(receiptText) && /pi_SYNTH/.test(receiptText), `${tag}: receipt shows amount + reference`);
+    check(/\$50\.00 USD/.test(receiptText) && /20% off the final price/.test(receiptText) && /pi_SYNTH/.test(receiptText) && !/\$100/.test(receiptText), `${tag}: receipt shows $50, the 20% machine discount and the reference`, receiptText);
     check(!/synthetic-buyer|Synthetic Buyer/.test(receiptText), `${tag}: receipt shows no customer email/name`);
-    check(/support@revivex\.store/.test(receiptText) && /not a final order/.test(receiptText), `${tag}: receipt refund contact + deposit-only scope`);
+    check(/support@revivex\.store/.test(receiptText) && /not a final order or a shipping commitment/.test(receiptText), `${tag}: receipt refund contact + deposit-only scope`);
     check(await page.evaluate(() => sessionStorage.getItem('revivex.depositOperation')) === null, `${tag}: operation cleared after confirmed deposit`);
     check(await page.locator('#receiptRetry').isHidden(), `${tag}: no 'Check again' on a confirmed receipt`);
     await page.screenshot({ path: path.join(OUT, `${tag}-04-receipt-confirmed.png`), fullPage: true });
@@ -504,8 +504,8 @@ try {
       check(!/convert/i.test(t) && !/before[^.]{0,40}final order/i.test(t), `rendered ${p.split('?')[0]}: no refund cutoff`);
     }
     await page.goto(`${S}/deposit-terms.html`, { waitUntil: 'networkidle' });
-    check(/deposit-terms-v2/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v2');
-    await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v2.png'), fullPage: true });
+    check(/deposit-terms-v3/i.test(await page.locator('main').innerText()), 'terms page shows version deposit-terms-v3');
+    await page.screenshot({ path: path.join(OUT, 'desktop-09-terms-v3.png'), fullPage: true });
     await ctx.close();
   }
 
@@ -589,7 +589,7 @@ try {
       check(/temporarily unavailable/.test(u.msg) && u.text === 'Preorder' && !u.busy && u.y === y0, `${tag}: ${name} Preorder fails closed with the message next to it, no scroll`, JSON.stringify({ y0, ...u }));
     }
     const r = await page.evaluate(async () => {
-      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v2' }) });
+      const a = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ step: 'start', termsAccepted: true, termsVersion: 'deposit-terms-v3', displayedAmount: 5000 }) });
       const b = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'browser-qa@example.test', consent: true }) });
       return { a: a.status, aj: await a.json(), b: b.status, bj: await b.json() };
     });

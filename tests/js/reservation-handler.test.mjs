@@ -23,11 +23,11 @@ async function get(h, query = `session_id=${ID}`, method = 'GET') {
 }
 const withSession = s => fakeProvider({ retrieveCheckoutSession: async () => s });
 
-test('paid, verified session returns only state, fixed amount, reference, mode and the measurement fresh flag', async () => {
+test('paid, verified session returns only state, its paid amount and terms, the machine discount, reference, mode and the measurement fresh flag', async () => {
   const h = setup({ provider: withSession(paidSession({ id: ID })) });
   const r = await get(h);
   assert.equal(r.statusCode, 200);
-  assert.deepEqual(r.json(), { ok: true, state: 'confirmed', amount: 10000, currency: 'usd', reference: 'pi_TESTPAID000001', mode: 'test', fresh: false });
+  assert.deepEqual(r.json(), { ok: true, state: 'confirmed', amount: 5000, amountRefunded: null, currency: 'usd', termsVersion: 'deposit-terms-v3', machineDiscountPercent: 20, reference: 'pi_TESTPAID000001', mode: 'test', fresh: false });
   assert.equal(r.headers['cache-control'], 'no-store, max-age=0');
   assert.equal(r.headers['referrer-policy'], 'no-referrer');
   for (const leak of ['buyer-pii', 'Pat Example', 'cs_secret', 'owner@example', 'checkout.stripe.com', SECRET]) assert.ok(!r.body.includes(leak), leak);
@@ -38,10 +38,10 @@ test('unpaid, open, expired, refunded and processing sessions are never reported
     [session({ id: ID, line_items: paidSession().line_items }), 'not_completed'],
     [session({ id: ID, status: 'expired', url: null, line_items: paidSession().line_items }), 'expired'],
     [paidSession({ id: ID, payment_status: 'unpaid' }), 'processing'],
-    [paidSession({ id: ID }, {}, { refunded: true, amount_refunded: 10000 }), 'refunded'],
-    [paidSession({ id: ID }, {}, { amount_refunded: 5000 }), 'partially_refunded'],
+    [paidSession({ id: ID }, {}, { refunded: true, amount_refunded: 5000 }), 'refunded'],
+    [paidSession({ id: ID }, {}, { amount_refunded: 2500 }), 'partially_refunded'],
     [paidSession({ id: ID }, {}, { disputed: true }), 'disputed'],
-    [paidSession({ id: ID }, {}, { disputed: true, refunded: true, amount_refunded: 10000 }), 'disputed'],
+    [paidSession({ id: ID }, {}, { disputed: true, refunded: true, amount_refunded: 5000 }), 'disputed'],
   ];
   for (const [s, state] of cases) {
     const r = await get(setup({ provider: withSession(s) }));
@@ -49,6 +49,7 @@ test('unpaid, open, expired, refunded and processing sessions are never reported
     if (['refunded', 'partially_refunded', 'disputed'].includes(state)) assert.equal(r.json().reference, 'pi_TESTPAID000001');
     else assert.equal(r.json().reference, null);
     assert.notEqual(r.json().state, 'confirmed');
+    assert.equal(r.json().machineDiscountPercent, null, `${state}: no benefit unless confirmed`);
   }
 });
 

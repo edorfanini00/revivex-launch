@@ -8,8 +8,12 @@
    ids are sent from the server (lib/meta-capi.js) so Meta counts each event once. */
 import { META_PIXEL_ID, META_PIXEL_ORIGIN } from './meta-pixel-id.js';
 
-// Mirrors DEPOSIT in lib/deposit-config.js ($100.00 USD).
-export const DEPOSIT_EVENT = Object.freeze({ content_name: 'Revivex machine preorder deposit', value: 100, currency: 'USD' });
+// Mirrors DEPOSIT in lib/deposit-config.js ($50.00 USD).
+export const DEPOSIT_EVENT = Object.freeze({ content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' });
+// Amounts (minor units) of every recognised offer (OFFERS in lib/deposit-config.js).
+// A Purchase reports what that deposit actually paid.
+const KNOWN_AMOUNTS = new Set([5000, 10000]);
+export const purchaseValue = amount => (Number.isInteger(amount) && KNOWN_AMOUNTS.has(amount) ? amount / 100 : null);
 // IndexedDB store holding the checkout sessions this browser already reported.
 export const PURCHASE_DB = 'revivex-meta';
 export const PURCHASE_STORE = 'purchases';
@@ -103,13 +107,14 @@ export function createPixel({ win, id = META_PIXEL_ID, origin = META_PIXEL_ORIGI
     // Only a server-confirmed paid live deposit that the server reports as recently paid
     // ("fresh"), at most once per checkout session per browser even across simultaneous
     // tabs. Resolves to the tracked arguments, or null when nothing was sent.
-    purchase({ state, sessionId, fresh, mode } = {}) {
+    purchase({ state, sessionId, fresh, mode, amount } = {}) {
       if (!fbq || state !== 'confirmed' || fresh !== true || mode !== 'live') return Promise.resolve(null);
       const eventID = purchaseEventId(sessionId);
-      if (!eventID || !sessionId.startsWith('cs_live_')) return Promise.resolve(null);
+      const value = purchaseValue(amount);
+      if (!eventID || !sessionId.startsWith('cs_live_') || value === null) return Promise.resolve(null);
       return Promise.resolve()
         .then(() => claim(sessionId))
-        .then(won => (won === true ? track('Purchase', { ...DEPOSIT_EVENT }, { eventID }) : null), () => null);
+        .then(won => (won === true ? track('Purchase', { ...DEPOSIT_EVENT, value }, { eventID }) : null), () => null);
     },
   };
 }
