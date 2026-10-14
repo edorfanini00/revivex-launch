@@ -43,7 +43,7 @@ test('no refund cutoff or conversion condition anywhere in served copy or Stripe
     assert.match(s, /credited toward/i, f);
     assert.match(s, /20% off<?\/?b?>? the final machine price/i, f);
   }
-  assert.match(read('public/index.html'), /\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, and your \$50 is credited toward it\. No automatic balance charge\./);
+  assert.match(read('public/index.html'), /\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
   // The archived v2 terms keep their original wording for $100 deposits.
   assert.match(read('public/deposit-terms-v2.html'), /The full \$100 is applied to the final machine price/);
 });

@@ -208,7 +208,7 @@
    "payment_method_details": {
     "card": {
      "amount_authorized": 10000,
-     "authorization_code": "869031",
+     "authorization_code": "[stripped]",
      "brand": "visa",
      "checks": {
       "address_line1_check": "[stripped]",
@@ -237,7 +237,7 @@
      "network_token": {
       "used": false
      },
-     "network_transaction_id": "116105481067211",
+     "network_transaction_id": "[stripped]",
      "overcapture": {
       "maximum_amount_capturable": 10000,
       "status": "unavailable"

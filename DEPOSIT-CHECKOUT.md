@@ -159,9 +159,9 @@ The synthetic fake mirrors these behaviours of Stripe and the TEST sandbox:
 1. In the **verified Revivex** Stripe account, test mode: create the product, the one-time $50 USD price (`scripts/create-deposit-price.mjs`) and a restricted test key. Set the public business name to Revivex.
 2. Set the variables above for **Preview only** (`STRIPE_MODE=test`; origin = the preview URL, which is then the canonical origin for that preview). Deploy a preview with `vercel` (not `--prod`).
 3. Run the provider acceptance above on the preview.
-4. Live: create the live product, price and restricted key. Add the Vercel Firewall rate-limit rule, and the Firewall challenge / bot protection rule on `POST /api/checkout` (the live control; the owner accepted the token-pool residual on 2026-10-13, see Rate limiting). Set **Production** variables, including `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. Merge, then run `vercel --prod`.
+4. Live: create the live product, price and restricted key. Add the Vercel Firewall rate-limit rule, and the Firewall challenge / bot protection rule on `POST /api/checkout` (the live control; the owner accepted the token-pool residual on 2026-10-13, see Rate limiting). Set **Production** variables, including `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. Merge; the Git integration deploys the merge commit. A manual `vercel --prod` must run only from a clean checkout of the merge commit.
 5. Read back production:
-   - `GET /api/checkout` shows `configured:true, mode:"live", siteOrigin` equal to the public origin;
+   - `GET /api/checkout` shows `configured:true, mode:"live", siteOrigin` equal to the public origin, `amount:5000`, `termsVersion:"deposit-terms-v3"` and `legacyPinned:true`;
    - served file hashes equal the merged commit;
    - provider acceptance steps 1–3 (an unpaid live session, expired afterwards) or an authorised controlled live deposit + refund, if separately approved.
 
@@ -169,13 +169,13 @@ The synthetic fake mirrors these behaviours of Stripe and the TEST sandbox:
 
 Vercel snapshots variables per deployment, so the cutover is:
 1. Create the $50 price in test and live with `scripts/create-deposit-price.mjs` (it reuses the price with lookup key `revivex_deposit_usd_5000_v3`, so a retry never creates a second price) and read it back.
-2. Set Production `STRIPE_DEPOSIT_PRICE_ID` to the $50 price, `STRIPE_LEGACY_DEPOSIT_PRICE_IDS` to the old $100 price and `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. The running deployment keeps its old snapshot, so there is no amount mismatch window.
-3. Merge; the new deployment picks up the new code and variables together. Read back the probe (`amount: 5000`, `termsVersion: "deposit-terms-v3"`).
+2. Set Production `STRIPE_DEPOSIT_PRICE_ID` to the $50 price, `STRIPE_LEGACY_DEPOSIT_PRICE_IDS` to the old $100 price and `REVIVEX_LIVE_APPROVED_TERMS_VERSION=deposit-terms-v3`. The running deployment keeps its old snapshot, so there is no amount mismatch window. **Do not redeploy or promote anything to Production between this step and the merge:** the old code with the new variables fails checkout closed and stops recognising every $100 receipt.
+3. Merge; the Git integration deploys the merge commit with the new variables. Read back the probe (`amount: 5000`, `termsVersion: "deposit-terms-v3"`, `legacyPinned: true`).
 
-Limits: $100 Checkout Sessions that were already open stay payable on Stripe until they expire (24 h); this code does not expire sessions it did not create. A visitor who pays one gets a valid $100 v2 receipt. Old $100 operation tokens are refused with `offer_changed`.
+Limits: $100 Checkout Sessions that were already open stay payable on Stripe until they expire (24 h); this code does not expire sessions it did not create. A visitor who pays one gets a valid $100 v2 receipt. Old $100 operation tokens are refused with `offer_changed`. Earlier immutable deployment URLs keep their $100 code and variables; the page refuses checkout off the canonical origin and the server refuses cross-origin POSTs, so only a forged request could open a $100 session there, which still shows $100 on Stripe.
 
 ## Rollback
 
 - **Pause new deposits (preferred):** set `REVIVEX_CHECKOUT_ENABLED=false` and redeploy. The button disables and receipts still load for existing depositors.
-- **Full code rollback:** promote the previous production deployment in Vercel. This restores the old log-only signup that falsely reported "saved", so prefer pausing.
+- **Full code rollback:** promote the previous production deployment in Vercel. This restores the old log-only signup that falsely reported "saved", so prefer pausing. After the $50 cutover, a rollback to the $100 code also makes every $50 receipt read `not_recognized` and reopens $100 checkout; once $50 deposits exist, pausing is the only safe rollback.
 - Existing deposits remain in Stripe. Refund from the Dashboard on request.

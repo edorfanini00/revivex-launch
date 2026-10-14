@@ -17,16 +17,18 @@
   <a href="/" class="doc-logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
   <a href="/" class="doc-back">Back to Revivex</a>
 </header>
-<main class="doc receipt" id="receipt" data-state="loading" aria-live="polite">
+<main class="doc receipt" id="receipt" data-state="loading">
   <figure class="receipt-photo" id="receiptPhoto" hidden>
     <picture>
       <source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg">
-      <img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a kitchen counter" width="2400" height="1339">
+      <img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a kitchen counter" width="2400" height="1339" loading="lazy">
     </picture>
   </figure>
-  <p class="doc-kicker" id="receiptKicker">Reservation status</p>
-  <h1 id="receiptTitle">Checking your deposit with Stripe&hellip;</h1>
-  <p class="receipt-lede" id="receiptText">This page asks Stripe directly. It does not rely on the link you arrived from.</p>
+  <div id="receiptStatus" aria-live="polite">
+    <p class="doc-kicker" id="receiptKicker">Reservation status</p>
+    <h1 id="receiptTitle">Checking your deposit with Stripe&hellip;</h1>
+    <p class="receipt-lede" id="receiptText">This page asks Stripe directly. It does not rely on the link you arrived from.</p>
+  </div>
   <dl class="receipt-facts" id="receiptFacts" hidden>
     <div><dt>Deposit paid</dt><dd id="receiptAmount"></dd></div>
     <div id="receiptRefundedRow" hidden><dt>Refunded</dt><dd id="receiptRefunded"></dd></div>

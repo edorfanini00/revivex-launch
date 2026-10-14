@@ -1064,8 +1064,8 @@ body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", 
   .doc-head { padding: 20px; }
   .doc { padding: 12px 20px 72px; }
   .cta .deposit-panel { padding: 16px; font-size: 14.5px; }
-  .receipt-photo { margin-bottom: 28px; aspect-ratio: 4 / 5; border-radius: var(--r-md); }
-  .receipt-photo img { object-position: 50% 62%; }
+  .receipt-photo { margin-bottom: 24px; aspect-ratio: 3 / 2; border-radius: var(--r-md); }
+  .receipt-photo img { object-position: 50% 66%; }
   .receipt .receipt-lede { font-size: 17px; }
 }
 .cta .link-btn { justify-self: start; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); text-decoration: underline; cursor: pointer; }

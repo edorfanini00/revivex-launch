@@ -41,7 +41,7 @@ test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet
 test('repeated CTA disclaimers are absent; offer, footer links and functional messages remain', () => {
   assert.doesNotMatch(html, /class="[^"]*\b(?:cta-terms|hero-terms|deposit-note)\b/);
   assert.doesNotMatch(html, /By preordering you accept|Preordering means you accept/);
-  assert.match(html, /id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, and your \$50 is credited toward it\. No automatic balance charge\./);
+  assert.match(html, /id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
   const nav = html.match(/<header class="nav"[\s\S]*?<\/header>/)[0];
   assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout>Preorder<\/a>/, 'the nav Preorder stands alone');
   assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|\$50|20%|refundable/i, 'no deposit tag in the nav (owner request)');
@@ -51,7 +51,7 @@ test('repeated CTA disclaimers are absent; offer, footer links and functional me
   assert.match(html, /id="reserveMsg" role="status" aria-live="polite"/);
   assert.match(html, /id="testModeNote" hidden>Test mode\. No real payment is taken\./);
   const faq = html.match(/<section class="faq"[\s\S]*?<\/section>/)[0];
-  assert.match(faq, /fully refundable \$50 deposit\. Preorders get 20% off the final machine price, and the \$50 is credited toward it\./);
+  assert.match(faq, /fully refundable \$50 deposit\. The \$50 deposit includes 20% off the final machine price, then the \$50 is credited toward the rest\./);
   assert.doesNotMatch(html, /\$100/, 'the page no longer offers the $100 deposit');
 });
 
@@ -70,5 +70,5 @@ test('Stripe Checkout: no consent collection, $50 submit text with the machine d
   const p = checkoutSessionParams(readCheckoutConfig(ENV).config, { id: 'x'.repeat(22), binding: 'b', attribution: {} });
   assert.equal(p.consent_collection, undefined);
   assert.equal(p.metadata.terms_version, 'deposit-terms-v3');
-  assert.equal(p.custom_text.submit.message, '$50 USD fully refundable preorder deposit for the Revivex machine, which is in development. Includes 20% off the final machine price, with your $50 credited toward it. No automatic balance charge. The final price and shipping date have not been announced.');
+  assert.equal(p.custom_text.submit.message, '$50 USD fully refundable preorder deposit for the Revivex machine, which is in development. Includes 20% off the final machine price, then your $50 is credited toward the rest. No automatic balance charge. The final price and shipping date have not been announced.');
 });

@@ -47,7 +47,7 @@ test('create sends form-encoded exact params, pinned API version and Idempotency
   assert.equal(form.get('metadata[utm_campaign]'), 'morning_simplified_preorder');
   assert.equal(form.get('payment_intent_data[metadata][utm_source]'), 'x');
   // Metadata records the future machine discount; no parameter may discount this deposit.
-  const params = [...form.keys()].filter(k => !/^(payment_intent_data\[metadata\]|metadata)\[/.test(k));
+  const params = [...form.keys()].filter(k => k !== 'metadata[machine_discount_percent]' && k !== 'payment_intent_data[metadata][machine_discount_percent]');
   assert.ok(!params.some(k => /amount|price_data|setup_future_usage|automatic_tax|shipping|discount|coupon|promotion_code\]|subscription|gclid|fbclid|referrer|email/.test(k)), params.join());
   assert.equal(form.get('allow_promotion_codes'), 'false');
   assert.equal(form.get('metadata[machine_discount_percent]'), '20');

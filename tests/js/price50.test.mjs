@@ -79,7 +79,7 @@ test('new checkout: exactly one $50 line item from the pinned price; terms, disc
   assert.equal(params.payment_intent_data.description, 'Revivex fully refundable preorder deposit (deposit-terms-v3)');
   const msg = params.custom_text.submit.message;
   assert.match(msg, /^\$50 USD fully refundable preorder deposit/);
-  assert.match(msg, /20% off the final machine price, with your \$50 credited toward it/);
+  assert.match(msg, /20% off the final machine price, then your \$50 is credited toward the rest/);
   assert.doesNotMatch(msg, /\$100/);
   // GET probe: the browser learns $50, v3 and the discount, nothing else.
   const g = res();
@@ -87,6 +87,11 @@ test('new checkout: exactly one $50 line item from the pinned price; terms, disc
   assert.equal(g.json().amount, 5000);
   assert.equal(g.json().termsVersion, 'deposit-terms-v3');
   assert.equal(g.json().machineDiscountPercent, 20);
+  assert.equal(g.json().legacyPinned, true);
+  const { STRIPE_LEGACY_DEPOSIT_PRICE_IDS: _, ...noLegacy } = ENV;
+  const g2 = res();
+  await setup({}, noLegacy).handler(req({ method: 'GET' }), g2);
+  assert.equal(g2.json().legacyPinned, false, 'the probe shows when historical receipts cannot be read');
 });
 
 test('the 20% is never applied to the deposit: no coupon/discount/promotion parameters, a $40 price is refused, the receipt says $50', async () => {

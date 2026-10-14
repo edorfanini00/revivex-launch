@@ -142,7 +142,7 @@ const text = html => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
 test('hosted Stripe custom text says "fully refundable" like the site', () => {
   const msg = checkoutSessionParams(CFG, { id: 'x'.repeat(22), binding: 'b', attribution: {} }).custom_text.submit.message;
   assert.match(msg, /^\$50 USD fully refundable preorder deposit/);
-  assert.match(msg, /Includes 20% off the final machine price, with your \$50 credited toward it\. No automatic balance charge\./);
+  assert.match(msg, /Includes 20% off the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
   assert.ok(msg.length <= 1200, 'Stripe custom_text limit');
 });
 

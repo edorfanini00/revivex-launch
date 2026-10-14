@@ -451,7 +451,7 @@ test('GET status exposes availability and the official contact only; method gate
   let h = setup();
   let r = res();
   await h.handler(req({ method: 'GET' }), r);
-  assert.deepEqual(r.json(), { ok: true, configured: true, siteOrigin: ORIGIN, mode: 'test', amount: 5000, currency: 'usd', termsVersion: DEPOSIT.termsVersion, machineDiscountPercent: 20, supportEmail: 'support@revivex.store' });
+  assert.deepEqual(r.json(), { ok: true, configured: true, siteOrigin: ORIGIN, mode: 'test', amount: 5000, currency: 'usd', termsVersion: DEPOSIT.termsVersion, machineDiscountPercent: 20, legacyPinned: true, supportEmail: 'support@revivex.store' });
   assert.ok(!r.body.includes(SECRET) && !r.body.includes('acct_') && !r.body.includes('price_') && !r.body.includes('signing'));
   assert.equal(h.provider.calls.length, 0);
 
