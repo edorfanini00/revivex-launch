@@ -18,7 +18,26 @@
     },
     {
       "src": "/api/signup",
-      "dest": "/api/signup.js"
+      "dest": "/api/signup.js",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer"
+      }
+    },
+    {
+      "src": "/api/unsubscribe",
+      "dest": "/api/unsubscribe.js",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer"
+      }
+    },
+    {
+      "src": "/api/stripe-webhook",
+      "dest": "/api/stripe-webhook.js",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     },
     {
       "src": "/api/health",

@@ -183,6 +183,24 @@
         <noscript><p class="form-msg">Reserving needs JavaScript. No payment can be taken without it.</p></noscript>
       </form>
     </div>
+    <div class="signup reveal" id="updates">
+      <div class="signup-copy">
+        <h3>Get launch updates</h3>
+        <p>Not ready to preorder? We&rsquo;ll tell you when the price and ship date are set.</p>
+      </div>
+      <form class="signup-form" data-source="reserve" action="/api/signup" method="post" novalidate>
+        <div class="signup-fields">
+          <label class="sr-only" for="signupReserveEmail">Email</label>
+          <input type="email" id="signupReserveEmail" name="email" placeholder="Email" autocomplete="email" inputmode="email" maxlength="254" required>
+          <label class="sr-only" for="signupReserveName">First name (optional)</label>
+          <input type="text" id="signupReserveName" name="firstName" placeholder="First name (optional)" autocomplete="given-name" maxlength="60">
+          <div class="hp" aria-hidden="true"><label for="signupReserveWebsite">Leave this empty</label><input type="text" id="signupReserveWebsite" name="website" tabindex="-1" autocomplete="off"></div>
+          <button type="submit" class="btn btn-ghost">Keep me posted</button>
+        </div>
+        <p class="signup-consent">We&rsquo;ll email you about Revivex. Unsubscribe anytime. <a href="/privacy.html">Privacy</a></p>
+        <p class="signup-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </section>
 
   <!-- FAQ -->
@@ -240,6 +258,21 @@
       <a href="/deposit-terms.html">Deposit terms</a>
       <a href="/privacy.html">Privacy</a>
     </nav>
+  </div>
+  <div class="footer-signup">
+    <p class="footer-signup-title">Get launch updates</p>
+    <form class="signup-form" data-source="footer" action="/api/signup" method="post" novalidate>
+        <div class="signup-fields">
+          <label class="sr-only" for="signupFooterEmail">Email</label>
+          <input type="email" id="signupFooterEmail" name="email" placeholder="Email" autocomplete="email" inputmode="email" maxlength="254" required>
+          <label class="sr-only" for="signupFooterName">First name (optional)</label>
+          <input type="text" id="signupFooterName" name="firstName" placeholder="First name (optional)" autocomplete="given-name" maxlength="60">
+          <div class="hp" aria-hidden="true"><label for="signupFooterWebsite">Leave this empty</label><input type="text" id="signupFooterWebsite" name="website" tabindex="-1" autocomplete="off"></div>
+          <button type="submit" class="btn btn-ghost">Keep me posted</button>
+        </div>
+        <p class="signup-consent">We&rsquo;ll email you about Revivex. Unsubscribe anytime. <a href="/privacy.html">Privacy</a></p>
+        <p class="signup-msg" role="status" aria-live="polite"></p>
+      </form>
   </div>
   <p class="footer-legal">&copy; 2026 Revivex. The Revivex machine is in development. The final price and shipping date have not been announced.</p>
 </footer>

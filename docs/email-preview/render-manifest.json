@@ -1,0 +1,234 @@
+{
+  "renderedAt": "2026-10-13T22:40:47.488Z",
+  "assetMode": "local files, not hosted-image or mail-client proof",
+  "htmlHashes": {
+    "preorder-confirmation": "6621357fedaee05ee86ac8e6c2677a2194e7d58ccfd50bc65e44b7980f8c8e41",
+    "welcome": "bf65ba2b952d779f69cb2c85102e47e6933e935b10dc699300fd115c89281e3d"
+  },
+  "captures": [
+    {
+      "name": "preorder-confirmation",
+      "width": 600,
+      "scheme": "light",
+      "viewport": 600,
+      "documentWidth": 600,
+      "background": "rgb(255, 255, 255)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "preorder-confirmation",
+      "width": 600,
+      "scheme": "dark",
+      "viewport": 600,
+      "documentWidth": 600,
+      "background": "rgb(0, 0, 0)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "preorder-confirmation",
+      "width": 375,
+      "scheme": "light",
+      "viewport": 375,
+      "documentWidth": 375,
+      "background": "rgb(255, 255, 255)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "preorder-confirmation",
+      "width": 375,
+      "scheme": "dark",
+      "viewport": 375,
+      "documentWidth": 375,
+      "background": "rgb(0, 0, 0)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 600,
+      "scheme": "light",
+      "viewport": 600,
+      "documentWidth": 600,
+      "background": "rgb(255, 255, 255)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 600,
+      "scheme": "dark",
+      "viewport": 600,
+      "documentWidth": 600,
+      "background": "rgb(0, 0, 0)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 375,
+      "scheme": "light",
+      "viewport": 375,
+      "documentWidth": 375,
+      "background": "rgb(255, 255, 255)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 375,
+      "scheme": "dark",
+      "viewport": 375,
+      "documentWidth": 375,
+      "background": "rgb(0, 0, 0)",
+      "images": [
+        {
+          "src": "brand/logo-dark.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "brand/logo-light.png",
+          "loaded": true,
+          "width": 448,
+          "height": 63
+        },
+        {
+          "src": "email/revivex-machine.png",
+          "loaded": true,
+          "width": 1200,
+          "height": 920
+        }
+      ]
+    }
+  ]
+}

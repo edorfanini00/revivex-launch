@@ -7,7 +7,7 @@
   const sessionId = new URLSearchParams(location.search).get('session_id') || '';
 
   const COPY = {
-    confirmed: ['Deposit received', 'Stripe confirms your $100 fully refundable deposit. This confirms the deposit only: it is not a final order, shipping commitment or place in a queue, and it does not sign you up for email. Revivex is in development; the final price and shipping date have not been announced. We will not charge a balance automatically.'],
+    confirmed: ['Deposit received', 'Stripe confirms your $100 fully refundable deposit. This confirms the deposit only: it is not a final order, shipping commitment or place in a queue, and it does not sign you up for marketing email. Revivex is in development; the final price and shipping date have not been announced. We will not charge a balance automatically.'],
     processing: ['Payment processing', 'Stripe has not confirmed this payment yet. This page will not show your deposit as received until it does. Check again shortly.'],
     not_completed: ['Checkout not completed', 'No payment was taken for this checkout. You can reserve again from the main page.'],
     expired: ['Checkout expired', 'This checkout page expired without a payment. You can reserve again from the main page.'],

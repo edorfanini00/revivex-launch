@@ -146,7 +146,7 @@ try {
     check(await page.locator('.nav-cta[href="#reserve"][data-checkout], .hero-actions .btn[href="#reserve"][data-checkout], .split-side .btn[href="#reserve"][data-checkout], #reserveBtn[data-checkout]').count() === 4, `${tag}: all four Preorder buttons open checkout and keep a #reserve fallback`);
     const ctaLabels = await page.$$eval('.nav-cta, .hero-actions .btn, .split-side .btn, #reserveBtn', els => els.map(e => e.textContent.trim()));
     check(ctaLabels.length === 4 && ctaLabels.every(t => t === 'Preorder'), `${tag}: every order button (nav, hero, mid page, form) reads Preorder`, ctaLabels.join(' | '));
-    check(await page.locator('a[href="#reserve"], button[type="submit"]').evaluateAll(els => els.every(e => e.textContent.trim() === 'Preorder')), `${tag}: no order button keeps the old Reserve label`);
+    check(await page.locator('a[href="#reserve"], button[type="submit"]:not(.signup-form button)').evaluateAll(els => els.every(e => e.textContent.trim() === 'Preorder')), `${tag}: no order button keeps the old Reserve label`);
     check((await page.locator('#reserve-title').innerText()).trim() === 'Preorder yours.', `${tag}: section heading reads Preorder yours.`);
     const preorderCopy = await page.evaluate(() => [document.querySelector('meta[name="description"]').content, document.querySelector('meta[property="og:description"]').content, ...[...document.querySelectorAll('.faq details p')].map(p => p.textContent)]);
     check(preorderCopy[0].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy[1].includes('Preorder with a fully refundable $100 deposit.') && preorderCopy.every(t => !/\breserv/i.test(t)), `${tag}: meta, og and FAQ copy say Preorder, not reserve`, preorderCopy.filter(t => /\breserv/i.test(t)).join(' | '));
@@ -546,6 +546,9 @@ try {
     await page.locator('#reserveBtn').dispatchEvent('click');
     await page.waitForTimeout(600);
     check(posts.length === 0 && stripeHits === 0 && !/\?/.test(page.url()), `${tag}: nothing posts to checkout and the form does not reload the page`, JSON.stringify({ posts: posts.length, stripeHits, url: page.url() }));
+    const su = await page.evaluate(() => [...document.querySelectorAll('.signup, .footer-signup')].map(e => getComputedStyle(e).display));
+    check(su.length === 2 && su.every(d => d === 'none'), `${tag}: launch updates signup (#reserve card and footer) is hidden without JavaScript`, JSON.stringify(su));
+    check(await page.locator('.signup-form[method="post"][action="/api/signup"]').count() === 2, `${tag}: signup forms never submit by GET (an address cannot land in the URL)`);
     await page.screenshot({ path: path.join(OUT, `${tag}-reserve.png`) });
     await ctx.close();
   }
@@ -556,6 +559,8 @@ try {
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     const o = await page.evaluate(() => ({ faq: getComputedStyle(document.querySelector('.faq details')).opacity, sheets: [...document.styleSheets].map(s => s.href || '').filter(h => /nojs/.test(h)).length }));
     check(o.faq === '0' && o.sheets === 0, 'js: reveal-on-scroll unchanged when JavaScript runs (no-JS stylesheet not loaded)', JSON.stringify(o));
+    const su = await page.evaluate(() => [...document.querySelectorAll('.signup, .footer-signup')].map(e => getComputedStyle(e).display));
+    check(su.length === 2 && su.every(d => d !== 'none'), 'js: launch updates signup is shown when JavaScript runs', JSON.stringify(su));
     await ctx.close();
   }
 
