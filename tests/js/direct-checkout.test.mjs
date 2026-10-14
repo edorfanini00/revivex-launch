@@ -38,17 +38,20 @@ test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet
   assert.doesNotMatch(html, /<style|style="/, 'the CSP allows no inline style');
 });
 
-test('hero and mid Preorder disclose the deposit next to them, with the terms link; the nav has no tag; no dashes', () => {
-  const lines = html.match(/<p class="cta-terms[^"]*">[^\n]*<\/p>/g) || [];
-  assert.equal(lines.length, 2, 'hero and mid page disclosure lines');
-  for (const l of lines) assert.match(l, /\$100 fully refundable deposit, credited toward your machine\. By preordering you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
+test('repeated CTA disclaimers are absent; offer, footer links and functional messages remain', () => {
+  assert.doesNotMatch(html, /class="[^"]*\b(?:cta-terms|hero-terms|deposit-note)\b/);
+  assert.doesNotMatch(html, /By preordering you accept|Preordering means you accept/);
+  assert.match(html, /id="depositPanel"><b>\$100 USD today\.<\/b> Fully refundable\. Applied to the final machine price\. No automatic balance charge\./);
   const nav = html.match(/<header class="nav"[\s\S]*?<\/header>/)[0];
   assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout>Preorder<\/a>/, 'the nav Preorder stands alone');
   assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|refundable/i, 'no deposit tag in the nav (owner request)');
-  const note = html.match(/<p class="deposit-note">[^\n]*<\/p>/)[0];
-  assert.match(note, /^<p class="deposit-note">Preordering means you accept the <a href="\/deposit-terms\.html">deposit terms<\/a>\./);
-  assert.match(note, /href="\/privacy\.html"/);
-  for (const t of [...lines, note]) assert.doesNotMatch(t.replace(/<[^>]+>/g, ''), /[–—]| - /);
+  const footer = html.match(/<footer[\s\S]*?<\/footer>/)[0];
+  assert.match(footer, /href="\/deposit-terms\.html">Deposit terms<\/a>/);
+  assert.match(footer, /href="\/privacy\.html">Privacy<\/a>/);
+  assert.match(html, /id="reserveMsg" role="status" aria-live="polite"/);
+  assert.match(html, /id="testModeNote" hidden>Test mode\. No real payment is taken\./);
+  const faq = html.match(/<section class="faq"[\s\S]*?<\/section>/)[0];
+  assert.match(faq, /\$100 deposit\. It is fully refundable, applied to the final machine price/);
 });
 
 test('server still requires termsAccepted and the current terms version (unchanged contract)', async () => {
