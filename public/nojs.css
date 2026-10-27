@@ -1,3 +1,6 @@
 /* Loaded only without JavaScript (index.html <noscript>): the reveal-on-scroll script
    never runs, so content that waits for it is shown as is. */
 .reveal { opacity: 1; transform: none; }
+/* How it works: without the step script every step reads in full. */
+.hiw-step p { max-height: none; opacity: 1; margin-top: 12px; }
+.hiw-step .hiw-h, .hiw-step .hiw-n { color: #0A0A0A; }

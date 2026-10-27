@@ -114,7 +114,7 @@ async function hammer(page) {
   await page.waitForTimeout(300);
 }
 
-const HERO_H1 = 'Your supplements, blended every morning';
+const HERO_H1 = 'Let your data fill the glass.';
 const UTM = 'utm_source=meta&utm_medium=paid_social&utm_campaign=morning_simplified_preorder&utm_content=angle_02&gclid=SHOULDNOTPASS&utm_term=ignored';
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -156,7 +156,7 @@ try {
     // Landing + layout identity
     await page.goto(`${S}/?${UTM}`, { waitUntil: 'networkidle' });
     check((await page.locator('h1.hero-title').innerText()).replace(/\s+/g, ' ').trim() === HERO_H1, `${tag}: hero headline unchanged`);
-    check(await page.locator('#heroCanvas').count() === 1 && await page.locator('img.hero-fallback[src="/assets/v11/hero-poster.jpg"]').count() === 1, `${tag}: hero canvas + approved graphite poster retained`);
+    check(await page.locator('.hero-media img.hero-img[src^="/assets/r3/hero-d-"]').count() === 1 && /\bdesigned to\b/.test(await page.locator('.hero-sub').innerText()) && /is in development/.test(await page.locator('.cta-lede').innerText()), `${tag}: hero photo shown, copy says designed to, development status in the preorder card`);
     const heroBtn = page.locator('.hero-actions .btn');
     check((await heroBtn.innerText()).trim() === 'Preorder' && (await heroBtn.getAttribute('href')) === '#reserve', `${tag}: hero CTA reads Preorder (no-JS fallback still links to #reserve)`);
     check(await page.locator('.nav-cta[href="#reserve"][data-checkout], .hero-actions .btn[href="#reserve"][data-checkout], .split-side .btn[href="#reserve"][data-checkout], #reserveBtn[data-checkout]').count() === 4, `${tag}: all four Preorder buttons open checkout and keep a #reserve fallback`);
@@ -198,8 +198,8 @@ try {
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     const csp = await page.evaluate(async () => (await fetch('/', { cache: 'no-store' })).headers.get('content-security-policy'));
     check(/frame-ancestors 'none'/.test(csp || ''), `${tag}: CSP with frame-ancestors none served`);
-    if (vp.name === 'desktop') await page.waitForFunction(() => document.getElementById('heroCanvas').classList.contains('ready'), null, { timeout: 10000 }).catch(() => {});
-    check(vp.name !== 'desktop' || await page.evaluate(() => document.getElementById('heroCanvas').classList.contains('ready')), `${tag}: hero frame sequence still loads under CSP`);
+    await page.waitForFunction(() => { const i = document.querySelector('.hero-img'); return i.complete && i.naturalWidth > 0; }, null, { timeout: 10000 }).catch(() => {});
+    check(await page.evaluate(() => { const i = document.querySelector('.hero-img'); return i.complete && i.naturalWidth > 0 && /\/assets\/r3\/hero-[dm]-/.test(i.currentSrc); }), `${tag}: hero photo loads under CSP`);
     check(await page.locator('script[type="application/ld+json"]').count() === 0, `${tag}: bogus PreOrder $0 JSON-LD removed`);
     await page.waitForTimeout(400);
     await page.locator('#reserve').screenshot({ path: path.join(OUT, `${tag}-02-reserve-panel.png`) });
@@ -693,7 +693,9 @@ try {
   }
 
   // ---------------- Desktop layout: one container for nav, sections and footer ----------------
-  const MACHINE_LEFT_X = 942; // left edge of the machine body in the 1600x900 hero poster
+  // Machine bounds in each hero photo, as fractions of the source image: the desktop
+  // landscape photo and the portrait photo used on phones and tall viewports.
+  const MACHINE = { 'hero-d': { l: 978 / 1672, r: 1383 / 1672, t: 234 / 941, b: 770 / 941 }, 'hero-m': { l: 345 / 941, r: 830 / 941, t: 740 / 1672, b: 1385 / 1672 } };
   // [width, height, minimum clear px between headline glyphs and machine]; 1024x1366 is a tall desktop class viewport
   for (const [w, h, minGap] of [[981, 800, 40], [1024, 768, 40], [1024, 1366, 40], [1280, 800, 80], [1440, 900, 80], [1920, 1080, 80]]) {
     const tag = `layout-${w}x${h}`;
@@ -701,7 +703,7 @@ try {
     await ctx.route('https://checkout.stripe.com/**', r => r.abort());
     const page = await ctx.newPage();
     await page.goto(`${U}/`, { waitUntil: 'networkidle' });
-    const m = await page.evaluate((mx) => {
+    const m = await page.evaluate((MACHINE) => {
       const R = s => document.querySelector(s).getBoundingClientRect();
       const vw = document.documentElement.clientWidth;
       const links = [...document.querySelectorAll('.nav-links a, .nav .logo, .nav-cta')].map(e => e.getBoundingClientRect());
@@ -709,8 +711,17 @@ try {
       const frame = R('.hero-frame');
       const glyphs = document.createRange();
       glyphs.selectNodeContents(document.querySelector('.hero-title'));
-      const s = Math.max(frame.width / 1600, frame.height / 900);
-      const machineLeft = frame.left + (frame.width - 1600 * s) * 0.64 + mx * s;
+      // Where the machine is drawn: the rendered image box (object-fit cover when set).
+      const img = document.querySelector('.hero-img'), ib = img.getBoundingClientRect(), cs = getComputedStyle(img);
+      const key = /hero-m-/.test(img.currentSrc) ? 'hero-m' : 'hero-d';
+      let box = { left: ib.left, top: ib.top, width: ib.width, height: ib.height };
+      if (cs.objectFit === 'cover') {
+        const s = Math.max(ib.width / img.naturalWidth, ib.height / img.naturalHeight), dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+        const [px, py] = cs.objectPosition.split(' ').map(v => parseFloat(v) / 100);
+        box = { left: ib.left + (ib.width - dw) * px, top: ib.top + (ib.height - dh) * py, width: dw, height: dh };
+      }
+      const f = MACHINE[key];
+      const machine = { left: box.left + f.l * box.width, right: box.left + f.r * box.width, top: box.top + f.t * box.height, bottom: box.top + f.b * box.height };
       return {
         vw, overflow: document.documentElement.scrollWidth - vw,
         linksInside: links.every(r => r.width > 0 && r.left >= 0 && r.right <= vw),
@@ -718,15 +729,18 @@ try {
         navLeft: R('.nav-links a').left, navRight: R('.nav-cta').right,
         heads: heads.map(r => [r.left, r.right]),
         others: ['.steps-row', '.gallery', '.cta-inner', '.faq-wrap', '.footer'].map(q => [q, R(q).left, R(q).right]),
-        titleRight: Math.max(...[...glyphs.getClientRects()].map(r => r.right)), machineLeft,
+        glyphs: [...glyphs.getClientRects()].map(r => ({ left: r.left, right: r.right, top: r.top, bottom: r.bottom })), machine, key,
+        machineInView: machine.left >= frame.left && machine.right <= frame.right && machine.top >= frame.top && machine.bottom <= frame.bottom,
       };
-    }, MACHINE_LEFT_X);
+    }, MACHINE);
     check(m.overflow <= 0, `${tag}: no horizontal overflow`, m.overflow);
     check(m.linksInside, `${tag}: nav links, logo and CTA fully inside the viewport`);
     check(m.linksOnHero, `${tag}: nav sits over the hero image at the top of the page (no white on white)`);
     check(m.heads.every(([l, r]) => Math.abs(l - m.navLeft) <= 2 && Math.abs(r - m.navRight) <= 2), `${tag}: nav left/right edges align with every section head container`, JSON.stringify({ nav: [m.navLeft, m.navRight], heads: m.heads }));
     check(m.others.every(([, l, r]) => Math.abs(l - m.navLeft) <= 2 && Math.abs(r - m.navRight) <= 2), `${tag}: steps, gallery, preorder, FAQ and footer share the nav container`, JSON.stringify(m.others));
-    check(m.titleRight + minGap <= m.machineLeft, `${tag}: hero headline clears the machine by at least ${minGap}px`, JSON.stringify({ titleRight: m.titleRight, machineLeft: m.machineLeft }));
+    const clear = m.glyphs.length > 0 && m.glyphs.every(r => r.right + minGap <= m.machine.left || r.left >= m.machine.right + minGap || r.bottom + minGap <= m.machine.top || r.top >= m.machine.bottom + minGap);
+    check(clear, `${tag}: hero headline clears the machine by at least ${minGap}px`, JSON.stringify({ key: m.key, machine: m.machine, glyphs: m.glyphs }));
+    check(m.machineInView, `${tag}: the hero crop keeps the whole machine in view`, JSON.stringify({ key: m.key, machine: m.machine }));
     if (w === 1920) check(m.navRight - m.navLeft >= 1400, `${tag}: wide screens use a wide container, not a narrow strip`, m.navRight - m.navLeft);
     await page.screenshot({ path: path.join(OUT, `${tag}-hero.png`) });
     await ctx.close();
