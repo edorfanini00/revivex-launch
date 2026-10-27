@@ -1204,7 +1204,7 @@ html.signup-open, html.signup-open body { overflow: hidden; }
 .signup-mark { position: absolute; z-index: 1; left: 31px; bottom: 32px; width: 132px; height: auto; }
 .signup-panel { position: relative; display: flex; align-items: center; padding: 64px 40px 64px 64px; min-width: 0; }
 .signup-close { position: absolute; top: 15px; right: 15px; width: 20px; height: 20px; padding: 0; border: 0; background: none; color: rgba(255, 255, 255, .75); cursor: pointer; }
-.signup-close:hover { color: #fff; }
+@media (hover: hover) { .signup-close:hover { color: #fff; } }
 .signup-close svg { display: block; }
 .signup-form, .signup-done { width: 100%; max-width: 376px; }
 .signup-head h2 { margin: 0 0 25px; font-size: 32px; line-height: 35.2px; font-weight: 500; letter-spacing: normal; color: #fff; }
@@ -1226,12 +1226,13 @@ html.signup-open, html.signup-open body { overflow: hidden; }
 .country-search:focus { outline: none; border-color: rgba(255, 255, 255, .4); }
 .country-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 196px; overflow-y: auto; overscroll-behavior: contain; }
 .country-option { padding: 8px 10px; border-radius: 3px; font-size: 15px; line-height: 1.3; cursor: pointer; }
-.country-option.is-active, .country-option:hover { background: rgba(255, 255, 255, .09); }
+.country-option.is-active { background: rgba(255, 255, 255, .09); }
+@media (hover: hover) { .country-option:hover { background: rgba(255, 255, 255, .09); } }
 .country-option[aria-selected="true"] { font-weight: 500; }
 .country-none { margin: 10px 4px 4px; font-size: 14px; color: rgba(255, 255, 255, .6); }
 .signup-hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 .signup-submit { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 43px; padding: 0 24px; border: 1px solid rgba(167, 167, 167, .38); border-radius: 8px; background: #fff; color: #000; font-family: inherit; font-size: 13.6px; line-height: 20.4px; font-weight: 500; letter-spacing: .68px; text-transform: uppercase; cursor: pointer; transition: background .2s ease; }
-.signup-submit:hover { background: #ECECEC; }
+@media (hover: hover) { .signup-submit:hover { background: #ECECEC; } }
 .signup-submit:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .signup-submit[aria-busy] { cursor: progress; background: #E6E6E6; }
 .signup-submit .btn-spinner { width: 13px; height: 13px; }
