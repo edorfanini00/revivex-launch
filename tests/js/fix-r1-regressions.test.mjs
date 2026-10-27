@@ -35,7 +35,8 @@ test('no refund cutoff or conversion condition anywhere in served copy or Stripe
   for (const f of files) assert.doesNotMatch(read(f), cutoff, f);
   const msg = checkoutSessionParams(readCheckoutConfig(ENV).config, { id: 'x'.repeat(22), binding: 'b', attribution: {} }).custom_text.submit.message;
   assert.doesNotMatch(msg, cutoff);
-  for (const f of ['public/index.html', 'public/deposit-terms.html']) {
+  // The home page no longer carries the deposit offer (waitlist only); the terms do.
+  for (const f of ['public/deposit-terms.html']) {
     const s = read(f);
     assert.match(s, /fully refundable/i, f);
     assert.match(s, /No automatic balance charge/, f);
@@ -43,7 +44,7 @@ test('no refund cutoff or conversion condition anywhere in served copy or Stripe
     assert.match(s, /credited toward/i, f);
     assert.match(s, /20% off<?\/?b?>? the final machine price/i, f);
   }
-  assert.match(read('public/index.html'), /\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
+  assert.doesNotMatch(read('public/index.html'), /\$50|20% off|refundable/i);
   // The archived v2 terms keep their original wording for $100 deposits.
   assert.match(read('public/deposit-terms-v2.html'), /The full \$100 is applied to the final machine price/);
 });

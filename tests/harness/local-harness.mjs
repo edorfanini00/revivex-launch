@@ -8,6 +8,9 @@
 //                        Not Stripe; never contacts any external service. The Meta
 //                        Conversions API is enabled with a fake token and a recorder
 //                        transport (GET /__synthetic/meta-events); nothing reaches Meta.
+//                        The waitlist (/api/signup, /api/unsubscribe) runs on an in-memory
+//                        PGlite Postgres with a recorder in place of Resend
+//                        (GET /__synthetic/signups, /__synthetic/emails).
 //   --stripe-mode live   (synthetic only) imitate a live mode account. Checkout stays
 //                        unconfigured (live needs an https origin); receipts work, and
 //                        /__synthetic/seed-paid creates paid live deposits.
@@ -31,6 +34,8 @@ let handlers = {};
 let control = null;
 let clockOffsetMs = 0;
 const metaEvents = [];
+const emails = [];
+let waitlist = null;
 
 if (mode === 'synthetic') {
   const { createCheckoutHandler, createReservationHandler } = await import(pathToFileURL(path.join(ROOT, 'lib/deposit-handlers.js')));
@@ -58,10 +63,16 @@ if (mode === 'synthetic') {
   const deps = { getEnv: () => env, providerFactory: () => synth.provider, now: () => Date.now() + clockOffsetMs, limiter: createInstanceRateLimiter({ limit: 10000, windowMs: 60_000 }) };
   handlers['/api/checkout.js'] = createCheckoutHandler({ ...deps, metaCapi: metaCapi() });
   handlers['/api/reservation.js'] = createReservationHandler({ ...deps, metaCapi: metaCapi() });
-  handlers['/api/signup.js'] = (await import(pathToFileURL(path.join(ROOT, 'api/signup.js')))).default;
+  const { createSignupHandler, createUnsubscribeHandler } = await import(pathToFileURL(path.join(ROOT, 'lib/waitlist.js')));
+  const { createTestDb } = await import(pathToFileURL(path.join(ROOT, 'tests/fixtures/pglite-db.mjs')));
+  waitlist = await createTestDb();
+  const waitlistEnv = { DATABASE_URL: 'pglite://harness', REVIVEX_IP_HASH_SALT: 'synthetic-harness-ip-salt-0123456789abcdef', RESEND_API_KEY: 'SYNTHETIC_RESEND', RESEND_FROM: 'Revivex <synthetic@example.test>', META_CAPI_ACCESS_TOKEN: 'SYNTHETIC_HARNESS_CAPI_TOKEN', REVIVEX_META_MODE: 'live' };
+  const mailFetch = async (url, init) => { const b = JSON.parse(init.body); emails.push({ to: b.to, subject: b.subject, text: b.text, headers: b.headers }); return new Response('{"id":"synthetic"}', { status: 200 }); };
+  handlers['/api/signup.js'] = createSignupHandler({ getEnv: () => waitlistEnv, dbFactory: async () => waitlist.db, fetchImpl: mailFetch, metaCapi: metaCapi(), rateLimit: 10000 });
+  handlers['/api/unsubscribe.js'] = createUnsubscribeHandler({ getEnv: () => waitlistEnv, dbFactory: async () => waitlist.db });
   handlers['/api/health.js'] = (await import(pathToFileURL(path.join(ROOT, 'api/health.js')))).default;
 } else {
-  for (const k of Object.keys(process.env)) if (/^(STRIPE_|REVIVEX_)/.test(k)) delete process.env[k];
+  for (const k of Object.keys(process.env)) if (/^(STRIPE_|REVIVEX_|DATABASE_|POSTGRES_|PG|RESEND_|META_)/.test(k)) delete process.env[k];
   globalThis.fetch = async () => { throw new Error('harness: outbound network disabled'); };
   for (const f of fs.readdirSync(path.join(ROOT, 'api'))) {
     handlers[`/api/${f}`] = (await import(pathToFileURL(path.join(ROOT, 'api', f)))).default;
@@ -75,6 +86,10 @@ function synthControl(req, res, url) {
   const op = url.pathname.slice('/__synthetic/'.length);
   if (op === 'state') return json(res, 200, control.state());
   if (op === 'meta-events') return json(res, 200, metaEvents);
+  if (op === 'emails') return json(res, 200, emails);
+  if (op === 'signups') return waitlist.rows().then(rows => json(res, 200, rows));
+  if (op === 'signup-db-fail' && req.method === 'POST') { waitlist.db.failNext(Object.assign(new Error('synthetic outage'), { code: '08006' })); return json(res, 200, { ok: true }); }
+  if (op === 'reset-signups' && req.method === 'POST') return waitlist.pg.exec('truncate revivex_waitlist, revivex_waitlist_rate').then(() => { emails.length = 0; metaEvents.length = 0; return json(res, 200, { ok: true }); });
   if (req.method !== 'POST') return json(res, 405, {});
   if (op === 'fail-next') { control.failNext(url.searchParams.get('kind'), Number(url.searchParams.get('n') || 1)); return json(res, 200, { ok: true }); }
   if (op === 'advance-clock') { clockOffsetMs += Number(url.searchParams.get('hours')) * 3600_000; return json(res, 200, { ok: true }); }

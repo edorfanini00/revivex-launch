@@ -180,14 +180,11 @@ test('old signed operation from the $100 offer: offer_changed, never re-sent to 
   assert.equal(h.provider.calls.length + h2.provider.calls.length, 0);
 });
 
-test('the app treats offer_changed like reconcile: silent fresh start only if never sent, otherwise ask first', () => {
-  const app = read('public/app.js');
-  assert.match(app, /const stopped = d\.state === 'reconcile' \|\| d\.state === 'invalid_operation' \|\| d\.state === 'offer_changed';/);
-  assert.match(app, /if \(stopped && d\.preWrite === true && !wasAttempted && fresh === 0\)/);
-  assert.match(app, /if \(stopped\) \{[\s\S]{0,200}restart\.hidden = false;/);
+test('server uncertain and reconcile copy names no amount; the home page no longer runs the checkout client', () => {
   // Uncertain and reconcile copy no longer names an amount (an earlier attempt may have been $100).
   for (const m of [MESSAGES.uncertain, MESSAGES.reconcile]) assert.doesNotMatch(m, /\$\d/);
-  assert.doesNotMatch(app.match(/const UNCERTAIN = [^\n]+/)[0] + app.match(/const RECONCILE = [^\n]+/)[0], /\$\d/);
+  const app = read('public/app.js');
+  assert.doesNotMatch(app, /\/api\/checkout|depositOperation|reserveBtn/);
 });
 
 test('old operation retry and duplicate submit: one Stripe session per operation, identical key and parameters', async () => {
@@ -272,11 +269,8 @@ test('canceled or unpaid checkouts never show an amount or the machine discount'
   }
 });
 
-test('page, terms and receipt agree with the server offer', () => {
-  const html = read('public/index.html');
-  const panel = html.match(/<p class="deposit-panel" id="depositPanel"[^>]*>/)[0];
-  assert.match(panel, new RegExp(`data-terms-version="${DEPOSIT.termsVersion}"`));
-  assert.match(panel, new RegExp(`data-deposit-amount="${DEPOSIT.amount}"`));
+test('terms and receipt agree with the server offer; the home page shows no offer', () => {
+  assert.doesNotMatch(read('public/index.html'), /depositPanel|data-deposit-amount|data-terms-version/);
   assert.match(read('public/deposit-terms.html'), new RegExp(`data-terms-version="${DEPOSIT.termsVersion}"`));
   assert.match(read('public/deposit-terms.html'), /the 20% comes off the final machine price first, and then your full \$50 deposit is credited toward what remains/);
   assert.match(read('public/deposit-terms.html'), /href="\/deposit-terms-v2\.html"/);

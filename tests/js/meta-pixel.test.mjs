@@ -3,11 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { DEPOSIT_EVENT, PURCHASE_DB, PURCHASE_STORE, claimOnce, createPixel as createPixelAt, gpcEnabled, loadFbq, operationEventId, purchaseEventId, validPixelId } from '../../public/meta-pixel.js';
+import { DEPOSIT_EVENT, PURCHASE_DB, PURCHASE_STORE, WAITLIST_EVENT, claimOnce, createPixel as createPixelAt, gpcEnabled, loadFbq, purchaseEventId, validPixelId } from '../../public/meta-pixel.js';
 import { META_PIXEL_ID, META_PIXEL_ORIGIN } from '../../public/meta-pixel-id.js';
-import { readCheckoutConfig } from '../../lib/deposit-config.js';
-import { issueOperation, readOperation } from '../../lib/operation-token.js';
-import { ENV } from '../fixtures/deposit-fixtures.mjs';
+import { LEAD_CUSTOM_DATA, newLeadEventId } from '../../lib/waitlist.js';
 import { createFakeIndexedDB } from '../fixtures/fake-indexeddb.mjs';
 
 const ROOT = new URL('../../', import.meta.url);
@@ -44,7 +42,6 @@ function recorder() {
   return load;
 }
 const tracked = load => load.calls.filter(c => c[0] === 'track');
-const realToken = () => issueOperation(readCheckoutConfig(ENV).config, { now: () => Date.now(), attribution: {} });
 
 test('placeholder pixel id: clean no-op (nothing loaded, nothing tracked)', async () => {
   assert.ok(META_PIXEL_ID === 'REVIVEX_PIXEL_ID_PLACEHOLDER' || validPixelId(META_PIXEL_ID), 'committed constant is a numeric pixel id or the placeholder');
@@ -53,7 +50,7 @@ test('placeholder pixel id: clean no-op (nothing loaded, nothing tracked)', asyn
     const px = createPixel({ win: fakeWin(), id, load });
     assert.equal(px.enabled, false);
     assert.equal(px.start(), false);
-    assert.equal(px.initiateCheckout(realToken()), null);
+    assert.equal(px.lead(newLeadEventId()), null);
     assert.equal(await px.purchase(PAID), null);
     assert.equal(load.loads, 0);
     assert.equal(load.calls.length, 0);
@@ -69,14 +66,14 @@ test('Global Privacy Control: nothing loaded or sent to Meta', async () => {
   const px = createPixel({ win, id: ID, load });
   assert.equal(px.enabled, false);
   assert.equal(px.start(), false);
-  px.initiateCheckout(realToken());
+  px.lead(newLeadEventId());
   await px.purchase(PAID);
   assert.equal(load.loads, 0);
   assert.equal(load.calls.length, 0);
   assert.deepEqual(claims(win.idb), [], 'no purchase guard written either');
 });
 
-test('home page: autoConfig off, init, PageView, ViewContent with the deposit payload', () => {
+test('home page: autoConfig off, init, PageView, ViewContent with the waitlist label (no deposit value)', () => {
   for (const path of ['/', '/index.html']) {
     const load = recorder();
     const px = createPixel({ win: fakeWin({ path }), id: ID, load });
@@ -85,9 +82,10 @@ test('home page: autoConfig off, init, PageView, ViewContent with the deposit pa
       ['set', 'autoConfig', false, ID],
       ['init', ID],
       ['track', 'PageView'],
-      ['track', 'ViewContent', { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' }],
+      ['track', 'ViewContent', { content_name: 'Revivex early access waitlist' }],
     ]);
   }
+  assert.deepEqual({ ...WAITLIST_EVENT }, { ...LEAD_CUSTOM_DATA }, 'browser and server use the same label');
   assert.deepEqual({ ...DEPOSIT_EVENT }, { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' });
 });
 
@@ -99,18 +97,16 @@ test('other pages: PageView only', () => {
   }
 });
 
-test('InitiateCheckout event id is the operation id the server reads from the same token', () => {
-  const token = realToken();
-  const serverId = readOperation(token, ENV.REVIVEX_OPERATION_SIGNING_SECRET, Date.now()).op.id;
-  assert.equal(operationEventId(token), serverId);
+test('Lead: the server event id, once per id, never malformed; no InitiateCheckout method remains', () => {
   const load = recorder();
   const px = createPixel({ win: fakeWin(), id: ID, load });
   px.start();
-  assert.deepEqual(px.initiateCheckout(token), ['InitiateCheckout', { ...DEPOSIT_EVENT }, { eventID: serverId }]);
-  assert.deepEqual(tracked(load).at(-1), ['track', 'InitiateCheckout', { ...DEPOSIT_EVENT }, { eventID: serverId }]);
-  for (const bad of [undefined, '', 'nope', 'e30.sig', `${Buffer.from(JSON.stringify({ id: 'short' })).toString('base64url')}.x`]) {
-    assert.equal(px.initiateCheckout(bad), null, String(bad));
-  }
+  const id = newLeadEventId();
+  assert.deepEqual(px.lead(id), ['Lead', { ...WAITLIST_EVENT }, { eventID: id }]);
+  assert.equal(px.lead(id), null, 'same id twice sends once');
+  for (const bad of [undefined, '', 'lead_short', 'deposit_cs_live_x', 42]) assert.equal(px.lead(bad), null, String(bad));
+  assert.deepEqual(tracked(load).filter(c => c[1] === 'Lead'), [['track', 'Lead', { ...WAITLIST_EVENT }, { eventID: id }]]);
+  assert.equal(px.initiateCheckout, undefined);
 });
 
 test('S3: the pixel starts only on the canonical origin (previews, aliases and local copies send nothing)', () => {
@@ -260,14 +256,14 @@ test('privacy notice discloses the Meta pixel and the opt out, with no dashes in
   assert.doesNotMatch(read('public/index.html'), /facebook-domain-verification/, 'domain verification is DNS based (no meta tag)');
 });
 
-test('page hooks: checkout opening announced only on the Stripe redirect path; receipt announces its state', () => {
-  const app = read('public/app.js');
-  const hook = app.indexOf("'revivex:checkout-opening'");
-  assert.ok(hook > -1);
-  assert.equal(app.split("'revivex:checkout-opening'").length, 2, 'announced in one place');
-  const redirect = app.indexOf("d.state === 'redirect'");
-  const assign = app.indexOf('window.location.assign(d.url)');
-  assert.ok(redirect < hook && hook < assign, 'inside the redirect branch, before leaving');
+test('page hooks: the home page never announces a checkout; signup announces Lead only after an ok response; receipt announces its state', () => {
+  assert.doesNotMatch(read('public/app.js'), /revivex:checkout-opening|\/api\/checkout/);
+  const signup = read('public/signup.js');
+  assert.equal(signup.split("'revivex:lead'").length, 2, 'announced in one place');
+  const okCheck = signup.indexOf('res.status === 200 && data && data.ok === true');
+  const hook = signup.indexOf("'revivex:lead'");
+  const successFn = signup.indexOf('function success(data)');
+  assert.ok(okCheck > -1 && successFn > -1 && hook > successFn, 'inside success(), which runs only after a 200 { ok: true }');
   assert.match(read('public/reservation.js'), /'revivex:deposit-status', \{ detail: \{ state, sessionId, fresh: !!d && d\.fresh === true, mode: d && d\.mode, amount: d && d\.amount \} \}/);
 });
 
