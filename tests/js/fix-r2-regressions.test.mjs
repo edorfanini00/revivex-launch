@@ -146,8 +146,9 @@ test('hosted Stripe custom text says "fully refundable" like the site', () => {
   assert.ok(msg.length <= 1200, 'Stripe custom_text limit');
 });
 
-test('terms, receipt and FAQ give the same refund instruction, with no mailbox precondition', () => {
-  for (const f of ['public/deposit-terms.html', 'public/reservation.html', 'public/index.html']) {
+test('terms and receipt give the same refund instruction, with no mailbox precondition (the home page FAQ is waitlist only now)', () => {
+  assert.doesNotMatch(text(read('public/index.html')), /To request a refund/);
+  for (const f of ['public/deposit-terms.html', 'public/reservation.html']) {
     const t = text(read(f));
     assert.ok(t.includes(`To request a refund, ${REFUND_HOW}.`), f);
     assert.ok(!/\bfrom the (email )?address you used at checkout\b/.test(t.replace(/ideally from the email address you used at checkout/g, '')), `${f}: no bare "from the address you used"`);

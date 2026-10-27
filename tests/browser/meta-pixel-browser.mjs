@@ -1,4 +1,5 @@
-// Meta pixel browser QA against the owned LOCAL harness (SYNTHETIC Stripe stand-in).
+// Meta pixel browser QA against the owned LOCAL harness (SYNTHETIC Stripe stand-in,
+// PGlite waitlist database).
 // Meta is never contacted: connect.facebook.net/en_US/fbevents.js is answered with a stub
 // that records every fbq call, any other request to a Meta host is counted and aborted,
 // and the harness records server (Conversions API) events instead of sending them.
@@ -86,12 +87,27 @@ async function newContext(browser, { gpc = false, gpcHeader = false } = {}) {
 const tracks = calls => calls.filter(c => c.args[0] === 'track').map(c => `${c.path} ${c.args[1]}`);
 const settle = page => page.waitForTimeout(300);
 const DEPOSIT = { content_name: 'Revivex machine preorder deposit', value: 50, currency: 'USD' };
+const WAITLIST = { content_name: 'Revivex early access waitlist' };
 
-async function reserveToStripe(page, base) {
-  await page.goto(`${base}/#reserve`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => !document.getElementById('reserveBtn').disabled, null, { timeout: 5000 });
-  await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('#reserveBtn').click()]);
-  return page.url().split('/').pop();
+// The home page no longer opens checkout; an existing-deposit session is made through the
+// unchanged checkout API from the page origin (as an earlier visitor's checkout was).
+async function checkoutViaApi(page, base) {
+  if (!page.url().startsWith(base)) await page.goto(`${base}/privacy.html`, { waitUntil: 'networkidle' });
+  return page.evaluate(async () => {
+    const post = async b => (await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ termsAccepted: true, termsVersion: 'deposit-terms-v3', displayedAmount: 5000, ...b }) })).json();
+    const s = await post({ step: 'start', attribution: {} });
+    const c = await post({ step: 'create', operation: s.operation });
+    return c.url.split('/').pop();
+  });
+}
+// Opens the modal from a CTA, fills it and submits; resolves to the API response body.
+async function signUp(page, { email, cta = '.hero-actions [data-signup]', country = 'united k' } = {}) {
+  await page.locator(cta).click();
+  await page.locator('#signupEmail').fill(email);
+  if (await page.locator('#countryValue').innerText() === 'Country') { await page.locator('#countryToggle').click(); await page.keyboard.type(country); await page.keyboard.press('Enter'); }
+  const [resp] = await Promise.all([page.waitForResponse(r => r.url().endsWith('/api/signup') && r.request().method() === 'POST'), page.locator('#signupSubmit').click()]);
+  await page.waitForTimeout(300);
+  return resp.json().catch(() => null);
 }
 async function receipt(page, base, id) {
   await page.goto(`${base}/reservation.html?session_id=${id}`, { waitUntil: 'networkidle' });
@@ -110,39 +126,31 @@ try {
   const serverEvents = async (base, id) => (await api('/__synthetic/meta-events', 'GET', base)).filter(e => !id || e.event_id === `deposit_${id}`);
   const purchases = calls => calls.filter(c => c.args[0] === 'track' && c.args[1] === 'Purchase');
 
-  // ---- Pixel on: home -> Preorder -> synthetic paid receipt ----
+  // ---- Pixel on: home -> waitlist signup (Lead) -> an existing deposit's receipt ----
   {
     const { ctx, page, calls, metaHits, errors } = await newContext(browser);
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     await settle(page);
-    check(JSON.stringify(calls.map(c => c.args)) === JSON.stringify([['set', 'autoConfig', false, TEST_PIXEL], ['init', TEST_PIXEL], ['track', 'PageView'], ['track', 'ViewContent', DEPOSIT]]), 'home: autoConfig off, init, PageView, ViewContent (value 50 USD)', JSON.stringify(calls));
+    check(JSON.stringify(calls.map(c => c.args)) === JSON.stringify([['set', 'autoConfig', false, TEST_PIXEL], ['init', TEST_PIXEL], ['track', 'PageView'], ['track', 'ViewContent', WAITLIST]]), 'home: autoConfig off, init, PageView, ViewContent (waitlist label, no deposit value)', JSON.stringify(calls));
+    check(await page.locator('[data-checkout], #reserveBtn').count() === 0, 'home: no checkout button left on the page');
+    const leads = () => calls.filter(c => c.args[0] === 'track' && c.args[1] === 'Lead');
+    check(leads().length === 0, 'no Lead before any signup');
 
-    // No terms checkbox: the hero Preorder button opens checkout directly; a double
-    // click still makes one checkout and one InitiateCheckout.
-    check(await page.locator('input[type="checkbox"]').count() === 0, 'no terms checkbox on the page');
-    check(!tracks(calls).some(t => t.endsWith('InitiateCheckout')), 'no InitiateCheckout before any Preorder click');
-    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('.hero-actions [data-checkout]').dblclick()]);
-    const sessionId = page.url().split('/').pop();
-    const ic = calls.filter(c => c.args[1] === 'InitiateCheckout');
-    await page.goBack({ waitUntil: 'networkidle' });
-    const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('revivex.depositOperation')).token);
-    const opId = JSON.parse(Buffer.from(token.split('.')[0], 'base64url').toString()).id;
-    check(ic.length === 1 && ic[0].path === '/' && JSON.stringify(ic[0].args) === JSON.stringify(['track', 'InitiateCheckout', DEPOSIT, { eventID: opId }]), 'hero Preorder (double click): InitiateCheckout fired once on the home page before the Stripe redirect, event id = operation id', JSON.stringify(ic));
+    const j = await signUp(page, { email: 'pixel-lead@example.com' });
+    const l1 = leads();
+    check(j && j.ok === true && /^lead_/.test(j.lead) && await page.locator('#signupDone').isVisible(), 'signup: 200 ok with a Lead id, success shown', JSON.stringify(j));
+    check(l1.length === 1 && l1[0].path === '/' && JSON.stringify(l1[0].args) === JSON.stringify(['track', 'Lead', WAITLIST, { eventID: j.lead }]), 'signup: browser Lead fired exactly once, event id = server Lead id', JSON.stringify(l1));
+    const sl = (await serverEvents(S)).filter(e => e.event_name === 'Lead');
+    check(sl.length === 1 && sl[0].event_id === j.lead && sl[0].has_em, 'signup: one server (CAPI) Lead with the same event id and a hashed email', JSON.stringify(sl));
+    check(!tracks(calls).some(t => /InitiateCheckout|Purchase/.test(t)), 'home: no InitiateCheckout or Purchase from the signup page');
 
-    // C4: Back from Stripe and Preorder again (another button, then Space on the hero)
-    // replays the same operation and session, and InitiateCheckout is not sent again.
-    const sessions0 = (await api('/__synthetic/state')).sessionCount;
-    for (const [how, sel] of [['click', '.nav-cta'], ['Space', '.hero-actions [data-checkout]']]) {
-      await page.waitForFunction(() => !document.querySelector('.nav-cta').hasAttribute('aria-busy'), null, { timeout: 5000 });
-      const go = page.waitForURL(/checkout\.stripe\.com/, { timeout: 10000 }).then(() => true, () => false);
-      if (how === 'click') await page.locator(sel).click(); else { await page.locator(sel).focus(); await page.keyboard.press('Space'); }
-      const gone = await go;
-      const icNow = calls.filter(c => c.args[1] === 'InitiateCheckout');
-      const st = await api('/__synthetic/state');
-      check(gone && page.url().endsWith(sessionId) && st.sessionCount === sessions0 && icNow.length === 1, `Back + retry (${how} ${sel}): same operation and session, InitiateCheckout still sent once per operation`, JSON.stringify({ redirected: gone, sameSession: page.url().endsWith(sessionId), newSessions: st.sessionCount - sessions0, initiateCheckouts: icNow.length, eventIDs: icNow.map(c => c.args[3] && c.args[3].eventID) }));
-      await page.goBack({ waitUntil: 'networkidle' });
-    }
+    // The same address again (new page load): idempotent success, no second Lead anywhere.
+    await page.goto(`${S}/`, { waitUntil: 'networkidle' });
+    const j2 = await signUp(page, { email: 'PIXEL-lead@example.com', cta: '.nav-cta' });
+    check(j2 && j2.ok === true && j2.lead === null && await page.locator('#signupDone').isVisible(), 'repeat signup: success shown, no Lead id', JSON.stringify(j2));
+    check(leads().length === 1 && (await serverEvents(S)).filter(e => e.event_name === 'Lead').length === 1, 'repeat signup: still exactly one browser and one server Lead');
 
+    const sessionId = await checkoutViaApi(page, S);
     const before = calls.length;
     check(await receipt(page, S, sessionId) === 'not_completed', 'unpaid receipt is not_completed');
     check(!calls.slice(before).some(c => c.args[1] === 'Purchase'), 'no Purchase for an unpaid receipt');
@@ -153,7 +161,7 @@ try {
     check(await receipt(page, S, sessionId) === 'confirmed', 'test mode paid receipt confirmed by the server');
     const paidCalls = calls.slice(paidFrom).filter(c => c.args[0] === 'track');
     check(JSON.stringify(paidCalls.map(c => c.args)) === JSON.stringify([['track', 'PageView']]), 'S3: test mode paid receipt: PageView only, no browser Purchase', JSON.stringify(paidCalls));
-    check((await serverEvents(S)).length === 0, 'S3: test mode: no server (CAPI) event at all, though the token is set', JSON.stringify(await serverEvents(S)));
+    check((await serverEvents(S)).filter(e => e.event_name !== 'Lead').length === 0, 'S3: test mode: no server (CAPI) deposit event at all, though the token is set', JSON.stringify(await serverEvents(S)));
 
     await page.goto(`${S}/privacy.html`, { waitUntil: 'networkidle' });
     await settle(page);
@@ -167,23 +175,26 @@ try {
     await ctx.close();
   }
 
-  // ---- A failed start sends no InitiateCheckout; the successful retry sends exactly one ----
+  // ---- A failed signup (5xx or network) sends no Lead; the successful retry sends exactly one ----
   {
     const { ctx, page, calls, errors } = await newContext(browser);
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
     await settle(page);
-    const ics = () => calls.filter(c => c.args[1] === 'InitiateCheckout');
-    let fail = true;
-    const steps = [];
-    await page.route('**/api/checkout', r => { if (r.request().method() !== 'POST') return r.continue(); const b = r.request().postDataJSON(); steps.push(b.step); return fail && b.step === 'start' ? r.abort() : r.continue(); });
-    await page.locator('.hero-actions [data-checkout]').click();
-    await page.waitForFunction(() => /could not be opened/.test((document.querySelector('.hero-actions .cta-msg') || {}).textContent || ''), null, { timeout: 8000 }).catch(() => {});
+    const leads = () => calls.filter(c => c.args[0] === 'track' && c.args[1] === 'Lead');
+    const server0 = (await serverEvents(S)).filter(e => e.event_name === 'Lead').length;
+    await api('/__synthetic/signup-db-fail', 'POST');
+    const j = await signUp(page, { email: 'pixel-retry@example.com' });
+    check(j && j.ok === false && leads().length === 0 && !(await page.locator('#signupDone').isVisible()), 'failed signup (503): no Lead, no success', JSON.stringify({ j, leads: leads().length }));
+    await page.route('**/api/signup', r => (r.request().method() === 'POST' ? r.abort() : r.continue()));
+    await page.locator('#signupSubmit').click();
+    await page.waitForFunction(() => /couldn't reach/.test(document.getElementById('signupError').textContent), null, { timeout: 5000 }).catch(() => {});
+    check(leads().length === 0 && !(await page.locator('#signupDone').isVisible()), 'network failure: no Lead, no success');
+    await page.unroute('**/api/signup');
+    const [resp] = await Promise.all([page.waitForResponse(r => r.url().endsWith('/api/signup') && r.request().method() === 'POST'), page.locator('#signupSubmit').click()]);
+    const j2 = await resp.json();
     await settle(page);
-    check(ics().length === 0 && steps.join() === 'start' && /^https?:\/\/127/.test(page.url()), 'failed start: no InitiateCheckout, no create, no redirect', JSON.stringify({ initiateCheckouts: ics().length, steps: steps.join(','), url: page.url() }));
-    fail = false;
-    await Promise.all([page.waitForURL(/checkout\.stripe\.com/), page.locator('.hero-actions [data-checkout]').click()]);
-    check(ics().length === 1 && steps.join() === 'start,start,create', 'retry after the failed start: one InitiateCheckout', JSON.stringify({ initiateCheckouts: ics().length, steps: steps.join(',') }));
-    check(errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'failed start: no console errors', errors.join(' | '));
+    check(j2.ok === true && leads().length === 1 && leads()[0].args[3].eventID === j2.lead && (await serverEvents(S)).filter(e => e.event_name === 'Lead').length === server0 + 1, 'retry after the failures: exactly one browser and one server Lead', JSON.stringify({ leads: leads().length }));
+    check(errors.filter(e => !/Failed to load resource|ERR_FAILED|503/.test(e)).length === 0, 'failed signup: no console errors', errors.join(' | '));
     await ctx.close();
   }
 
@@ -224,6 +235,9 @@ try {
     const { ctx, calls } = await newContext(browser);
     const pages = await Promise.all(Array.from({ length: TABS }, () => ctx.newPage()));
     const counts = [];
+    // Known to time out on origin/main as well (8 tabs on one loaded machine): a timeout
+    // is recorded as this case's failure and the rest of the suite still runs.
+    try {
     for (let round = 0; round < ROUNDS; round++) {
       const id = await seedPaid(0);
       let waiting = [];
@@ -241,6 +255,9 @@ try {
       counts.push(sent.length);
       check(sent.length === 1 && sent[0].args[3].eventID === `deposit_${id}`, `C1: round ${round + 1}: ${TABS} simultaneous tabs -> exactly 1 Purchase`, `got ${sent.length}`);
       await ctx.unroute(route);
+    }
+    } catch (e) {
+      check(false, `C1: ${TABS} simultaneous tabs completed every round`, `${String(e).split('\n')[0]} after ${counts.length} rounds`);
     }
     console.log('C1 purchases per round:', counts.join(', '));
     await ctx.close();
@@ -278,13 +295,15 @@ try {
     await ctx.close();
   }
 
-  // ---- Global Privacy Control: nothing loaded, nothing sent, checkout still works ----
+  // ---- Global Privacy Control: nothing loaded, nothing sent; signup and receipts still work ----
   {
     const { ctx, page, calls, metaHits, errors } = await newContext(browser, { gpc: true });
     await page.goto(`${S}/`, { waitUntil: 'networkidle' });
-    const id = await reserveToStripe(page, S);
+    const gj = await signUp(page, { email: 'pixel-gpc@example.com' });
+    check(gj && gj.ok === true && await page.locator('#signupDone').isVisible(), 'GPC: signup still works');
+    const id = await checkoutViaApi(page, S);
     await api(`/__synthetic/pay?session_id=${id}`, 'POST');
-    check(await receipt(page, S, id) === 'confirmed', 'GPC: checkout and receipt still work');
+    check(await receipt(page, S, id) === 'confirmed', 'GPC: existing deposit receipt still works');
     check(calls.length === 0 && metaHits.fbevents === 0 && metaHits.other.length === 0, 'GPC: no fbq calls and no request to Meta', JSON.stringify({ calls: calls.length, metaHits }));
     check(await page.evaluate(() => typeof window.fbq) === 'undefined', 'GPC: fbq never defined');
     check(errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'GPC: no console errors', errors.join(' | '));
@@ -296,9 +315,11 @@ try {
     const { ctx, page, calls, metaHits, errors } = await newContext(browser);
     const O = `http://127.0.0.1:${OFF}`;
     await page.goto(`${O}/`, { waitUntil: 'networkidle' });
-    const id = await reserveToStripe(page, O);
+    const pj = await signUp(page, { email: 'pixel-off@example.com' });
+    check(pj && pj.ok === true, 'placeholder: signup still works');
+    const id = await checkoutViaApi(page, O);
     await fetch(`${O}/__synthetic/pay?session_id=${id}`, { method: 'POST' });
-    check(await receipt(page, O, id) === 'confirmed', 'placeholder: checkout and receipt still work');
+    check(await receipt(page, O, id) === 'confirmed', 'placeholder: existing deposit receipt still works');
     check(calls.length === 0 && metaHits.fbevents === 0 && metaHits.other.length === 0, 'placeholder: no fbq calls and no request to Meta', JSON.stringify({ calls: calls.length, metaHits }));
     check(await page.evaluate(() => typeof window.fbq) === 'undefined', 'placeholder: fbq never defined');
     check(errors.filter(e => !/Failed to load resource/.test(e)).length === 0, 'placeholder: no console errors', errors.join(' | '));

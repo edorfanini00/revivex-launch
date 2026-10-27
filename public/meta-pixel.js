@@ -1,11 +1,12 @@
-/* Meta pixel for the preorder deposit funnel.
+/* Meta pixel for the early access waitlist and existing deposit receipts.
    Sends nothing (and loads nothing from Meta) while the pixel id is the placeholder, off
    the canonical origin (previews, aliases, local copies), or when the browser sends
    Global Privacy Control. The page scripts never call Meta directly:
-   app.js announces "revivex:checkout-opening" just before it leaves for Stripe, and
+   signup.js announces "revivex:lead" after the server committed a first signup, and
    reservation.js announces "revivex:deposit-status" after the server lookup. Only a
    server-confirmed, recently paid, live mode deposit becomes a Purchase. The same event
-   ids are sent from the server (lib/meta-capi.js) so Meta counts each event once. */
+   ids are sent from the server (lib/meta-capi.js) so Meta counts each event once.
+   The home page no longer opens checkout, so it sends no InitiateCheckout. */
 import { META_PIXEL_ID, META_PIXEL_ORIGIN } from './meta-pixel-id.js';
 
 // Mirrors DEPOSIT in lib/deposit-config.js ($50.00 USD).
@@ -19,23 +20,12 @@ export const PURCHASE_DB = 'revivex-meta';
 export const PURCHASE_STORE = 'purchases';
 const FBEVENTS_URL = 'https://connect.facebook.net/en_US/fbevents.js';
 const SESSION_RE = /^cs_(test|live)_[A-Za-z0-9]{8,250}$/;
-const OPERATION_ID_RE = /^[A-Za-z0-9_-]{22}$/;
+// Mirrors LEAD_CUSTOM_DATA in lib/waitlist.js. The home page view carries the same label.
+export const WAITLIST_EVENT = Object.freeze({ content_name: 'Revivex early access waitlist' });
+const LEAD_ID_RE = /^lead_[A-Za-z0-9_-]{22}$/;
 
 export const validPixelId = id => typeof id === 'string' && /^[0-9]{6,20}$/.test(id);
 export const gpcEnabled = nav => !!nav && nav.globalPrivacyControl === true;
-
-// The random id inside the signed operation token (lib/operation-token.js). The server
-// uses the same id for its InitiateCheckout, so the two copies deduplicate.
-export function operationEventId(token) {
-  if (typeof token !== 'string') return null;
-  try {
-    const b64 = token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
-    const op = JSON.parse(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)));
-    return op && OPERATION_ID_RE.test(op.id) ? op.id : null;
-  } catch {
-    return null;
-  }
-}
 
 // Claims a key once per browser profile, atomically across tabs: readwrite transactions
 // on one store run one at a time for the whole origin, and "add" fails (aborting the
@@ -86,6 +76,7 @@ export function createPixel({ win, id = META_PIXEL_ID, origin = META_PIXEL_ORIGI
   const enabled = validPixelId(id) && win.location.origin === origin && !gpcEnabled(win.navigator);
   let fbq = null;
   const track = (...args) => { if (!fbq) return null; fbq('track', ...args); return args; };
+  const leads = new Set();
   return {
     enabled,
     // PageView everywhere; ViewContent on the home page only.
@@ -97,12 +88,16 @@ export function createPixel({ win, id = META_PIXEL_ID, origin = META_PIXEL_ORIGI
       fbq('init', id);
       track('PageView');
       const path = win.location.pathname;
-      if (path === '/' || path === '/index.html') track('ViewContent', { ...DEPOSIT_EVENT });
+      if (path === '/' || path === '/index.html') track('ViewContent', { ...WAITLIST_EVENT });
       return true;
     },
-    initiateCheckout(token) {
-      const eventID = operationEventId(token);
-      return eventID ? track('InitiateCheckout', { ...DEPOSIT_EVENT }, { eventID }) : null;
+    // A first waitlist signup the server committed, with the server Lead's event id. Each
+    // id is sent at most once by this page.
+    lead(eventID) {
+      if (typeof eventID !== 'string' || !LEAD_ID_RE.test(eventID) || leads.has(eventID)) return null;
+      const sent = track('Lead', { ...WAITLIST_EVENT }, { eventID });
+      if (sent) leads.add(eventID);
+      return sent;
     },
     // Only a server-confirmed paid live deposit that the server reports as recently paid
     // ("fresh"), at most once per checkout session per browser even across simultaneous
@@ -123,7 +118,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   try {
     const pixel = createPixel({ win: window });
     if (pixel.start()) {
-      window.addEventListener('revivex:checkout-opening', e => { try { pixel.initiateCheckout(e.detail && e.detail.operation); } catch { /* never block checkout */ } });
+      window.addEventListener('revivex:lead', e => { try { pixel.lead(e.detail && e.detail.eventId); } catch { /* never block the signup */ } });
       window.addEventListener('revivex:deposit-status', e => { try { pixel.purchase(e.detail || {}); } catch { /* ignore */ } });
     }
   } catch { /* measurement must never break the page */ }

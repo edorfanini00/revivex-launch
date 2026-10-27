@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Revivex | Your supplements, blended every morning from your data</title>
-  <meta name="description" content="Revivex is a countertop supplement machine in development, designed to read your sleep, recovery and biomarker data and blend one drink each morning. Preorder with a fully refundable $50 deposit.">
+  <meta name="description" content="Revivex is a countertop supplement machine in development, designed to read your sleep, recovery and biomarker data and blend one drink each morning. Join the waitlist for early access.">
   <!-- SEO -->
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://revivex-launch.vercel.app/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://revivex-launch.vercel.app/">
   <meta property="og:title" content="Revivex | Your supplements, blended every morning">
-  <meta property="og:description" content="A countertop supplement machine in development, designed to read your data and blend one drink each morning. Preorder with a fully refundable $50 deposit.">
+  <meta property="og:description" content="A countertop supplement machine in development, designed to read your data and blend one drink each morning. Join the waitlist for early access.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Revivex | Your supplements, blended every morning">
   <meta name="twitter:description" content="A countertop supplement machine in development, designed to blend one drink each morning from your data.">
@@ -40,7 +40,7 @@
     <img class="logo-light" src="/assets/brand/logo-light.png" alt="Revivex" width="448" height="63">
     <img class="logo-dark" src="/assets/brand/logo-dark.png" alt="" width="448" height="63">
   </a>
-  <a href="#reserve" class="btn nav-cta" data-checkout>Preorder</a>
+  <a href="#waitlist" class="btn nav-cta" data-signup="nav">Get early access</a>
 </header>
 
 <main id="top">
@@ -57,7 +57,7 @@
           <h1 class="hero-title reveal-now">Your supplements, blended<br>every morning</h1>
           <p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight. One touch in the morning and your blend is ready.</p>
           <div class="hero-actions reveal-now">
-            <a href="#reserve" class="btn" data-checkout>Preorder</a>
+            <a href="#waitlist" class="btn" data-signup="hero">Join the waitlist</a>
           </div>
         </div>
 
@@ -126,7 +126,7 @@
     <h2 id="s3-title">One touch. Your drink, ready.</h2>
     <div class="split-side">
       <p>The machine is designed to measure each supplement, blend it with water and pour one glass.</p>
-      <a href="#reserve" class="btn" data-checkout>Preorder</a>
+      <a href="#waitlist" class="btn" data-signup="mid">Join the waitlist</a>
     </div>
   </header>
   <div class="scene scene-left" aria-labelledby="s3-title">
@@ -166,22 +166,18 @@
     </div>
   </section>
 
-  <!-- RESERVE: refundable $50 preorder deposit (Stripe-hosted checkout) -->
-  <section class="cta" id="reserve" aria-labelledby="reserve-title">
-    <span id="waitlist" class="anchor-alias" aria-hidden="true"></span>
+  <!-- WAITLIST: every CTA opens the early access signup (#signup below) -->
+  <section class="cta" id="waitlist" aria-labelledby="waitlist-title">
+    <span id="reserve" class="anchor-alias" aria-hidden="true"></span>
     <div class="cta-inner reveal">
       <div class="cta-copy">
-        <h2 id="reserve-title">Preorder yours.</h2>
-        <p>Revivex is in development. The final price and shipping date have not been announced.</p>
+        <h2 id="waitlist-title">Get early access.</h2>
+        <p>Revivex is in development. Join the waitlist and we&rsquo;ll email you as we get closer to launch.</p>
       </div>
-      <form class="reserve-form" id="reserveForm" novalidate>
-        <p class="deposit-panel" id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>$50 USD today, fully refundable.</b> You get <b>20% off</b> the final machine price, then your $50 is credited toward the rest. No automatic balance charge.</p>
-        <button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder</button>
-        <p class="form-msg" id="reserveMsg" role="status" aria-live="polite"></p>
-        <button type="button" class="link-btn" id="reserveRestart" hidden>I have checked. Start a new reservation</button>
-        <p class="deposit-test" id="testModeNote" hidden>Test mode. No real payment is taken.</p>
-        <noscript><p class="form-msg">Reserving needs JavaScript. No payment can be taken without it.</p></noscript>
-      </form>
+      <div class="reserve-form waitlist-cta">
+        <button type="button" class="btn" id="waitlistBtn" data-signup="waitlist">Join the waitlist</button>
+        <noscript><p class="form-msg">Joining the waitlist needs JavaScript.</p></noscript>
+      </div>
     </div>
   </section>
 
@@ -198,7 +194,7 @@
         </details>
         <details class="reveal">
           <summary>Can I order the Revivex machine today?</summary>
-          <p>Not yet. It's in development, and the final price and shipping date have not been announced. You can preorder one with a fully refundable $50 deposit. It includes 20% off the final machine price, then your $50 is credited toward the rest. We never charge a balance automatically.</p>
+          <p>Not yet. It's in development, and the final price and shipping date have not been announced. Join the waitlist and we'll email you as we get closer to launch.</p>
         </details>
         <details class="reveal">
           <summary>Do I need a wearable?</summary>
@@ -217,8 +213,8 @@
           <p>No. It's designed around a removable tank that you fill at the tap and set back on top.</p>
         </details>
         <details class="reveal">
-          <summary>How do I get my deposit back?</summary>
-          <p>Your deposit is fully refundable. To request a refund, email <a href="mailto:support@revivex.store">support@revivex.store</a>, ideally from the email address you used at checkout, or tell us which email address you used. Include your payment reference if you have it. Refunds go back to the original payment method. See the <a href="/deposit-terms.html">deposit terms</a>.</p>
+          <summary>How does the waitlist work?</summary>
+          <p>Joining is free and you don't pay anything. Leave your email address and country and we'll send you launch updates. You can unsubscribe at any time with the link in every email, or by writing to <a href="mailto:support@revivex.store">support@revivex.store</a>. See our <a href="/privacy.html">privacy notice</a>.</p>
         </details>
         <details class="reveal">
           <summary>Are these real photos?</summary>
@@ -244,7 +240,59 @@
   <p class="footer-legal">&copy; 2026 Revivex. The Revivex machine is in development. The final price and shipping date have not been announced.</p>
 </footer>
 
+<!-- EARLY ACCESS SIGNUP: one modal for every CTA (public/signup.js) -->
+<div class="signup" id="signup" hidden>
+  <div class="signup-backdrop" data-signup-close></div>
+  <div class="signup-card" role="dialog" aria-modal="true" aria-labelledby="signupTitle" aria-describedby="signupSub">
+    <div class="signup-media" aria-hidden="true">
+      <img src="/assets/v13/g-side.jpg" alt="" class="signup-photo" loading="lazy" decoding="async" width="1170" height="1452">
+      <img src="/assets/brand/logo-light.png" alt="" class="signup-mark" width="448" height="63">
+    </div>
+    <div class="signup-panel">
+      <button type="button" class="signup-close" aria-label="Close" data-signup-close>
+        <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M2 2l16 16M18 2L2 18" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+      </button>
+      <form class="signup-form" id="signupForm" novalidate>
+        <div class="signup-head">
+          <h2 id="signupTitle">Get early access</h2>
+          <p id="signupSub">Be the first to know when the Revivex machine is ready.</p>
+        </div>
+        <div class="signup-fields">
+          <label class="sr-only" for="signupEmail">Email address</label>
+          <input class="signup-input" type="email" id="signupEmail" name="email" placeholder="Email Address" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" required aria-describedby="signupError">
+          <div class="country" id="country">
+            <span class="sr-only" id="countryLabelText">Country</span>
+            <button type="button" class="signup-input country-toggle" id="countryToggle" aria-haspopup="listbox" aria-expanded="false" aria-controls="countryPop" aria-labelledby="countryLabelText countryValue">
+              <span class="country-value is-empty" id="countryValue">Country</span>
+              <svg class="country-caret" width="10" height="5" viewBox="0 0 10 5" aria-hidden="true"><path d="M.43 0C.3 0 .2.04.12.13A.44.44 0 0 0 0 .44c0 .03.05.13.14.3l4.06 4.03a.66.66 0 0 0 .9 0L9.15.74a.44.44 0 0 0 .15-.3.44.44 0 0 0-.12-.31A.4.4 0 0 0 8.87 0H.43Z" fill="currentColor"/></svg>
+            </button>
+            <div class="country-pop" id="countryPop" hidden>
+              <input type="text" class="country-search" id="countrySearch" placeholder="Search countries..." autocomplete="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="countryList" aria-label="Search countries">
+              <ul class="country-list" id="countryList" role="listbox" aria-label="Country"></ul>
+              <p class="country-none" id="countryNone" hidden>No countries found</p>
+            </div>
+          </div>
+          <div class="signup-hp" aria-hidden="true">
+            <label>Leave this field empty <input type="text" name="hp_extra" tabindex="-1" autocomplete="off"></label>
+          </div>
+          <button type="submit" class="signup-submit" id="signupSubmit"><span class="signup-submit-label">Get early access</span></button>
+          <p class="signup-error" id="signupError" role="alert" aria-live="assertive"></p>
+        </div>
+        <div class="signup-trust">
+          <span class="signup-shield" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 11.8l2.1 2.1L15.2 9.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <p>Your data is encrypted and securely stored. Unsubscribe anytime.</p>
+        </div>
+      </form>
+      <div class="signup-done" id="signupDone" hidden tabindex="-1">
+        <p class="signup-done-title">You&rsquo;re on the list.</p>
+        <p>Thanks for joining the Revivex early access list. We&rsquo;ll keep you updated as we get closer to launch.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="/meta-pixel.js"></script>
 <script src="/app.js" defer></script>
+<script type="module" src="/signup.js"></script>
 </body>
 </html>

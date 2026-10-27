@@ -126,36 +126,38 @@ test('real default Vercel exports fail closed with an unconfigured (production) 
   }
 });
 
-test('legacy signup route never reports success and never logs the address', async () => {
+test('signup route without a database never reports success and never logs the address', async () => {
   const { default: signup } = await import('../../api/signup.js');
+  const savedDb = process.env.DATABASE_URL;
+  delete process.env.DATABASE_URL;
   const logs = [];
   const realLog = console.log, realErr = console.error;
   console.log = (...a) => logs.push(a.join(' '));
   console.error = (...a) => logs.push(a.join(' '));
   try {
     const r = res();
-    await signup(req({ url: '/api/signup', body: { email: 'pii-person@example.test', consent: true, website: '', source: 'landing-v11' } }), r);
+    await signup(req({ url: '/api/signup', headers: { host: 'revivex-launch.vercel.app' }, body: { email: 'pii-person@example.com', country: 'US', source: 'hero' } }), r);
     assert.equal(r.statusCode, 503);
     assert.equal(r.json().ok, false);
     assert.doesNotMatch(r.body, /interest is saved|on the list/i);
     assert.match(r.body, /Nothing was saved/);
     const g = res();
-    await signup(req({ method: 'GET', url: '/api/signup' }), g);
+    await signup(req({ method: 'PUT', url: '/api/signup' }), g);
     assert.equal(g.statusCode, 405);
     assert.equal(logs.join('').includes('pii-person'), false);
-  } finally { console.log = realLog; console.error = realErr; }
+  } finally { console.log = realLog; console.error = realErr; if (savedDb !== undefined) process.env.DATABASE_URL = savedDb; }
 });
 
 test('vercel.json routes new APIs before the static catch-all with no-store headers', () => {
   const v = JSON.parse(fs.readFileSync(new URL('../../vercel.json', import.meta.url)));
   const srcs = v.routes.map(r => r.src);
   const catchAll = srcs.indexOf('/(.*)');
-  for (const [src, dest] of [['/api/checkout', '/api/checkout.js'], ['/api/reservation', '/api/reservation.js'], ['/api/signup', '/api/signup.js']]) {
+  for (const [src, dest] of [['/api/checkout', '/api/checkout.js'], ['/api/reservation', '/api/reservation.js'], ['/api/signup', '/api/signup.js'], ['/api/unsubscribe', '/api/unsubscribe.js']]) {
     const i = srcs.indexOf(src);
     assert.ok(i > -1 && i < catchAll, src);
     assert.equal(v.routes[i].dest, dest);
   }
-  for (const src of ['/api/checkout', '/api/reservation', '/reservation\\.html']) {
+  for (const src of ['/api/checkout', '/api/reservation', '/api/signup', '/api/unsubscribe', '/reservation\\.html']) {
     assert.equal(v.routes[srcs.indexOf(src)].headers['Cache-Control'], 'no-store');
   }
   assert.ok(v.builds.some(b => b.src === 'api/*.js' && b.use === '@vercel/node'));

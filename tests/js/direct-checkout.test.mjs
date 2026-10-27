@@ -1,6 +1,6 @@
-// Direct checkout: every Preorder button opens Stripe Checkout, with no terms checkbox.
-// The server contract is unchanged: the page still sends termsAccepted + the current
-// terms version, and the server still refuses requests without them.
+// The home page no longer opens checkout: every CTA opens the early access signup modal.
+// The checkout server contract is unchanged for existing deposit flows: it still requires
+// termsAccepted + the current terms version, and refuses requests without them.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,21 +14,25 @@ const ROOT = new URL('../../', import.meta.url);
 const read = p => fs.readFileSync(new URL(p, ROOT), 'utf8');
 const html = read('public/index.html');
 
-// The page script's behaviour (Enter/Space, the in-flight guard, no scroll, request body,
-// once-per-operation InitiateCheckout, failed starts) is tested in a real browser:
-// tests/browser/deposit-browser.mjs and tests/browser/meta-pixel-browser.mjs. These tests
-// cover the static page that ships, which is what a visitor without JavaScript gets.
+// The signup modal's behaviour (every CTA, focus trap, Escape, errors, success only after
+// a 200, Lead once) is tested in a real browser: tests/browser/site-browser.mjs and
+// tests/browser/meta-pixel-browser.mjs. These tests cover the static page that ships,
+// which is what a visitor without JavaScript gets.
 
-test('no terms checkbox; the section button starts disabled and only the script enables it', () => {
+test('no terms checkbox and no checkout control on the home page', () => {
   assert.doesNotMatch(html, /type="checkbox"|termsInput|class="consent"|I agree/);
-  assert.match(html, /<button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder<\/button>/);
+  assert.doesNotMatch(html, /data-checkout|id="reserveBtn"|id="reserveForm"|id="depositPanel"|id="reserveMsg"|testModeNote/);
 });
 
-test('all four Preorder buttons are marked for checkout; the three links keep #reserve as the no-JS fallback', () => {
-  const buttons = html.match(/<(a|button)\b[^>]*\bdata-checkout\b[^>]*>Preorder<\/\1>/g) || [];
-  assert.equal(buttons.length, 4, buttons.join('\n'));
-  assert.equal(buttons.filter(b => /^<a href="#reserve"/.test(b)).length, 3, buttons.join('\n'));
-  assert.ok(buttons.some(b => /class="btn nav-cta"/.test(b)) && buttons.some(b => /id="reserveBtn"/.test(b)));
+test('all four CTAs open the signup modal (nav Get early access, the rest Join the waitlist); links keep #waitlist as the no-JS fallback', () => {
+  const ctas = html.match(/<(a|button)\b[^>]*\bdata-signup="[a-z]+"[^>]*>[^<]+<\/\1>/g) || [];
+  assert.equal(ctas.length, 4, ctas.join('\n'));
+  assert.match(ctas[0], /^<a href="#waitlist" class="btn nav-cta" data-signup="nav">Get early access<\/a>$/);
+  assert.equal(ctas.slice(1).filter(b => />Join the waitlist</.test(b)).length, 3, ctas.join('\n'));
+  assert.equal(ctas.filter(b => /^<a href="#waitlist"/.test(b)).length, 3, ctas.join('\n'));
+  assert.doesNotMatch(html, />\s*Preorder\s*</);
+  assert.match(html, /<div class="signup" id="signup" hidden>/);
+  assert.match(html, /<script type="module" src="\/signup\.js"><\/script>/);
 });
 
 test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet, no inline style)', () => {
@@ -38,21 +42,22 @@ test('without JavaScript the reveal-on-scroll content is shown (no-JS stylesheet
   assert.doesNotMatch(html, /<style|style="/, 'the CSP allows no inline style');
 });
 
-test('repeated CTA disclaimers are absent; offer, footer links and functional messages remain', () => {
-  assert.doesNotMatch(html, /class="[^"]*\b(?:cta-terms|hero-terms|deposit-note)\b/);
+test('no deposit offer on the home page; the nav CTA stands alone; footer links and waitlist FAQ remain', () => {
+  assert.doesNotMatch(html, /class="[^"]*\b(?:cta-terms|hero-terms|deposit-note|deposit-panel)\b/);
   assert.doesNotMatch(html, /By preordering you accept|Preordering means you accept/);
-  assert.match(html, /id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>\$50 USD today, fully refundable\.<\/b> You get <b>20% off<\/b> the final machine price, then your \$50 is credited toward the rest\. No automatic balance charge\./);
+  assert.doesNotMatch(html, /\$\s?\d|20% off|refundable|preorder/i, 'no $50 deposit, 20% off, refundable or preorder claim (copy or meta)');
   const nav = html.match(/<header class="nav"[\s\S]*?<\/header>/)[0];
-  assert.match(nav, /<a href="#reserve" class="btn nav-cta" data-checkout>Preorder<\/a>/, 'the nav Preorder stands alone');
-  assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$100|\$50|20%|refundable/i, 'no deposit tag in the nav (owner request)');
+  assert.doesNotMatch(nav, /nav-order|nav-terms|navTerms|aria-describedby|deposit-terms|\$\d|20%|refundable/i, 'no tag beside the nav CTA (owner request)');
   const footer = html.match(/<footer[\s\S]*?<\/footer>/)[0];
-  assert.match(footer, /href="\/deposit-terms\.html">Deposit terms<\/a>/);
+  assert.match(footer, /href="\/deposit-terms\.html">Deposit terms<\/a>/, 'existing depositors can still reach their terms');
   assert.match(footer, /href="\/privacy\.html">Privacy<\/a>/);
-  assert.match(html, /id="reserveMsg" role="status" aria-live="polite"/);
-  assert.match(html, /id="testModeNote" hidden>Test mode\. No real payment is taken\./);
   const faq = html.match(/<section class="faq"[\s\S]*?<\/section>/)[0];
-  assert.match(faq, /fully refundable \$50 deposit\. It includes 20% off the final machine price, then your \$50 is credited toward the rest\./);
-  assert.doesNotMatch(html, /\$100/, 'the page no longer offers the $100 deposit');
+  assert.match(faq, /How does the waitlist work\?/);
+  assert.match(faq, /final price and shipping date have not been announced/);
+  assert.doesNotMatch(faq, /deposit|refund/i);
+  const section = html.match(/<section class="cta" id="waitlist"[\s\S]*?<\/section>/)[0];
+  assert.match(section, /<h2 id="waitlist-title">Get early access\.<\/h2>/);
+  assert.match(section, /<span id="reserve" class="anchor-alias"/, 'old #reserve links (Stripe cancel_url) still land on this section');
 });
 
 test('server still requires termsAccepted and the current terms version (unchanged contract)', async () => {

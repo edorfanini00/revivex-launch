@@ -3,46 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy notice for preorder checkout | Revivex</title>
-  <meta name="description" content="How the Revivex preorder deposit checkout handles your information.">
+  <title>Privacy notice | Revivex</title>
+  <meta name="description" content="How Revivex handles your information on this website and its early access waitlist.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="doc-page">
 <header class="doc-head">
   <a href="/" class="doc-logo"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
-  <a href="/#reserve" class="doc-back">Back to reserve</a>
+  <a href="/" class="doc-back">Back to Revivex</a>
 </header>
 <main class="doc">
-  <p class="doc-kicker">Privacy notice &middot; preorder deposit checkout</p>
-  <h1>Your information at checkout</h1>
-  <p>This notice covers this website and its preorder deposit checkout only. It is not the notice for other Revivex products or services.</p>
+  <p class="doc-kicker">Privacy notice &middot; waitlist and preorder deposits</p>
+  <h1>Your information on this site</h1>
+  <p>This notice covers this website, its early access waitlist and the preorder deposits that were taken through it. It is not the notice for other Revivex products or services.</p>
 
   <h2>Who is responsible</h2>
   <p>Revivex. Contact: <a href="mailto:support@revivex.store">support@revivex.store</a>.</p>
 
-  <h2>Payment details are entered with Stripe</h2>
-  <p>When you reserve, you leave this site for Stripe&rsquo;s hosted checkout page. Your card details, email address, name and billing details are entered there and processed by Stripe under the <a href="https://stripe.com/privacy" rel="noopener">Stripe Privacy Policy</a>. We do not receive your full card number.</p>
-  <p>Stripe gives us a payment record that includes your email address, name and billing country. We use it to keep a record of your deposit, to process refunds, and to contact you about your deposit and refunds.</p>
+  <h2>The early access waitlist</h2>
+  <p>When you join the waitlist we store:</p>
+  <ul>
+    <li>your email address and the country you choose;</li>
+    <li>when you signed up, and when you last signed up again or unsubscribed;</li>
+    <li>where on the page you signed up (for example the top of the page) and, if you arrived from one of our campaign links, its campaign labels (utm_source, utm_medium, utm_campaign, utm_content and utm_term);</li>
+    <li>the Meta cookies described below (_fbp and _fbc) if your browser has them, your browser&rsquo;s user agent, and a scrambled (hashed with a secret key) form of your IP address that we use to limit repeated signups. We do not store your IP address itself.</li>
+  </ul>
+  <p>This information is kept in our Postgres database, hosted by Neon, which encrypts it at rest and in transit. We use it only to send you updates about the Revivex launch. We do not sell it or share it with anyone else for their own marketing.</p>
+  <p>Our welcome email and launch updates are sent through Resend, our email provider, which receives your email address to deliver them.</p>
+  <p>You can unsubscribe at any time with the unsubscribe link in every email, or by writing to <a href="mailto:support@revivex.store">support@revivex.store</a>. To have your waitlist record deleted, write to the same address.</p>
 
-  <h2>No marketing sign-up</h2>
-  <p>Paying a deposit does not sign you up for marketing email. The email waitlist on this site is not open, and no email addresses are collected through it.</p>
+  <h2>Preorder deposits paid earlier</h2>
+  <p>New deposits are no longer taken on this site. If you paid a preorder deposit, you entered your card details, email address, name and billing details on Stripe&rsquo;s hosted checkout page, where they were processed by Stripe under the <a href="https://stripe.com/privacy" rel="noopener">Stripe Privacy Policy</a>. We never received your full card number.</p>
+  <p>Stripe gives us a payment record that includes your email address, name and billing country. We use it to keep a record of your deposit, to process refunds, and to contact you about your deposit and refunds. Paying a deposit did not sign you up for the waitlist emails.</p>
 
   <h2>What this website itself handles</h2>
   <ul>
-    <li>Pages are hosted on Vercel, which processes standard request data such as your IP address to deliver the site.</li>
+    <li>Pages are hosted on Vercel, which processes standard request data such as your IP address to deliver the site. Vercel also tells our signup form which country you are visiting from, so it can suggest your country. That suggestion is not stored unless you join.</li>
     <li>The Inter typeface is loaded from Google Fonts, which receives your IP address when the page loads.</li>
-    <li>Our checkout functions keep your IP address in temporary memory to limit repeated requests. They log event names and error codes only, never your email address, name or payment details.</li>
-    <li>If you arrive from one of our campaign links, up to four short campaign labels from the link (utm_source, utm_medium, utm_campaign, utm_content, for example &ldquo;instagram&rdquo;) are attached to your Stripe payment record so we can see which campaign led to deposits. No other link details, referrer or click identifiers are added to that record.</li>
-    <li>Your browser keeps a signed checkout attempt ID and those campaign labels in session storage so a retry reuses the same checkout. It is removed when you close the tab. Apart from the Meta pixel described below, this site sets no cookies and runs no other analytics or advertising trackers. Stripe&rsquo;s checkout page, on Stripe&rsquo;s own domain, may use its own cookies.</li>
+    <li>Our server functions log event names and error codes only, never your email address, name or payment details.</li>
+    <li>Your browser keeps any campaign labels from the link you arrived on in session storage until you close the tab, so they can be saved with a signup. Apart from the Meta pixel described below, this site sets no cookies and runs no other analytics or advertising trackers.</li>
   </ul>
 
   <h2>Meta pixel</h2>
-  <p>We use the Meta pixel and Meta&rsquo;s Conversions API to measure our ads on Facebook and Instagram. They tell Meta when you view a page on this site, when you open checkout, and when a deposit is confirmed as paid. With these events Meta receives your IP address, browser details, the Meta cookies the pixel sets on this site (_fbp and _fbc) and, for a paid deposit, a hashed (scrambled) copy of the email address you gave Stripe. We never send Meta your name, your card details or your email address in readable form. After a paid deposit, your browser keeps a small note on this site so the confirmation is reported to Meta only once. Meta handles this data under the <a href="https://www.facebook.com/privacy/policy/" rel="noopener">Meta Privacy Policy</a>.</p>
+  <p>We use the Meta pixel and Meta&rsquo;s Conversions API to measure our ads on Facebook and Instagram. They tell Meta when you view a page on this site, when you join the waitlist, and when an earlier deposit is confirmed as paid. With these events Meta receives your IP address, browser details, the Meta cookies the pixel sets on this site (_fbp and _fbc) and a hashed (scrambled) copy of the email address you signed up with or gave Stripe. We never send Meta your name, your card details or your email address in readable form. After a paid deposit, your browser keeps a small note on this site so the confirmation is reported to Meta only once. Meta handles this data under the <a href="https://www.facebook.com/privacy/policy/" rel="noopener">Meta Privacy Policy</a>.</p>
   <p>To opt out, turn on Global Privacy Control in your browser (some browsers, such as Firefox and Brave, include it as a setting). When your browser sends it, this site does not load the Meta pixel and sends nothing to Meta. You can also block third party cookies in your browser, or change how Meta uses this data in your Facebook or Instagram ad preferences.</p>
 
   <h2>Keeping and deleting records</h2>
-  <p>Deposit payment records are kept in Stripe for as long as they are needed to manage your deposit, refunds and any final order, and to keep payment records we are legally required to keep. To ask about or delete your information, or to request a refund, email the contact above.</p>
+  <p>Waitlist records are kept until you ask us to delete them, or until we stop sending launch updates. After you unsubscribe we keep only the record that you unsubscribed, so we never email you again by mistake, unless you ask us to delete it. Deposit payment records are kept in Stripe for as long as they are needed to manage your deposit, refunds and any final order, and to keep payment records we are legally required to keep. To ask about or delete your information, or to request a refund, email the contact above.</p>
 </main>
 <script type="module" src="/meta-pixel.js"></script>
 <script src="/legal.js" defer></script>
