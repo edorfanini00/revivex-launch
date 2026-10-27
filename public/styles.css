@@ -1238,7 +1238,7 @@ html.signup-open, html.signup-open body { overflow: hidden; }
 .signup-error { margin: -20px 0 0; font-size: 14px; line-height: 1.45; color: #FFB4A6; }
 .signup-error:empty { display: none; }
 .signup-trust { display: flex; align-items: center; gap: 23px; margin-top: 24px; }
-.signup-shield { flex: none; display: grid; place-items: center; width: 50px; height: 50px; border: 1.5px solid #5AA0F2; border-radius: 50%; color: #5AA0F2; }
+.signup-shield { flex: none; display: grid; place-items: center; width: 50px; height: 50px; border: 2px solid #5AA0F2; border-radius: 50%; color: #5AA0F2; }
 .signup-trust p { margin: 0; font-size: 16px; line-height: 22.4px; color: #fff; }
 .signup-done { padding: 21px; border: 1px solid rgba(255, 255, 255, .11); border-radius: 3.2px; background: #232427; font-size: 16px; line-height: 24px; outline: none; }
 .signup-done p { margin: 0; }
@@ -1249,7 +1249,7 @@ html.signup-open, html.signup-open body { overflow: hidden; }
 /* Phones and narrow tablets: no image, single column card (Linc phone: 330px, 32px padding). */
 @media (max-width: 859px) {
   .signup { padding: 12px 30px; }
-  .signup-card { display: flex; flex-direction: column; width: min(400px, 100%); height: min(598px, 100%); min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .signup-card { display: flex; flex-direction: column; width: min(400px, 100%); height: min(598px, 100%); min-height: 0; border: 1px solid rgba(255, 255, 255, .11); overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .signup-media { display: none; }
   .signup-panel { flex: 1 0 auto; padding: 32px; }
   .signup-close { top: 18px; right: 18px; }
