@@ -1,88 +1,12 @@
-/* Revivex v10 — scroll-scrubbed hero, reveals, parallax, deposit reservation */
+/* Revivex landing reveal and unchanged deposit reservation contract. */
 (() => {
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* Nav background after hero starts */
   const nav = document.getElementById('nav');
-  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > document.getElementById('hero').offsetHeight - window.innerHeight - 20);
+  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > 12);
   onNav(); window.addEventListener('scroll', onNav, { passive: true });
-
-  /* Reveal on scroll */
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
   }), { rootMargin: '0px 0px -10% 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-  /* Scroll-scrubbed hero: frame sequence drawn to canvas (cover fit) */
-  const hero = document.getElementById('hero');
-  const canvas = document.getElementById('heroCanvas');
-  const bar = document.getElementById('heroBar');
-  const ctx = canvas.getContext('2d');
-  // Phones get native portrait frames (1080x1920) so nothing is upscaled from a desktop crop.
-  const MOBILE = window.matchMedia('(max-width: 640px), (orientation: portrait) and (max-width: 900px)').matches;
-  const FRAMES = MOBILE ? '/assets/v11/frames-m-opt/' : '/assets/v11/frames-opt/';
-  const frames = [];
-  let count = 0, current = -1, ready = false;
-
-  function size() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    canvas.width = Math.round(canvas.clientWidth * dpr);
-    canvas.height = Math.round(canvas.clientHeight * dpr);
-    current = -1; render();
-  }
-  function draw(img) {
-    const cw = canvas.width, ch = canvas.height;
-    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-    const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    const focusX = MOBILE ? 0.5 : 0.64;
-    const x = (cw - w) * focusX, y = (ch - h) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, x, y, w, h);
-  }
-  function progress() {
-    const r = hero.getBoundingClientRect();
-    const total = hero.offsetHeight - window.innerHeight;
-    return Math.min(1, Math.max(0, -r.top / total));
-  }
-  function render() {
-    const p = progress();
-    if (bar) bar.style.width = (p * 100) + '%';
-    if (!ready) return;
-    let i = Math.round(p * (count - 1));
-    while (i > 0 && !(frames[i] && frames[i].complete && frames[i].naturalWidth)) i--;
-    if (!frames[i] || !frames[i].naturalWidth || i === current) return;
-    current = i; draw(frames[i]);
-  }
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(() => { render(); ticking = false; }); }
-  }, { passive: true });
-  window.addEventListener('resize', size);
-
-  if (!reduce) {
-    fetch(FRAMES + 'manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
-      count = m.frameCount;
-      for (let i = 1; i <= count; i++) {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = `${FRAMES}f-${String(i).padStart(4, '0')}.${m.ext}`;
-        if (i === 1) img.onload = () => { ready = true; canvas.classList.add('ready'); size(); };
-        frames.push(img);
-      }
-    }).catch(() => { /* keep static fallback image */ });
-  }
-
-  /* Gentle parallax on full-bleed image */
-  const bleed = document.querySelector('.bleed img');
-  if (bleed && !reduce) {
-    const par = () => {
-      const r = bleed.parentElement.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > window.innerHeight) return;
-      const t = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
-      bleed.style.transform = `translate3d(0, ${(-8 + t * 10).toFixed(2)}%, 0)`;
-    };
-    par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
-  }
 
   /* Preorder: refundable deposit through Stripe-hosted Checkout.
      Every Preorder button (nav, hero, mid page and the #reserve form) opens checkout
