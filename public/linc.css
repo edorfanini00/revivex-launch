@@ -30,3 +30,7 @@ h1,h2,h3{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-weight:500;letter
 @media(max-width:800px){.hero-actions .btn{height:46px}.hero-actions .busy-more{display:none}.product-action{margin-top:30px}}
 
 .hero .hero-actions .btn:hover,.hero .hero-actions .btn:focus-visible{background:#344040;color:#fff;box-shadow:none}
+
+/* Keep the real native screen including its bottom navigation visible. */
+.phone{width:min(260px,72%);height:536px}.phone img{object-fit:contain;object-position:center;background:#fff}
+@media(max-width:800px){.journey-art.app-art{height:570px}}
