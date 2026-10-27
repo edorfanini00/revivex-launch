@@ -156,7 +156,7 @@ try {
     // Landing + layout identity
     await page.goto(`${S}/?${UTM}`, { waitUntil: 'networkidle' });
     check((await page.locator('h1.hero-title').innerText()).replace(/\s+/g, ' ').trim() === HERO_H1, `${tag}: hero headline unchanged`);
-    check(await page.locator('.hero-media img.hero-img[src^="/assets/r3/hero-d-"]').count() === 1 && (await page.locator('.hero-note').innerText()).trim() === 'In development. No confirmed ship date.', `${tag}: hero photo and development status shown`);
+    check(await page.locator('.hero-media img.hero-img[src^="/assets/r3/hero-d-"]').count() === 1 && /\bdesigned to\b/.test(await page.locator('.hero-sub').innerText()) && /is in development/.test(await page.locator('.cta-lede').innerText()), `${tag}: hero photo shown, copy says designed to, development status in the preorder card`);
     const heroBtn = page.locator('.hero-actions .btn');
     check((await heroBtn.innerText()).trim() === 'Preorder' && (await heroBtn.getAttribute('href')) === '#reserve', `${tag}: hero CTA reads Preorder (no-JS fallback still links to #reserve)`);
     check(await page.locator('.nav-cta[href="#reserve"][data-checkout], .hero-actions .btn[href="#reserve"][data-checkout], .split-side .btn[href="#reserve"][data-checkout], #reserveBtn[data-checkout]').count() === 4, `${tag}: all four Preorder buttons open checkout and keep a #reserve fallback`);

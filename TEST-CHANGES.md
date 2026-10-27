@@ -5,13 +5,13 @@ Every change to a test file in `feat/r3-photo-rebuild`, with the reason. No beha
 ## 1. `tests/js/fix-r1-regressions.test.mjs`: hero subtitle copy
 
 - **Before:** pinned the old hero subtitle markup, `<p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight. …</p>`.
-- **After:** pins the new subtitle, `<p class="hero-sub">Revivex is a countertop machine designed to read your wearable and lab data through the Revivex app, then pour your daily supplement&nbsp;drink.</p>`, plus the new `<p class="hero-note">In development. No confirmed ship date.</p>`.
+- **After:** pins the new subtitle, `<p class="hero-sub">Revivex is a countertop machine designed to read your wearable and lab data through the Revivex app, then pour your daily supplement&nbsp;drink.</p>`, and, after the parent review moved the legal line out of the hero, requires the preorder card's development statement (`<p class="cta-lede">Revivex is in development. The final price and shipping date have not been announced.</p>`).
 - **Why:** the redesign intentionally replaces the hero copy. The test still checks the same thing, that the hero copy is qualified as design intent ("designed to"), and it now also requires the in-development statement.
 
 ## 2. `tests/browser/deposit-browser.mjs`: hero copy and markup that the redesign replaces
 
 1. **Headline:** `HERO_H1` changes from `'Your supplements, blended every morning'` to `'Let your data fill the glass.'`, the new verb-led headline.
-2. **Hero media:** the scroll-scrubbed canvas and its poster (`#heroCanvas`, `img.hero-fallback[src="/assets/v11/hero-poster.jpg"]`) are gone. The page uses one full-bleed photo. The check now requires that photo (`.hero-media img.hero-img` from `/assets/r3/hero-d-…`) and the visible development note.
+2. **Hero media:** the scroll-scrubbed canvas and its poster (`#heroCanvas`, `img.hero-fallback[src="/assets/v11/hero-poster.jpg"]`) are gone. The page uses one full-bleed photo. The check now requires that photo (`.hero-media img.hero-img` from `/assets/r3/hero-d-…`), "designed to" in the hero subtitle and the development statement in the preorder card.
 3. **Hero load under CSP:** "hero frame sequence still loads under CSP" waited for the canvas `ready` class. It now waits for the hero photo to decode (`complete && naturalWidth > 0`, `currentSrc` under `/assets/r3/hero-…`) on both desktop and mobile. That is a stronger check, because it previously ran on desktop only.
 4. **Headline clears the machine (layout block, same six viewports, same minimum gaps):**
    - **Before:** computed the machine's left edge from the old 1600x900 poster's geometry (`MACHINE_LEFT_X = 942`, canvas focus 0.64) and compared it with the headline's right edge.

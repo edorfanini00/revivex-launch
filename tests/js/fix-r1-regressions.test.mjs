@@ -264,8 +264,8 @@ test('retrieve 404 after create is unavailable (never shown); retrieve timeout i
 });
 
 // ---- correctness F6: the hero subtitle keeps design-intent wording (round 3 copy) ----
-test('hero subtitle keeps design-intent wording and states the development status', () => {
+test('hero subtitle keeps design-intent wording; the preorder card states the development status', () => {
   const s = read('public/index.html');
   assert.match(s, /<p class="hero-sub">Revivex is a countertop machine designed to read your wearable and lab data through the Revivex app, then pour your daily supplement&nbsp;drink\.<\/p>/);
-  assert.match(s, /<p class="hero-note">In development\. No confirmed ship date\.<\/p>/);
+  assert.match(s, /<p class="cta-lede">Revivex is in development\. The final price and shipping date have not been announced\.<\/p>/);
 });

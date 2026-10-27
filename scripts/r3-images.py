@@ -17,23 +17,25 @@ os.makedirs(OUT, exist_ok=True)
 SLOTS = {
     'hero-d':  ('hero-16x9.png', None, [1280, 1920, 2560]),
     'hero-m':  ('hero-tall.png', None, [640, 960, 1280]),
-    # How it works, desktop stage (668:900) and phone cards (9:10)
-    'hiw1-d':  ('hero-phone.png', (320, 200, 1120, 1278), [600, 1000, 1400]),
-    'hiw2-d':  ('front.png', (470, 0, 1230, 1024), [600, 1000, 1400]),
-    'hiw3-d':  ('screen.png', (470, 0, 1230, 1024), [600, 1000, 1400]),
+    # How it works. Desktop stage (668:900), phone mockup over the right edge:
+    # 1 screen (connect data), 2 detail (labs), 3 front (routine), 4 pour (no phone).
+    'hiw1-d':  ('screen.png', (440, 0, 1200, 1024), [600, 1000, 1400]),
+    'hiw2-d':  ('detail.png', (0, 0, 931, 1254), [600, 1000, 1400]),
+    'hiw3-d':  ('front.png', (400, 0, 1160, 1024), [600, 1000, 1400]),
     'hiw4-d':  ('pour.png', (600, 0, 1360, 1024), [600, 1000, 1400]),
-    'hiw1-m':  ('hero-16x9.png', (942, 100, 1672, 911), [640, 960]),
-    'hiw2-m':  ('front.png', (470, 0, 1392, 1024), [640, 960]),
-    'hiw3-m':  ('screen.png', (465, 0, 1387, 1024), [640, 960]),
+    # Phone cards (9:10); the large phone sits over the right 46%, so the subject is left.
+    'hiw1-m':  ('screen.png', (500, 0, 1422, 1024), [640, 960]),
+    'hiw2-m':  ('detail.png', (600, 180, 1254, 907), [640, 960]),
+    'hiw3-m':  ('front.png', (480, 0, 1402, 1024), [640, 960]),
     'hiw4-m':  ('pour.png', (600, 0, 1522, 1024), [640, 960]),
-    # Why cards, desktop (square) and phone (0.92). Each viewport shows every photo once:
-    # the hero pair member that is not that viewport's hero fills one extra slot.
+    # Why cards, desktop (square) and phone (0.92): hand, a pour macro (glass and
+    # bubbles, a different framing from step 4), and the counter by the window.
     'why1-d':  ('hand.png', (0, 150, 1122, 1272), [600, 1000]),
-    'why2-d':  ('detail.png', None, [600, 1000]),
-    'why3-d':  ('hero-tall.png', (238, 715, 938, 1415), [600, 1000]),
+    'why2-d':  ('pour.png', (720, 470, 1150, 900), [600, 860]),
+    'why3-d':  ('context.png', (150, 141, 950, 941), [600, 1000]),
     'why1-m':  ('hand.png', (0, 100, 1122, 1320), [700, 1050]),
-    'why2-m':  ('detail.png', (100, 0, 1254, 1254), [700, 1050]),
-    'why3-m':  ('hero-phone.png', (255, 392, 1015, 1218), [700, 1050]),
+    'why2-m':  ('pour.png', (735, 460, 1135, 895), [700]),
+    'why3-m':  ('context.png', (160, 61, 960, 931), [700, 1050]),
     # Final band
     'final-d': ('context.png', None, [1280, 1920, 2560]),
     'final-m': ('context.png', (680, 0, 1621, 941), [640, 960, 1280]),
