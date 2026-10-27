@@ -3,28 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Revivex | Your supplements, blended every morning from your data</title>
-  <meta name="description" content="Revivex is a countertop supplement machine in development, designed to read your sleep, recovery and biomarker data and blend one drink each morning. Preorder with a fully refundable $50 deposit.">
-  <!-- SEO -->
+  <title>Revivex | Let your data fill the glass</title>
+  <meta name="description" content="A countertop machine in development, designed to pour your daily supplement drink from your wearable and lab data. Preorder with a fully refundable $50 deposit.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://revivex-launch.vercel.app/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://revivex-launch.vercel.app/">
-  <meta property="og:title" content="Revivex | Your supplements, blended every morning">
-  <meta property="og:description" content="A countertop supplement machine in development, designed to read your data and blend one drink each morning. Preorder with a fully refundable $50 deposit.">
+  <meta property="og:title" content="Revivex | Let your data fill the glass">
+  <meta property="og:description" content="A countertop machine in development, designed to pour your daily supplement drink from your data. Preorder with a fully refundable $50 deposit.">
+  <meta property="og:image" content="/assets/r3/hero-d-1280.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Revivex | Your supplements, blended every morning">
-  <meta name="twitter:description" content="A countertop supplement machine in development, designed to blend one drink each morning from your data.">
-  <!-- GEO: allow AI crawlers to index and cite -->
-  <meta name="robots" content="index, follow">
+  <meta name="twitter:title" content="Revivex | Let your data fill the glass">
+  <meta name="twitter:description" content="A countertop machine in development, designed to pour your daily supplement drink from your data.">
   <meta name="theme-color" content="#FFFFFF">
-  <meta property="og:image" content="/assets/v11/hero-end.jpg">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="/assets/v11/hero-poster.jpg">
-  <link rel="stylesheet" href="/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" type="image/avif" media="(min-width: 861px) and (min-aspect-ratio: 6/5)" imagesrcset="/assets/r3/hero-d-1280.avif 1280w, /assets/r3/hero-d-1920.avif 1920w, /assets/r3/hero-d-2560.avif 2560w" imagesizes="118vw" fetchpriority="high">
+  <link rel="preload" as="image" type="image/avif" media="(max-width: 860px), (max-aspect-ratio: 6/5)" imagesrcset="/assets/r3/hero-m-640.avif 640w, /assets/r3/hero-m-960.avif 960w, /assets/r3/hero-m-1280.avif 1280w" imagesizes="100vw" fetchpriority="high">
+  <link rel="stylesheet" href="/home.css">
   <!-- Without JavaScript nothing reveals on scroll, so show everything (no inline style: CSP) -->
   <noscript><link rel="stylesheet" href="/nojs.css"></noscript>
 </head>
@@ -33,163 +31,211 @@
 <header class="nav" id="nav">
   <nav class="nav-links" aria-label="Sections">
     <a href="#how">How it works</a>
-    <a href="#details">Design</a>
+    <a href="#details">Why Revivex</a>
     <a href="#faq">FAQ</a>
   </nav>
-  <a href="#top" class="logo" aria-label="Revivex home">
-    <img class="logo-light" src="/assets/brand/logo-light.png" alt="Revivex" width="448" height="63">
-    <img class="logo-dark" src="/assets/brand/logo-dark.png" alt="" width="448" height="63">
-  </a>
+  <a href="#top" class="logo" aria-label="Revivex home"><img src="/assets/brand/logo-dark.png" alt="Revivex" width="448" height="63"></a>
   <a href="#reserve" class="btn nav-cta" data-checkout>Preorder</a>
 </header>
 
 <main id="top">
 
-  <!-- HERO: rounded frame, glass fills as you scroll -->
-  <section class="hero" id="hero" aria-label="The Revivex machine pours a glass as you scroll">
-    <div class="hero-sticky">
-      <div class="hero-frame">
-        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
-        <picture><source media="(max-width: 640px)" srcset="/assets/v11/m/hero-poster-m.jpg"><img class="hero-fallback" src="/assets/v11/hero-poster.jpg" alt="The Revivex machine on a concrete counter with an empty glass in the bay" fetchpriority="high"></picture>
-        <div class="hero-veil" aria-hidden="true"></div>
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <div class="hero-frame">
+      <picture class="hero-media">
+        <source media="(max-width: 860px), (max-aspect-ratio: 6/5)" type="image/avif" srcset="/assets/r3/hero-m-640.avif 640w, /assets/r3/hero-m-960.avif 960w, /assets/r3/hero-m-1280.avif 1280w" sizes="100vw">
+        <source media="(max-width: 860px), (max-aspect-ratio: 6/5)" type="image/webp" srcset="/assets/r3/hero-m-640.webp 640w, /assets/r3/hero-m-960.webp 960w, /assets/r3/hero-m-1280.webp 1280w" sizes="100vw">
+        <source media="(max-width: 860px), (max-aspect-ratio: 6/5)" srcset="/assets/r3/hero-m-640.jpg 640w, /assets/r3/hero-m-960.jpg 960w, /assets/r3/hero-m-1280.jpg 1280w" sizes="100vw">
+        <source type="image/avif" srcset="/assets/r3/hero-d-1280.avif 1280w, /assets/r3/hero-d-1920.avif 1920w, /assets/r3/hero-d-2560.avif 2560w" sizes="118vw">
+        <source type="image/webp" srcset="/assets/r3/hero-d-1280.webp 1280w, /assets/r3/hero-d-1920.webp 1920w, /assets/r3/hero-d-2560.webp 2560w" sizes="118vw">
+        <img class="hero-img" src="/assets/r3/hero-d-1920.jpg" srcset="/assets/r3/hero-d-1280.jpg 1280w, /assets/r3/hero-d-1920.jpg 1920w, /assets/r3/hero-d-2560.jpg 2560w" sizes="118vw" width="1672" height="941" alt="The Revivex machine in graphite on a white stone counter, a glass of water under its nozzle" fetchpriority="high">
+      </picture>
+      <div class="hero-copy">
+        <h1 class="hero-title" id="hero-title">Let your data fill the&nbsp;glass.</h1>
+        <p class="hero-sub">Revivex is a countertop machine designed to read your wearable and lab data through the Revivex app, then pour your daily supplement&nbsp;drink.</p>
+        <div class="hero-actions">
+          <a href="#reserve" class="btn" data-checkout>Preorder</a>
+        </div>
+        <p class="hero-note">In development. No confirmed ship date.</p>
+      </div>
+    </div>
+  </section>
 
-        <div class="hero-copy">
-          <h1 class="hero-title reveal-now">Your supplements, blended<br>every morning</h1>
-          <p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight. One touch in the morning and your blend is ready.</p>
-          <div class="hero-actions reveal-now">
-            <a href="#reserve" class="btn" data-checkout>Preorder</a>
+  <section class="hiw" id="how" aria-labelledby="how-title">
+    <header class="split-head">
+      <h2 id="how-title">How it works</h2>
+      <p class="split-note">Your wearable and your labs go in. Your daily drink comes out.</p>
+    </header>
+    <div class="steps-row" id="hiw">
+      <div class="hiw-pin">
+        <div class="hiw-stage">
+          <div class="hiw-photo">
+            <picture class="hiw-shot is-on" data-step="0">
+              <source type="image/avif" srcset="/assets/r3/hiw1-d-600.avif 600w, /assets/r3/hiw1-d-1000.avif 1000w, /assets/r3/hiw1-d-1400.avif 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <source type="image/webp" srcset="/assets/r3/hiw1-d-600.webp 600w, /assets/r3/hiw1-d-1000.webp 1000w, /assets/r3/hiw1-d-1400.webp 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <img src="/assets/r3/hiw1-d-1000.jpg" srcset="/assets/r3/hiw1-d-600.jpg 600w, /assets/r3/hiw1-d-1000.jpg 1000w, /assets/r3/hiw1-d-1400.jpg 1400w" sizes="(min-width: 1280px) 668px, 46vw" width="1400" height="1887" alt="The Revivex machine on a stone counter in morning light" loading="lazy" decoding="async">
+            </picture>
+            <picture class="hiw-shot" data-step="1">
+              <source type="image/avif" srcset="/assets/r3/hiw2-d-600.avif 600w, /assets/r3/hiw2-d-1000.avif 1000w, /assets/r3/hiw2-d-1400.avif 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <source type="image/webp" srcset="/assets/r3/hiw2-d-600.webp 600w, /assets/r3/hiw2-d-1000.webp 1000w, /assets/r3/hiw2-d-1400.webp 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <img src="/assets/r3/hiw2-d-1000.jpg" srcset="/assets/r3/hiw2-d-600.jpg 600w, /assets/r3/hiw2-d-1000.jpg 1000w, /assets/r3/hiw2-d-1400.jpg 1400w" sizes="(min-width: 1280px) 668px, 46vw" width="1400" height="1886" alt="The Revivex machine seen from the front with an empty glass in the bay" loading="lazy" decoding="async">
+            </picture>
+            <picture class="hiw-shot" data-step="2">
+              <source type="image/avif" srcset="/assets/r3/hiw3-d-600.avif 600w, /assets/r3/hiw3-d-1000.avif 1000w, /assets/r3/hiw3-d-1400.avif 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <source type="image/webp" srcset="/assets/r3/hiw3-d-600.webp 600w, /assets/r3/hiw3-d-1000.webp 1000w, /assets/r3/hiw3-d-1400.webp 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <img src="/assets/r3/hiw3-d-1000.jpg" srcset="/assets/r3/hiw3-d-600.jpg 600w, /assets/r3/hiw3-d-1000.jpg 1000w, /assets/r3/hiw3-d-1400.jpg 1400w" sizes="(min-width: 1280px) 668px, 46vw" width="760" height="1024" alt="The machine touchscreen reading Morning blend, Ready" loading="lazy" decoding="async">
+            </picture>
+            <picture class="hiw-shot" data-step="3">
+              <source type="image/avif" srcset="/assets/r3/hiw4-d-600.avif 600w, /assets/r3/hiw4-d-1000.avif 1000w, /assets/r3/hiw4-d-1400.avif 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <source type="image/webp" srcset="/assets/r3/hiw4-d-600.webp 600w, /assets/r3/hiw4-d-1000.webp 1000w, /assets/r3/hiw4-d-1400.webp 1400w" sizes="(min-width: 1280px) 668px, 46vw">
+              <img src="/assets/r3/hiw4-d-1000.jpg" srcset="/assets/r3/hiw4-d-600.jpg 600w, /assets/r3/hiw4-d-1000.jpg 1000w, /assets/r3/hiw4-d-1400.jpg 1400w" sizes="(min-width: 1280px) 668px, 46vw" width="760" height="1024" alt="Clear water pouring from the nozzle into a glass" loading="lazy" decoding="async">
+            </picture>
+          </div>
+          <div class="phone hiw-phone" aria-hidden="true">
+            <picture class="phone-screen is-on" data-step="0"><source type="image/webp" srcset="/assets/r3/app-health.webp"><img src="/assets/r3/app-health.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture>
+            <picture class="phone-screen" data-step="1"><source type="image/webp" srcset="/assets/r3/app-labs-recorded.webp"><img src="/assets/r3/app-labs-recorded.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture>
+            <picture class="phone-screen" data-step="2"><source type="image/webp" srcset="/assets/r3/app-sleep-recorded.webp"><img src="/assets/r3/app-sleep-recorded.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture>
           </div>
         </div>
 
-        <div class="hero-progress" aria-hidden="true"><span id="heroBar"></span></div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- WORKS WITH -->
-  <section class="works-with" aria-label="Designed to connect with">
-    <ul class="works-logos">
-      <li><img src="/assets/logos/apple.svg" alt="" width="20" height="20">Apple Health</li>
-      <li><img src="/assets/logos/oura.svg" alt="" width="20" height="20">Oura</li>
-      <li><img src="/assets/logos/whoop.svg" alt="" width="20" height="20">WHOOP</li>
-      <li><img src="/assets/logos/fitbit.svg" alt="" width="20" height="20">Fitbit</li>
-      <li><img src="/assets/logos/blood.svg" alt="" width="20" height="20">Revivex biomarkers</li>
-    </ul>
-  </section>
-
-  <!-- SCENE 1: CONNECT -->
-  <section class="block" id="connected">
-  <header class="split-head reveal">
-    <h2 id="s1-title">Designed to read your data every night.</h2>
-    <div class="split-side">
-      <p>Sleep, recovery and training from your ring or watch, plus your biomarker results.</p>
-    </div>
-  </header>
-  <div class="scene scene-left" aria-labelledby="s1-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s1-connect-m.jpg"><img src="/assets/v14/s1-connect.jpg" alt="A man holding a plank on a terrace at dawn wearing a fitness band" loading="lazy"></picture>
-    <div class="glass glass-hud reveal" aria-hidden="true">
-      <div class="hud-head"><span>Recovery</span><span class="hud-sync">Synced</span></div>
-      <div class="hud-body">
-        <svg class="hud-ring" viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" class="ring-bg"/><circle cx="40" cy="40" r="32" class="ring-fg" stroke-dasharray="201" stroke-dashoffset="72"/></svg>
-        <div class="hud-stats">
-          <div><span>Sleep</span><b>6h 12m</b></div>
-          <div><span>HRV</span><b>48 ms</b></div>
-          <div><span>Strain</span><b>High</b></div>
+        <ol class="hiw-steps" id="hiwSteps">
+          <li class="hiw-step is-on" data-step="0">
+            <figure class="hiw-media">
+              <picture>
+                <source type="image/avif" srcset="/assets/r3/hiw1-m-640.avif 640w, /assets/r3/hiw1-m-960.avif 960w" sizes="315px">
+                <source type="image/webp" srcset="/assets/r3/hiw1-m-640.webp 640w, /assets/r3/hiw1-m-960.webp 960w" sizes="315px">
+                <img src="/assets/r3/hiw1-m-960.jpg" srcset="/assets/r3/hiw1-m-640.jpg 640w, /assets/r3/hiw1-m-960.jpg 960w" sizes="315px" width="1460" height="1622" alt="The Revivex machine on a stone counter in morning light" loading="lazy" decoding="async">
+              </picture>
+              <div class="phone" aria-hidden="true"><picture><source type="image/webp" srcset="/assets/r3/app-health.webp"><img src="/assets/r3/app-health.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture></div>
+            </figure>
+            <h3 class="hiw-h"><span class="hiw-n">1</span>Connect your data</h3>
+            <p>Link Apple Health, Oura, WHOOP or Fitbit in the Revivex app. Sleep, recovery and activity sync on their&nbsp;own.</p>
+          </li>
+          <li class="hiw-step" data-step="1">
+            <figure class="hiw-media">
+              <picture>
+                <source type="image/avif" srcset="/assets/r3/hiw2-m-640.avif 640w, /assets/r3/hiw2-m-960.avif 960w" sizes="315px">
+                <source type="image/webp" srcset="/assets/r3/hiw2-m-640.webp 640w, /assets/r3/hiw2-m-960.webp 960w" sizes="315px">
+                <img src="/assets/r3/hiw2-m-960.jpg" srcset="/assets/r3/hiw2-m-640.jpg 640w, /assets/r3/hiw2-m-960.jpg 960w" sizes="315px" width="922" height="1024" alt="The Revivex machine seen from the front with an empty glass in the bay" loading="lazy" decoding="async">
+              </picture>
+              <div class="phone" aria-hidden="true"><picture><source type="image/webp" srcset="/assets/r3/app-labs-recorded.webp"><img src="/assets/r3/app-labs-recorded.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture></div>
+            </figure>
+            <h3 class="hiw-h"><span class="hiw-n">2</span>Add your labs</h3>
+            <p>Record your lab results in the app, so your plan starts from your own&nbsp;numbers.</p>
+          </li>
+          <li class="hiw-step" data-step="2">
+            <figure class="hiw-media">
+              <picture>
+                <source type="image/avif" srcset="/assets/r3/hiw3-m-640.avif 640w, /assets/r3/hiw3-m-960.avif 960w" sizes="315px">
+                <source type="image/webp" srcset="/assets/r3/hiw3-m-640.webp 640w, /assets/r3/hiw3-m-960.webp 960w" sizes="315px">
+                <img src="/assets/r3/hiw3-m-960.jpg" srcset="/assets/r3/hiw3-m-640.jpg 640w, /assets/r3/hiw3-m-960.jpg 960w" sizes="315px" width="922" height="1024" alt="The machine touchscreen reading Morning blend, Ready" loading="lazy" decoding="async">
+              </picture>
+              <div class="phone" aria-hidden="true"><picture><source type="image/webp" srcset="/assets/r3/app-sleep-recorded.webp"><img src="/assets/r3/app-sleep-recorded.jpg" width="600" height="1304" alt="" loading="lazy" decoding="async"></picture></div>
+            </figure>
+            <h3 class="hiw-h"><span class="hiw-n">3</span>The app sets today&rsquo;s routine</h3>
+            <p>Each morning the app is designed to set your routine from your latest data, always inside the plan you&nbsp;approved.</p>
+          </li>
+          <li class="hiw-step" data-step="3">
+            <figure class="hiw-media">
+              <picture>
+                <source type="image/avif" srcset="/assets/r3/hiw4-m-640.avif 640w, /assets/r3/hiw4-m-960.avif 960w" sizes="315px">
+                <source type="image/webp" srcset="/assets/r3/hiw4-m-640.webp 640w, /assets/r3/hiw4-m-960.webp 960w" sizes="315px">
+                <img src="/assets/r3/hiw4-m-960.jpg" srcset="/assets/r3/hiw4-m-640.jpg 640w, /assets/r3/hiw4-m-960.jpg 960w" sizes="315px" width="922" height="1024" alt="Clear water pouring from the nozzle into a glass" loading="lazy" decoding="async">
+              </picture>
+            </figure>
+            <h3 class="hiw-h"><span class="hiw-n">4</span>Revivex pours it</h3>
+            <p>One touch, and the machine is designed to pour your daily supplement drink. Nothing to measure or&nbsp;mix.</p>
+          </li>
+        </ol>
+        <div class="hiw-ctrl">
+          <button type="button" class="hiw-arrow" id="hiwPrev" aria-label="Previous step"><span aria-hidden="true">&larr;</span></button>
+          <span class="hiw-count" id="hiwCount" aria-hidden="true">01 / 04</span>
+          <button type="button" class="hiw-arrow" id="hiwNext" aria-label="Next step"><span aria-hidden="true">&rarr;</span></button>
         </div>
       </div>
     </div>
-  </div>
   </section>
 
-  <!-- SCENE 2: ROUTINE -->
-  <section class="block">
-  <header class="split-head reveal">
-    <h2 id="s2-title">By morning, your blend is set.</h2>
-    <div class="split-side">
-      <p>The app is designed to decide what goes in and how much, within the limits of your plan.</p>
-    </div>
-  </header>
-  <div class="scene scene-right" aria-labelledby="s2-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s2-routine-m.jpg"><img src="/assets/v14/s2-routine.jpg" alt="A woman checking her phone by the window" loading="lazy"></picture>
-    <div class="glass glass-note reveal" aria-hidden="true">
-      <div class="note-top"><img src="/assets/brand/logo-dark.png" alt="" class="note-logo"><span>now</span></div>
-      <p class="note-title">Today's blend is ready</p>
-      <div class="note-row"><span class="note-dot"></span><div><b>Recovery blend</b><span>Waiting on your machine</span></div></div>
-    </div>
-  </div>
-  </section>
-
-  <!-- SCENE 3: MACHINE -->
-  <section class="block">
-  <header class="split-head reveal">
-    <h2 id="s3-title">One touch. Your drink, ready.</h2>
-    <div class="split-side">
-      <p>The machine is designed to measure each supplement, blend it with water and pour one glass.</p>
-      <a href="#reserve" class="btn" data-checkout>Preorder</a>
-    </div>
-  </header>
-  <div class="scene scene-left" aria-labelledby="s3-title">
-    <picture><source media="(max-width: 640px)" srcset="/assets/v14/s3-machine-m.jpg"><img src="/assets/v14/s3-machine.jpg" alt="The Revivex machine on a stone kitchen island with a skyline view" loading="lazy"></picture>
-    <div class="glass glass-screen reveal" aria-hidden="true">
-      <span class="gs-label">Recovery blend</span>
-      <span class="gs-main">Done</span>
-      <span class="gs-bar"><i></i></span>
-    </div>
-  </div>
-  </section>
-
-  <!-- HOW IT WORKS (4 steps) -->
-  <section class="steps" id="how" aria-labelledby="steps-title">
-    <header class="split-head reveal">
-      <h2 id="steps-title">Four steps. No thinking required.</h2>
-      <div class="split-side"><p>No scoops, shakers or tubs of powder on the counter.</p></div>
-    </header>
-    <div class="steps-row">
-      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/p-data.jpg" alt="A hand wearing a smart ring and fitness band" loading="lazy"></div><h3>Build your plan</h3><p>Tell the app your goals, supplements and health data.</p></article>
-      <article class="hstep reveal"><div class="photo"><img src="/assets/v13/e-phone.jpg" alt="A woman checking her phone in the morning" loading="lazy"></div><h3>Sync your data</h3><p>Connect Apple Health, Oura, WHOOP or Fitbit. Your data is designed to update your blend every night.</p></article>
-      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-pour-m.jpg"><img src="/assets/v11/detail-pour.jpg" alt="Clear water pouring into a glass" loading="lazy"></picture></div><h3>One touch, one drink</h3><p>Designed to measure, blend and pour. No scoops, no shakers.</p></article>
-      <article class="hstep reveal"><div class="photo"><picture><source media="(max-width: 640px)" srcset="/assets/v11/m/detail-tank-m.jpg"><img src="/assets/v11/detail-tank.jpg" alt="Lifting the water tank out of the machine" loading="lazy"></picture></div><h3>Refill when it asks</h3><p>Top up water and supplements when the app says. Everything else is designed to be automatic.</p></article>
-    </div>
-  </section>
-
-  <!-- DESIGN GALLERY -->
-  <section class="details" id="details">
-    <header class="split-head reveal">
-      <h2>Designed for your counter.</h2>
-      <div class="split-side"><p>Graphite finish. Touchscreen. A clear tank that lifts out.</p></div>
+  <section class="why" id="details" aria-labelledby="why-title">
+    <header class="split-head">
+      <h2 id="why-title">Why Revivex</h2>
     </header>
     <div class="gallery">
-      <figure class="g-item g-tall reveal"><img src="/assets/v13/g-side.jpg" alt="Side profile of the Revivex machine" loading="lazy"></figure>
-      <figure class="g-item reveal"><img src="/assets/v13/g-hand-v2.jpg" alt="A finger touching the Revivex touchscreen" loading="lazy"></figure>
-      <figure class="g-item reveal"><img src="/assets/v13/e-machine.jpg" alt="The Revivex machine beside a eucalyptus sprig" loading="lazy"></figure>
+      <article class="why-card reveal">
+        <picture>
+          <source media="(max-width: 860px)" type="image/avif" srcset="/assets/r3/why1-m-700.avif 700w, /assets/r3/why1-m-1050.avif 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" type="image/webp" srcset="/assets/r3/why1-m-700.webp 700w, /assets/r3/why1-m-1050.webp 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" srcset="/assets/r3/why1-m-700.jpg 700w, /assets/r3/why1-m-1050.jpg 1050w" sizes="calc(100vw - 40px)">
+          <source type="image/avif" srcset="/assets/r3/why1-d-600.avif 600w, /assets/r3/why1-d-1000.avif 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <source type="image/webp" srcset="/assets/r3/why1-d-600.webp 600w, /assets/r3/why1-d-1000.webp 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <img src="/assets/r3/why1-d-1000.jpg" srcset="/assets/r3/why1-d-600.jpg 600w, /assets/r3/why1-d-1000.jpg 1000w" sizes="(min-width: 1520px) 469px, 31vw" width="1000" height="1000" alt="A hand lifting a glass of water from the Revivex machine" loading="lazy" decoding="async">
+        </picture>
+        <span class="why-n">1</span>
+        <h3>No scoops, no shakers</h3>
+        <p>Your daily supplements in one glass, in place of a cabinet of tubs and bottles.</p>
+      </article>
+      <article class="why-card reveal">
+        <picture>
+          <source media="(max-width: 860px)" type="image/avif" srcset="/assets/r3/why2-m-700.avif 700w, /assets/r3/why2-m-1050.avif 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" type="image/webp" srcset="/assets/r3/why2-m-700.webp 700w, /assets/r3/why2-m-1050.webp 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" srcset="/assets/r3/why2-m-700.jpg 700w, /assets/r3/why2-m-1050.jpg 1050w" sizes="calc(100vw - 40px)">
+          <source type="image/avif" srcset="/assets/r3/why2-d-600.avif 600w, /assets/r3/why2-d-1000.avif 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <source type="image/webp" srcset="/assets/r3/why2-d-600.webp 600w, /assets/r3/why2-d-1000.webp 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <img src="/assets/r3/why2-d-1000.jpg" srcset="/assets/r3/why2-d-600.jpg 600w, /assets/r3/why2-d-1000.jpg 1000w" sizes="(min-width: 1520px) 469px, 31vw" width="1000" height="1000" alt="The brushed graphite edge and touchscreen of the Revivex machine" loading="lazy" decoding="async">
+        </picture>
+        <span class="why-n">2</span>
+        <h3>Made for the counter</h3>
+        <p>Brushed graphite and one touchscreen. No dials, no buttons, nothing to assemble.</p>
+      </article>
+      <article class="why-card reveal">
+        <picture>
+          <source media="(max-width: 860px)" type="image/avif" srcset="/assets/r3/why3-m-700.avif 700w, /assets/r3/why3-m-1050.avif 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" type="image/webp" srcset="/assets/r3/why3-m-700.webp 700w, /assets/r3/why3-m-1050.webp 1050w" sizes="calc(100vw - 40px)">
+          <source media="(max-width: 860px)" srcset="/assets/r3/why3-m-700.jpg 700w, /assets/r3/why3-m-1050.jpg 1050w" sizes="calc(100vw - 40px)">
+          <source type="image/avif" srcset="/assets/r3/why3-d-600.avif 600w, /assets/r3/why3-d-1000.avif 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <source type="image/webp" srcset="/assets/r3/why3-d-600.webp 600w, /assets/r3/why3-d-1000.webp 1000w" sizes="(min-width: 1520px) 469px, 31vw">
+          <img src="/assets/r3/why3-d-1000.jpg" srcset="/assets/r3/why3-d-600.jpg 600w, /assets/r3/why3-d-1000.jpg 1000w" sizes="(min-width: 1520px) 469px, 31vw" width="1000" height="1000" alt="The Revivex machine with a glass of water in its bay" loading="lazy" decoding="async">
+        </picture>
+        <span class="why-n">3</span>
+        <h3>You set the limits</h3>
+        <p>The app is designed to adjust your routine only inside the plan you choose, and to show what goes in every&nbsp;glass.</p>
+      </article>
     </div>
   </section>
 
-  <!-- RESERVE: refundable $50 preorder deposit (Stripe-hosted checkout) -->
-  <section class="cta" id="reserve" aria-labelledby="reserve-title">
-    <span id="waitlist" class="anchor-alias" aria-hidden="true"></span>
-    <div class="cta-inner reveal">
-      <div class="cta-copy">
-        <h2 id="reserve-title">Preorder yours.</h2>
-        <p>Revivex is in development. The final price and shipping date have not been announced.</p>
+  <section class="honest" id="what" aria-labelledby="what-title">
+    <header class="split-head">
+      <h2 id="what-title">What it is, and what it&nbsp;isn&rsquo;t.</h2>
+      <div class="split-side">
+        <p>Revivex is in development, with no confirmed ship date. You can preorder today with a fully refundable $50&nbsp;deposit.</p>
+        <a href="#reserve" class="btn" data-checkout>Preorder</a>
       </div>
-      <form class="reserve-form" id="reserveForm" novalidate>
-        <p class="deposit-panel" id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>$50 USD today, fully refundable.</b> You get <b>20% off</b> the final machine price, then your $50 is credited toward the rest. No automatic balance charge.</p>
-        <button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder</button>
-        <p class="form-msg" id="reserveMsg" role="status" aria-live="polite"></p>
-        <button type="button" class="link-btn" id="reserveRestart" hidden>I have checked. Start a new reservation</button>
-        <p class="deposit-test" id="testModeNote" hidden>Test mode. No real payment is taken.</p>
-        <noscript><p class="form-msg">Reserving needs JavaScript. No payment can be taken without it.</p></noscript>
-      </form>
+    </header>
+    <div class="honest-grid">
+      <div class="honest-col reveal">
+        <h3>It is</h3>
+        <ul>
+          <li>A countertop machine designed to pour one supplement drink a day.</li>
+          <li>Run by the Revivex app, which reads your wearable and lab data.</li>
+          <li>Designed to stay inside the plan you set, and to show you what is in each glass.</li>
+        </ul>
+      </div>
+      <div class="honest-col reveal">
+        <h3>It isn&rsquo;t</h3>
+        <ul>
+          <li>A way to diagnose, treat or prevent anything.</li>
+          <li>A replacement for advice from your doctor.</li>
+          <li>Shipping yet. It is in development, and the final price has not been announced.</li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section class="faq" id="faq">
+  <section class="faq" id="faq" aria-labelledby="faq-title">
     <div class="faq-wrap">
-      <header class="faq-head reveal">
-        <h2>Questions</h2>
+      <header class="faq-head">
+        <h2 id="faq-title">Questions</h2>
+        <p>What we can tell you today.</p>
       </header>
       <div class="faq-list">
         <details class="reveal">
@@ -197,24 +243,24 @@
           <p>It is designed to make one drink each morning: your supplements, measured and blended with water, based on your data and your plan.</p>
         </details>
         <details class="reveal">
-          <summary>Can I order the Revivex machine today?</summary>
-          <p>Not yet. It's in development, and the final price and shipping date have not been announced. You can preorder one with a fully refundable $50 deposit. It includes 20% off the final machine price, then your $50 is credited toward the rest. We never charge a balance automatically.</p>
-        </details>
-        <details class="reveal">
           <summary>Do I need a wearable?</summary>
-          <p>No. It's designed to work from your goals, routine and Revivex results. Connecting Apple Health, Oura, WHOOP or Fitbit is designed to let the app adjust your blend to how you actually slept, trained and recovered.</p>
+          <p>No. It is designed to work from your goals, routine and lab results. Connecting Apple Health, Oura, WHOOP or Fitbit is designed to let the app adjust your routine to how you actually slept, trained and recovered.</p>
         </details>
         <details class="reveal">
-          <summary>Does it use my biomarker results?</summary>
-          <p>That's the idea. It's designed to work with the Revivex app, so your biomarker testing and daily data shape the blend the machine makes.</p>
+          <summary>Does it use my lab results?</summary>
+          <p>That is the idea. The Revivex app is designed to use the results you record in it, together with your daily data, to set what the machine pours.</p>
         </details>
         <details class="reveal">
           <summary>Who controls what goes in?</summary>
-          <p>You do. The app is designed to set your blend within the limits of your plan and to show you exactly what's in it.</p>
+          <p>You do. The app is designed to set your routine within the limits of your plan and to show you exactly what is in it.</p>
         </details>
         <details class="reveal">
           <summary>Does it need a water line?</summary>
-          <p>No. It's designed around a removable tank that you fill at the tap and set back on top.</p>
+          <p>No. It is designed around a removable tank that you fill at the tap.</p>
+        </details>
+        <details class="reveal">
+          <summary>Can I order the Revivex machine today?</summary>
+          <p>Not yet. It's in development, and the final price and shipping date have not been announced. You can preorder one with a fully refundable $50 deposit. It includes 20% off the final machine price, then your $50 is credited toward the rest. We never charge a balance automatically.</p>
         </details>
         <details class="reveal">
           <summary>How do I get my deposit back?</summary>
@@ -224,6 +270,33 @@
           <summary>Are these real photos?</summary>
           <p>Not yet. The images show the design as it stands today. The final machine may change.</p>
         </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREORDER: refundable $50 deposit (Stripe-hosted checkout) -->
+  <section class="cta" id="reserve" aria-labelledby="reserve-title">
+    <span id="waitlist" class="anchor-alias" aria-hidden="true"></span>
+    <picture class="cta-media">
+      <source media="(max-width: 860px)" type="image/avif" srcset="/assets/r3/final-m-640.avif 640w, /assets/r3/final-m-960.avif 960w, /assets/r3/final-m-1280.avif 1280w" sizes="100vw">
+      <source media="(max-width: 860px)" type="image/webp" srcset="/assets/r3/final-m-640.webp 640w, /assets/r3/final-m-960.webp 960w, /assets/r3/final-m-1280.webp 1280w" sizes="100vw">
+      <source media="(max-width: 860px)" srcset="/assets/r3/final-m-640.jpg 640w, /assets/r3/final-m-960.jpg 960w, /assets/r3/final-m-1280.jpg 1280w" sizes="100vw">
+      <source type="image/avif" srcset="/assets/r3/final-d-1280.avif 1280w, /assets/r3/final-d-1920.avif 1920w, /assets/r3/final-d-2560.avif 2560w" sizes="100vw">
+      <source type="image/webp" srcset="/assets/r3/final-d-1280.webp 1280w, /assets/r3/final-d-1920.webp 1920w, /assets/r3/final-d-2560.webp 2560w" sizes="100vw">
+      <img src="/assets/r3/final-d-1920.jpg" srcset="/assets/r3/final-d-1280.jpg 1280w, /assets/r3/final-d-1920.jpg 1920w, /assets/r3/final-d-2560.jpg 2560w" sizes="100vw" width="1672" height="941" alt="The Revivex machine on a long stone counter in a bright kitchen" loading="lazy" decoding="async">
+    </picture>
+    <div class="cta-inner">
+      <div class="reserve-card reveal">
+        <h2 id="reserve-title">Preorder yours.</h2>
+        <p class="cta-lede">Revivex is in development. The final price and shipping date have not been announced.</p>
+        <form class="reserve-form" id="reserveForm" novalidate>
+          <p class="deposit-panel" id="depositPanel" data-terms-version="deposit-terms-v3" data-deposit-amount="5000"><b>$50 USD today, fully refundable.</b> You get <b>20% off</b> the final machine price, then your $50 is credited toward the rest. No automatic balance charge.</p>
+          <button type="submit" class="btn" id="reserveBtn" data-checkout disabled>Preorder</button>
+          <p class="form-msg" id="reserveMsg" role="status" aria-live="polite"></p>
+          <button type="button" class="link-btn" id="reserveRestart" hidden>I have checked. Start a new reservation</button>
+          <p class="deposit-test" id="testModeNote" hidden>Test mode. No real payment is taken.</p>
+          <noscript><p class="form-msg">Reserving needs JavaScript. No payment can be taken without it.</p></noscript>
+        </form>
       </div>
     </div>
   </section>
@@ -241,7 +314,7 @@
       <a href="/privacy.html">Privacy</a>
     </nav>
   </div>
-  <p class="footer-legal">&copy; 2026 Revivex. The Revivex machine is in development. The final price and shipping date have not been announced.</p>
+  <p class="footer-legal">&copy; 2026 Revivex. The Revivex machine is in development. The final price and shipping date have not been announced. Images show the current design.</p>
 </footer>
 
 <script type="module" src="/meta-pixel.js"></script>

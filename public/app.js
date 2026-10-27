@@ -1,10 +1,10 @@
-/* Revivex v10 — scroll-scrubbed hero, reveals, parallax, deposit reservation */
+/* Revivex round 3: nav state, reveals, How it works steps, deposit reservation */
 (() => {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Nav background after hero starts */
+  /* Nav turns solid once the page moves off the top of the hero */
   const nav = document.getElementById('nav');
-  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > document.getElementById('hero').offsetHeight - window.innerHeight - 20);
+  const onNav = () => nav.classList.toggle('scrolled', window.scrollY > 8);
   onNav(); window.addEventListener('scroll', onNav, { passive: true });
 
   /* Reveal on scroll */
@@ -13,75 +13,65 @@
   }), { rootMargin: '0px 0px -10% 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  /* Scroll-scrubbed hero: frame sequence drawn to canvas (cover fit) */
-  const hero = document.getElementById('hero');
-  const canvas = document.getElementById('heroCanvas');
-  const bar = document.getElementById('heroBar');
-  const ctx = canvas.getContext('2d');
-  // Phones get native portrait frames (1080x1920) so nothing is upscaled from a desktop crop.
-  const MOBILE = window.matchMedia('(max-width: 640px), (orientation: portrait) and (max-width: 900px)').matches;
-  const FRAMES = MOBILE ? '/assets/v11/frames-m-opt/' : '/assets/v11/frames-opt/';
-  const frames = [];
-  let count = 0, current = -1, ready = false;
-
-  function size() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    canvas.width = Math.round(canvas.clientWidth * dpr);
-    canvas.height = Math.round(canvas.clientHeight * dpr);
-    current = -1; render();
-  }
-  function draw(img) {
-    const cw = canvas.width, ch = canvas.height;
-    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-    const w = img.naturalWidth * s, h = img.naturalHeight * s;
-    const focusX = MOBILE ? 0.5 : 0.64;
-    const x = (cw - w) * focusX, y = (ch - h) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, x, y, w, h);
-  }
-  function progress() {
-    const r = hero.getBoundingClientRect();
-    const total = hero.offsetHeight - window.innerHeight;
-    return Math.min(1, Math.max(0, -r.top / total));
-  }
-  function render() {
-    const p = progress();
-    if (bar) bar.style.width = (p * 100) + '%';
-    if (!ready) return;
-    let i = Math.round(p * (count - 1));
-    while (i > 0 && !(frames[i] && frames[i].complete && frames[i].naturalWidth)) i--;
-    if (!frames[i] || !frames[i].naturalWidth || i === current) return;
-    current = i; draw(frames[i]);
-  }
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(() => { render(); ticking = false; }); }
-  }, { passive: true });
-  window.addEventListener('resize', size);
-
-  if (!reduce) {
-    fetch(FRAMES + 'manifest.json').then(r => r.ok ? r.json() : Promise.reject()).then(m => {
-      count = m.frameCount;
-      for (let i = 1; i <= count; i++) {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = `${FRAMES}f-${String(i).padStart(4, '0')}.${m.ext}`;
-        if (i === 1) img.onload = () => { ready = true; canvas.classList.add('ready'); size(); };
-        frames.push(img);
-      }
-    }).catch(() => { /* keep static fallback image */ });
-  }
-
-  /* Gentle parallax on full-bleed image */
-  const bleed = document.querySelector('.bleed img');
-  if (bleed && !reduce) {
-    const par = () => {
-      const r = bleed.parentElement.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > window.innerHeight) return;
-      const t = (r.top + r.height / 2 - window.innerHeight / 2) / window.innerHeight;
-      bleed.style.transform = `translate3d(0, ${(-8 + t * 10).toFixed(2)}%, 0)`;
+  /* How it works. Desktop: the section pins while the page scrolls through four steps;
+     each step swaps the photo and the real app screen. Phone: a swipe carousel. */
+  const row = document.getElementById('hiw');
+  const list = document.getElementById('hiwSteps');
+  if (row && list) {
+    const steps = [...list.querySelectorAll('.hiw-step')];
+    const shots = [...row.querySelectorAll('.hiw-shot')];
+    const screens = [...row.querySelectorAll('.phone-screen')];
+    const phone = row.querySelector('.hiw-phone');
+    const count = document.getElementById('hiwCount');
+    const prev = document.getElementById('hiwPrev');
+    const next = document.getElementById('hiwNext');
+    const desktop = window.matchMedia('(min-width: 861px)');
+    let active = -1;
+    const show = i => {
+      if (i === active) return;
+      active = i;
+      steps.forEach((s, n) => s.classList.toggle('is-on', n === i));
+      shots.forEach(s => s.classList.toggle('is-on', Number(s.dataset.step) === i));
+      screens.forEach(s => s.classList.toggle('is-on', Number(s.dataset.step) === i));
+      if (phone) phone.classList.toggle('is-off', !screens.some(s => Number(s.dataset.step) === i));
+      if (count) count.textContent = `0${i + 1} / 0${steps.length}`;
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === steps.length - 1;
     };
-    par(); window.addEventListener('scroll', () => requestAnimationFrame(par), { passive: true });
+    // Scroll distance over which the pinned stage stays in place.
+    const span = () => row.offsetHeight - row.querySelector('.hiw-pin').offsetHeight;
+    const onScroll = () => {
+      if (!desktop.matches) return;
+      const p = Math.min(0.999, Math.max(0, -row.getBoundingClientRect().top / Math.max(1, span())));
+      show(Math.floor(p * steps.length));
+    };
+    const toStep = i => {
+      if (desktop.matches) {
+        const top = row.getBoundingClientRect().top + window.scrollY + span() * (i + 0.5) / steps.length;
+        window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+      } else {
+        list.scrollTo({ left: steps[i].offsetLeft - steps[0].offsetLeft, behavior: reduce ? 'auto' : 'smooth' });
+      }
+    };
+    steps.forEach((s, i) => {
+      s.addEventListener('click', () => { if (desktop.matches) toStep(i); });
+    });
+    if (prev) prev.addEventListener('click', () => toStep(Math.max(0, active - 1)));
+    if (next) next.addEventListener('click', () => toStep(Math.min(steps.length - 1, active + 1)));
+    // Phone: the card whose left edge is nearest the start of the track is the current one.
+    let ticking = false;
+    list.addEventListener('scroll', () => {
+      if (desktop.matches || ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const x = list.scrollLeft, w = steps[1] ? steps[1].offsetLeft - steps[0].offsetLeft : 1;
+        show(Math.min(steps.length - 1, Math.round(x / w)));
+      });
+    }, { passive: true });
+    window.addEventListener('scroll', () => requestAnimationFrame(onScroll), { passive: true });
+    desktop.addEventListener('change', () => { active = -1; show(0); onScroll(); });
+    show(0); onScroll();
   }
 
   /* Preorder: refundable deposit through Stripe-hosted Checkout.

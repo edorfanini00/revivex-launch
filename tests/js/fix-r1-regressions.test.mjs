@@ -263,8 +263,9 @@ test('retrieve 404 after create is unavailable (never shown); retrieve timeout i
   }
 });
 
-// ---- correctness F6: desktop hero subtitle must keep the base 3-line layout ----
-test('hero subtitle keeps design-intent wording without lengthening the original line', () => {
+// ---- correctness F6: the hero subtitle keeps design-intent wording (round 3 copy) ----
+test('hero subtitle keeps design-intent wording and states the development status', () => {
   const s = read('public/index.html');
-  assert.match(s, /<p class="hero-sub reveal-now">Designed to read your sleep, recovery and biomarker data overnight\. One touch in the morning and your blend is ready\.<\/p>/);
+  assert.match(s, /<p class="hero-sub">Revivex is a countertop machine designed to read your wearable and lab data through the Revivex app, then pour your daily supplement&nbsp;drink\.<\/p>/);
+  assert.match(s, /<p class="hero-note">In development\. No confirmed ship date\.<\/p>/);
 });
